@@ -85,6 +85,24 @@ Includes centralized utility functions for text sanitization and formatting, enh
 
 ## Recent Changes
 
+### August 10, 2025 - Audio Processing Removal & Koyeb Port Fixes
+
+- **Audio Processing Removal**: Completely removed all audio/voice processing components for cloud deployment optimization
+  - Disabled voice cloning, TTS, and STT models in config.py (VOICE_ENABLED=false by default)
+  - Removed audio dependencies from Dockerfile and pyproject.toml (gtts, speechrecognition, pydub)
+  - Disabled VoiceCloningEngine initialization in WhatsApp client
+  - Removed audio system packages from Docker image to reduce build size and memory usage
+- **Koyeb Port Configuration**: Fixed health server to use dynamic PORT environment variable
+  - Health server now reads PORT env var for proper Koyeb deployment
+  - Updated main.py to use int(os.getenv("PORT", "8080")) for cloud compatibility
+  - Added proper error handling for port conflicts in cloud environments
+- **NumPy Compatibility Fix**: Added "numpy<2.0" constraint to fix PyTorch compatibility issues
+  - Prevents NumPy 2.x crashes with existing compiled modules
+  - Ensures stable AI model loading in cloud environments
+- **Docker Optimization**: Removed unnecessary audio packages from Dockerfile
+  - Eliminated ffmpeg, espeak, festival, and audio development libraries
+  - Reduced container size and eliminated potential dependency conflicts
+
 ### August 10, 2025 - SearXNG Integration & Koyeb Deployment Optimization
 - **Search Engine Migration**: Replaced Whoogle with SearXNG for better search capabilities
   - SearXNG provides JSON API, multiple search engines, and better privacy

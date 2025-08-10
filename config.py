@@ -51,9 +51,9 @@ class Config:
         self.TARGET_LANGUAGE = os.getenv("TARGET_LANGUAGE", "en")
         self.SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "ja", "ko", "zh", "ar", "hi", "yo", "ig", "ha"]
         
-        # Voice Configuration
+        # Voice Configuration (DISABLED for cloud deployment)
         self.TTS_LANGUAGE = os.getenv("TTS_LANGUAGE", "en")
-        self.VOICE_ENABLED = os.getenv("VOICE_ENABLED", "true").lower() == "true"
+        self.VOICE_ENABLED = os.getenv("VOICE_ENABLED", "false").lower() == "true"  # Default disabled
         self.VOICE_SPEED = float(os.getenv("VOICE_SPEED", "1.0"))
         
         # Web Search Configuration - SearXNG instances

@@ -157,9 +157,10 @@ class WhatsAppAIBot:
             sys.exit(1)
     
     def _start_health_server(self):
-        """Start HTTP health check server in background thread"""
+        """Start HTTP health check server in background thread (Koyeb compatible)"""
         try:
-            self.health_server = HTTPServer(('0.0.0.0', 8080), HealthCheckHandler)
+            health_port = int(os.getenv("PORT", "8080"))  # Use Koyeb's PORT env
+            self.health_server = HTTPServer(('0.0.0.0', health_port), HealthCheckHandler)
             self.health_server.deployment_ready = False
             self.health_server.whatsapp_connected = False
             self.health_server.database_available = False
@@ -170,7 +171,7 @@ class WhatsAppAIBot:
             health_thread = threading.Thread(target=self.health_server.serve_forever, daemon=True)
             health_thread.start()
             
-            logger.info("🏥 Health check server started on port 8080")
+            logger.info(f"🏥 Health check server started on port {health_port}")
         except Exception as e:
             logger.error(f"❌ Failed to start health check server: {e}")
     

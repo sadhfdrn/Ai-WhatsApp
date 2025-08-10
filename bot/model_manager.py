@@ -98,28 +98,7 @@ class SmartModelManager:
                     'cache_strategy': 'streaming'
                 }
             },
-            'text_to_speech': {
-                'github_actions': {
-                    'model_name': 'microsoft/speecht5_tts',
-                    'cache_strategy': 'progressive',
-                    'max_memory': '1GB'
-                },
-                'cloud': {
-                    'model_name': 'suno/bark',
-                    'cache_strategy': 'streaming'
-                }
-            },
-            'speech_to_text': {
-                'github_actions': {
-                    'model_name': 'openai/whisper-base',
-                    'cache_strategy': 'full_cache',
-                    'max_memory': '600MB'
-                },
-                'cloud': {
-                    'model_name': 'openai/whisper-large-v3',
-                    'cache_strategy': 'streaming'
-                }
-            },
+            # Audio models removed for cloud deployment optimization
             'code_generation': {
                 'github_actions': {
                     'model_name': 'Salesforce/codegen-350M-mono',

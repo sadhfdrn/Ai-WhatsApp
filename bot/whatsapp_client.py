@@ -34,11 +34,10 @@ class WhatsAppClient:
         
         # Initialize AI components with enhanced model management
         self.ai_processor = EnhancedAISystem(config)
-        self.voice_handler = VoiceCloningEngine(config) if config.VOICE_ENABLED else None
+        # Voice processing disabled for cloud deployment
+        self.voice_handler = None  # VoiceCloningEngine disabled
         
-        # Share model manager between components
-        if self.voice_handler and hasattr(self.ai_processor, 'model_manager'):
-            self.voice_handler.model_manager = self.ai_processor.model_manager
+        # Share model manager between components (voice handler disabled)
         self.web_search = WebSearchHandler(config) if config.SEARCH_ENABLED else None
         self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
         self.auto_reply = AutoReplyManager(config)
@@ -94,9 +93,7 @@ class WhatsAppClient:
             # AI models are automatically initialized in the EnhancedAISystem constructor
             logger.info("🧠 AI models ready")
             
-            # Initialize voice AI models if enabled
-            if self.voice_handler and hasattr(self.voice_handler, 'initialize_ai_models'):
-                await self.voice_handler.initialize_ai_models()
+            # Voice AI models disabled for cloud deployment
             
             # Start Node.js baileys bridge
             await self.start_baileys_bridge()

@@ -24,16 +24,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     wget \
-    ffmpeg \
-    espeak \
-    espeak-data \
-    libespeak1 \
-    libespeak-dev \
-    festival \
-    festvox-kallpc16k \
-    alsa-utils \
-    libasound2-dev \
-    pkg-config \
+    # Audio packages removed for cloud deployment optimization
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20.x (required for baileys-mod)
@@ -50,14 +41,16 @@ COPY pyproject.toml uv.lock ./
 # Install Node.js dependencies
 RUN npm install
 
-# Install Python dependencies with AI models support
+# Fix NumPy compatibility for cloud deployment
+RUN pip install --no-cache-dir "numpy<2.0" wheel setuptools
+
+# Install PyTorch CPU-only with fixed NumPy compatibility
 RUN pip install --no-cache-dir \
     torch==2.1.0+cpu \
     torchvision==0.16.0+cpu \
-    torchaudio==2.1.0+cpu \
     --index-url https://download.pytorch.org/whl/cpu
 
-# Install transformers and AI model dependencies
+# Install transformers with compatible versions (no audio processing)
 RUN pip install --no-cache-dir \
     transformers==4.35.2 \
     accelerate==0.24.1 \

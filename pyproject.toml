@@ -5,15 +5,15 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "beautifulsoup4>=4.13.4",
-    "gtts>=2.5.4",
-    "openai>=1.99.6",
+    # "gtts>=2.5.4",  # Removed for cloud deployment
+    # "openai>=1.99.6",  # Not needed with Hugging Face models
     "pillow>=11.3.0",
     "psutil>=7.0.0",
     "psycopg2-binary>=2.9.10",
-    "pydub>=0.25.1",
+    # "pydub>=0.25.1",  # Removed for cloud deployment
     "python-dotenv>=1.1.1",
     "requests>=2.32.4",
-    "speechrecognition>=3.14.3",
+    # "speechrecognition>=3.14.3",  # Removed for cloud deployment
     "sqlalchemy>=2.0.42",
     "trafilatura>=2.0.0",
 ]
