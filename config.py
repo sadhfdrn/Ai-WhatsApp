@@ -56,8 +56,8 @@ class Config:
         self.VOICE_ENABLED = os.getenv("VOICE_ENABLED", "true").lower() == "true"
         self.VOICE_SPEED = float(os.getenv("VOICE_SPEED", "1.0"))
         
-        # Web Search Configuration - Unlimited Access
-        self.WHOOGLE_URL = os.getenv("WHOOGLE_URL", "https://search.benbusby.com")
+        # Web Search Configuration - Updated working Whoogle instances
+        self.WHOOGLE_URL = os.getenv("WHOOGLE_URL", "https://search.whoogle.io")
         self.SEARCH_ENABLED = os.getenv("SEARCH_ENABLED", "true").lower() == "true"
         self.MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "10"))
         self.AUTO_SEARCH_ON_QUESTIONS = os.getenv("AUTO_SEARCH_ON_QUESTIONS", "true").lower() == "true"

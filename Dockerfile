@@ -117,8 +117,8 @@ ENV MKL_NUM_THREADS=4
 
 # Configuration for unlimited web search with Whoogle instance
 ENV SEARCH_ENABLED=true
-ENV WHOOGLE_URL=https://search.benbusby.com
-ENV WHOOGLE_FALLBACK_URL=https://whoogle.hectabit.co
+ENV WHOOGLE_URL=https://search.whoogle.io
+ENV WHOOGLE_FALLBACK_URL=https://whoogle.sdf.org
 ENV MAX_SEARCH_RESULTS=10
 ENV AUTO_SEARCH_ON_QUESTIONS=true
 ENV WHOOGLE_INSTANCE_ACTIVE=true

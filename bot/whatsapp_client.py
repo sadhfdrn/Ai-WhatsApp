@@ -16,8 +16,7 @@ from bot.voice_cloning import VoiceCloningEngine
 from bot.web_search import WebSearchHandler
 from bot.meme_generator import MemeGenerator
 from bot.auto_reply import AutoReplyManager
-from bot.github_profile_manager import GitHubProfileManager
-from bot.personality_learner import PersonalityLearner
+# GitHub integration removed - now using database for personality learning
 from bot.style_mimicker import StyleMimicker
 from database.db_manager import DatabaseManager
 from utils.helpers import sanitize_text, format_timestamp
@@ -44,26 +43,14 @@ class WhatsAppClient:
         self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
         self.auto_reply = AutoReplyManager(config)
         
-        # Initialize personality learning system (keep GitHub for backup)
-        self.profile_manager = GitHubProfileManager()
-        self.personality_learner = PersonalityLearner(self.profile_manager)
-        
-        # Initialize database-based learning system
-        # For now, use a default user ID - this should be configured based on your actual WhatsApp ID
+        # Initialize database-based learning system (primary)
         your_whatsapp_id = config.YOUR_USER_ID if hasattr(config, 'YOUR_USER_ID') else "your_phone_number@c.us"
         self.db_manager = DatabaseManager(your_whatsapp_id)
         
-        # Load user profile and initialize style mimicker
-        user_profile = self.profile_manager.load_profile()
-        self.style_mimicker = StyleMimicker(user_profile)
+        # Initialize style mimicker with database patterns
+        self.style_mimicker = StyleMimicker({})
         
-        # Update AI processor with learned personality
-        try:
-            if hasattr(self.ai_processor, 'set_user_profile'):
-                self.ai_processor.set_user_profile(user_profile)
-        except AttributeError:
-            # Method may not exist in all AI processor versions
-            pass
+        # AI processor will use database patterns through style_mimicker
         
         # Message handlers
         self.message_handlers = {}
@@ -280,13 +267,13 @@ class WhatsAppClient:
         try:
             logger.info(f"🔄 Processing text message from {sender}: {message}")
             
-            # Learn from user's message patterns (only for main user, not from own responses)
+            # Learn from user's message patterns using database
             if not message.startswith(self.config.BOT_PREFIX) and sender != 'bot':
-                await self.personality_learner.learn_from_user_message(
-                    message, 
-                    {'sender': sender, 'timestamp': timestamp}
-                )
-                logger.info("🧠 Learned patterns from user message")
+                try:
+                    await self.db_manager.learn_from_message(sender, message, timestamp)
+                    logger.info("🧠 Learned patterns from user message")
+                except Exception as e:
+                    logger.warning(f"⚠️ Learning failed: {e}")
             
             # Check if it's a command
             if message.startswith(self.config.BOT_PREFIX):
@@ -484,7 +471,7 @@ class WhatsAppClient:
 **Special Features:**
 • I learn your communication style automatically
 • Every message helps me understand you better
-• Your patterns are saved to GitHub repository
+• Your patterns are saved to the database
 • I mimic your phrases, emojis, and tone
 • Memory persists across bot restarts
 
@@ -892,34 +879,26 @@ Keep the conversation going for more detailed analysis!"""
             return 'general'
     
     async def update_style_mimicker_profile(self):
-        """Update style mimicker with latest learned profile"""
+        """Update style mimicker with database patterns"""
         try:
-            current_profile = self.profile_manager.load_profile()
-            self.style_mimicker.update_profile(current_profile)
-            logger.info("🔄 Style mimicker updated with latest profile")
+            patterns = await self.db_manager.get_user_patterns() if self.db_manager else {}
+            self.style_mimicker.update_patterns(patterns)
+            logger.info("🔄 Style mimicker updated with database patterns")
         except Exception as e:
             logger.error(f"❌ Failed to update style mimicker: {e}")
     
     async def save_personality_data(self):
-        """Save all personality learning data"""
+        """Save all personality learning data to database"""
         try:
-            await self.personality_learner.save_learned_data()
-            await self.update_style_mimicker_profile()
-            logger.info("💾 Personality data saved successfully")
+            # Data is automatically saved to database during message processing
+            logger.info("💾 Personality data automatically saved to database")
         except Exception as e:
             logger.error(f"❌ Failed to save personality data: {e}")
     
     def get_learning_stats(self) -> Dict[str, Any]:
-        """Get personality learning statistics"""
+        """Get personality learning statistics from database"""
         try:
-            stats = self.personality_learner.get_learning_summary()
-            profile_stats = self.profile_manager.get_profile_stats()
-            
-            return {
-                'learning_progress': stats,
-                'profile_stats': profile_stats,
-                'style_mimicker_active': self.style_mimicker is not None
-            }
+            return self.db_manager.get_learning_stats() if self.db_manager else {}
         except Exception as e:
             logger.error(f"❌ Failed to get learning stats: {e}")
             return {}
@@ -949,7 +928,7 @@ Keep the conversation going for more detailed analysis!"""
 • Last updated: {profile_stats.get('last_updated', 'Never')[:19]}
 • Learning status: {'Active' if stats.get('style_mimicker_active') else 'Inactive'}
 
-🔄 All patterns are automatically saved to GitHub repository for persistence!"""
+🔄 All patterns are automatically saved to the database for persistence!"""
 
             await self.send_message(sender, profile_text, add_ai_icon=True)
             

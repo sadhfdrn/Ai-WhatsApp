@@ -128,8 +128,8 @@ class DeploymentLogger:
         """Check network connectivity to key services"""
         urls_to_check = [
             'https://huggingface.co',
-            'https://search.benbusby.com',
-            'https://whoogle.hectabit.co'
+            'https://search.whoogle.io',
+            'https://whoogle.sdf.org'
         ]
         
         status = {}
