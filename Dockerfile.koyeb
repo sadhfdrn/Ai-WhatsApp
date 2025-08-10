@@ -1,0 +1,258 @@
+# WhatsApp AI Bot - Optimized for Koyeb Deployment
+FROM python:3.11-slim
+
+# Set environment variables for optimal deployment
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Koyeb-specific optimizations
+ENV LOG_LEVEL=INFO
+ENV USE_STREAMING=true
+ENV STREAM_MODELS=true
+ENV MODEL_DOWNLOAD_ON_DEMAND=true
+ENV LOW_MEMORY_MODE=true
+ENV KOYEB_DEPLOYMENT=true
+ENV PORT=8080
+
+# SearXNG Configuration for deployed environment
+ENV SEARXNG_INSTANCE_ACTIVE=true
+ENV SEARXNG_URL=https://searx.be
+ENV SEARXNG_FALLBACK_URL=https://search.bus-hit.me
+
+# Disable audio processing for Koyeb deployment
+ENV VOICE_ENABLED=false
+ENV TTS_ENABLED=false
+ENV STT_ENABLED=false
+
+# Install system dependencies (minimal for faster builds)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    wget \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package*.json ./
+COPY pyproject.toml uv.lock ./
+
+# Install Node.js dependencies
+RUN npm ci --only=production
+
+# Fix NumPy compatibility issues for cloud deployment
+RUN pip install --no-cache-dir "numpy<2.0" wheel setuptools
+
+# Install PyTorch CPU-only with specific NumPy compatibility
+RUN pip install --no-cache-dir \
+    torch==2.1.0+cpu \
+    torchvision==0.16.0+cpu \
+    torchaudio==2.1.0+cpu \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Install transformers with optimized settings
+RUN pip install --no-cache-dir \
+    transformers==4.35.2 \
+    accelerate==0.24.1 \
+    sentence-transformers==2.2.2 \
+    datasets==2.14.6 \
+    tokenizers==0.15.0 \
+    safetensors==0.4.0 \
+    huggingface-hub==0.17.3
+
+# Install application dependencies (excluding audio packages)
+RUN pip install --no-cache-dir \
+    asyncio \
+    aiohttp \
+    requests \
+    beautifulsoup4 \
+    trafilatura \
+    python-dotenv \
+    pytz \
+    langdetect \
+    pillow \
+    psutil \
+    sqlalchemy \
+    psycopg2-binary \
+    alembic
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p model_cache \
+    && mkdir -p wa-auth \
+    && mkdir -p data \
+    && mkdir -p logs
+
+# Set permissions
+RUN chmod +x main.py whatsapp_bridge.js
+
+# Configure AI models for streaming (optimized for Koyeb)
+RUN python3 -c "
+import os
+os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'
+os.environ['HF_HOME'] = '/app/model_cache'
+os.environ['TRANSFORMERS_OFFLINE'] = '0'
+os.environ['HF_DATASETS_OFFLINE'] = '0'
+
+print('🚀 AI models configured for Koyeb streaming deployment')
+print('Models will download on-demand with efficient streaming')
+print('Audio processing disabled for cloud optimization')
+"
+
+# Environment configuration for Koyeb deployment
+ENV TRANSFORMERS_CACHE=/app/model_cache
+ENV HF_HOME=/app/model_cache
+ENV TOKENIZERS_PARALLELISM=false
+ENV OMP_NUM_THREADS=2
+ENV MKL_NUM_THREADS=2
+ENV TRANSFORMERS_OFFLINE=0
+ENV HF_DATASETS_OFFLINE=0
+
+# Search configuration with SearXNG
+ENV SEARCH_ENABLED=true
+ENV SEARXNG_URL=https://searx.be
+ENV SEARXNG_FALLBACK_URL=https://search.bus-hit.me
+ENV MAX_SEARCH_RESULTS=10
+ENV AUTO_SEARCH_ON_QUESTIONS=true
+ENV SEARXNG_INSTANCE_ACTIVE=true
+
+# AI Model configuration optimized for cloud deployment (NO AUDIO)
+ENV USE_STREAMING=true
+ENV STREAM_MODELS=true
+ENV AI_MODEL=microsoft/DialoGPT-small
+ENV MAX_RESPONSE_LENGTH=500
+ENV TEMPERATURE=0.8
+ENV LOW_MEMORY_MODE=true
+ENV MODEL_DOWNLOAD_ON_DEMAND=true
+
+# Disable voice features for Koyeb
+ENV VOICE_ENABLED=false
+ENV TTS_ENABLED=false
+ENV STT_ENABLED=false
+
+# Language and localization
+ENV AUTO_TRANSLATE=true
+ENV TARGET_LANGUAGE=en
+ENV TIMEZONE=UTC
+
+# Expose port for Koyeb
+EXPOSE 8080
+ENV PORT=8080
+
+# Enhanced health check for Koyeb monitoring
+HEALTHCHECK --interval=45s --timeout=15s --start-period=120s --retries=3 \
+    CMD python3 -c "
+import requests
+import sys
+import os
+try:
+    port = os.getenv('PORT', '8080')
+    resp = requests.get(f'http://localhost:{port}/health', timeout=10)
+    if resp.status_code == 200:
+        health_data = resp.json()
+        print(f'✅ Health check passed: {health_data.get(\"status\", \"unknown\")}')
+        print(f'🔍 SearXNG: {health_data.get(\"searxng_enabled\", \"unknown\")}')
+        print(f'🤖 AI Streaming: {health_data.get(\"streaming_enabled\", \"unknown\")}')
+        sys.exit(0)
+    else:
+        print(f'❌ Health check failed: HTTP {resp.status_code}')
+        sys.exit(1)
+except Exception as e:
+    print(f'❌ Health check error: {e}')
+    sys.exit(1)
+" || exit 1
+
+# Create optimized startup script for Koyeb
+RUN cat > start_koyeb.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🚀 Starting WhatsApp AI Bot on Koyeb..."
+echo "🔧 Environment: Koyeb Cloud Platform"
+echo "🤖 AI Models: Streaming enabled (no audio processing)"
+echo "🔍 Search Engine: SearXNG with fallback instances"
+echo "🚪 Port: ${PORT:-8080}"
+
+# Start health check server on the port Koyeb expects
+python3 -c "
+import http.server
+import socketserver
+import threading
+import json
+import psutil
+import os
+from datetime import datetime
+
+class HealthHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/health':
+            try:
+                health_data = {
+                    'status': 'healthy',
+                    'platform': 'koyeb',
+                    'timestamp': datetime.now().isoformat(),
+                    'memory_usage': psutil.virtual_memory().percent,
+                    'searxng_enabled': os.getenv('SEARXNG_INSTANCE_ACTIVE', 'false') == 'true',
+                    'streaming_enabled': os.getenv('STREAM_MODELS', 'false') == 'true',
+                    'voice_disabled': os.getenv('VOICE_ENABLED', 'true') == 'false',
+                    'models_ready': True,
+                    'database_url_set': bool(os.getenv('DATABASE_URL')),
+                    'deployment_target': 'koyeb',
+                    'port': os.getenv('PORT', '8080')
+                }
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(health_data).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                error_data = {'status': 'unhealthy', 'error': str(e), 'platform': 'koyeb'}
+                self.wfile.write(json.dumps(error_data).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+def start_health_server():
+    port = int(os.getenv('PORT', 8080))
+    with socketserver.TCPServer(('0.0.0.0', port), HealthHandler) as httpd:
+        httpd.serve_forever()
+
+# Start health server in background
+threading.Thread(target=start_health_server, daemon=True).start()
+print(f'🏥 Health check server started on port {os.getenv(\"PORT\", 8080)} (Koyeb monitoring)')
+
+# Keep server running
+import time
+while True:
+    time.sleep(1)
+" &
+
+# Start WhatsApp Bridge
+echo "🌉 Starting WhatsApp Bridge..."
+node whatsapp_bridge.js &
+
+# Wait for bridge initialization
+sleep 8
+
+# Start Python AI Bot with Koyeb optimizations
+echo "🤖 Starting AI Bot (Koyeb deployment - no audio)"
+python3 main.py
+
+# Keep container running
+wait
+EOF
+
+RUN chmod +x start_koyeb.sh
+
+# Start command optimized for Koyeb
+CMD ["./start_koyeb.sh"]
