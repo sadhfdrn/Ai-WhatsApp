@@ -1,9 +1,9 @@
 {
-  "last_updated": "2025-08-10T09:42:51.407593Z",
+  "last_updated": "2025-08-10T09:49:27.559528Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T09:42:50.683670Z",
+      "timestamp": "2025-08-10T09:49:27.530868Z",
       "message": "Hello bot! This is a test message.",
       "patterns": {
         "length": 34,
@@ -33,9 +33,9 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "test",
+          "hello",
           "message",
-          "hello"
+          "test"
         ],
         "greeting_patterns": "casual",
         "agreement_patterns": null,
@@ -43,7 +43,7 @@
       },
       "context": {
         "sender": "test_user@c.us",
-        "timestamp": "2025-08-10T09:42:50.676221"
+        "timestamp": "2025-08-10T09:49:27.524973"
       }
     }
   ]
