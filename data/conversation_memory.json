@@ -1,21 +1,18 @@
 {
-  "last_updated": "2025-08-10T20:34:51.505410Z",
+  "last_updated": "2025-08-10T20:34:51.804363Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:51.411943Z",
-      "message": "I want us to understand that the degree of your knowing would be known by simply looking at your dispositions and carriage🙇‍♂️",
+      "timestamp": "2025-08-10T20:34:51.710738Z",
+      "message": "I am going to be a father soon 🤧",
       "patterns": {
-        "length": 126,
-        "word_count": 22,
+        "length": 32,
+        "word_count": 9,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.007936507936507936,
-        "emoji_usage": {
-          "🙇": 1,
-          "♂️": 1
-        },
+        "caps_ratio": 0.03125,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
@@ -36,15 +33,9 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "dispositions",
-          "simply",
-          "carriage",
-          "degree",
-          "looking",
-          "knowing",
-          "want",
-          "understand",
-          "known"
+          "father",
+          "going",
+          "soon"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -52,7 +43,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:22:24"
+        "timestamp": "2025-08-10T20:22:35"
       }
     }
   ]
