@@ -256,23 +256,19 @@ class AIProcessor:
         """Add humor to response"""
         try:
             humor_additions = [
-                " 😄",
                 " (Just kidding around!)",
-                " 😉",
                 " Haha!",
-                " 😂",
-                " (I couldn't resist!)",
-                " 🤣"
+                " (I couldn't resist!)"
             ]
             
             # Sometimes add a humorous comment
             if random.random() < 0.3:
                 humorous_comments = [
                     "By the way, did you hear about the programmer who got stuck in the shower? The instructions said: Lather, Rinse, Repeat!",
-                    "Fun fact: I'm 99% sure I'm an AI, but there's always that 1% doubt! 🤔",
+                    "Fun fact: I'm 99% sure I'm an AI, but there's always that 1% doubt!",
                     "Speaking of which, why did the robot go on a diet? It had a byte problem!",
-                    "Random thought: If I were human, I'd probably be the type who puts pineapple on pizza! 🍕",
-                    "Totally unrelated, but I just 'learned' that octopi have three hearts. Show-offs! 🐙"
+                    "Random thought: If I were human, I'd probably be the type who puts pineapple on pizza!",
+                    "Totally unrelated, but I just 'learned' that octopi have three hearts. Show-offs!"
                 ]
                 response += "\n\n" + random.choice(humorous_comments)
             else:
@@ -289,18 +285,18 @@ class AIProcessor:
         try:
             jokes = {
                 "tech": [
-                    "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
-                    "How many programmers does it take to change a light bulb? None, that's a hardware problem! 💡",
-                    "Why did the developer go broke? Because he used up all his cache! 💸",
-                    "What's a programmer's favorite hangout place? Foo Bar! 🍺",
-                    "Why don't robots ever panic? They have nerves of steel! 🤖"
+                    "Why do programmers prefer dark mode? Because light attracts bugs!",
+                    "How many programmers does it take to change a light bulb? None, that's a hardware problem!",
+                    "Why did the developer go broke? Because he used up all his cache!",
+                    "What's a programmer's favorite hangout place? Foo Bar!",
+                    "Why don't robots ever panic? They have nerves of steel!"
                 ],
                 "general": [
-                    "Why don't scientists trust atoms? Because they make up everything! ⚛️",
-                    "What do you call a fake noodle? An impasta! 🍝",
-                    "Why did the scarecrow win an award? He was outstanding in his field! 🌾",
-                    "What do you call a bear with no teeth? A gummy bear! 🐻",
-                    "Why don't eggs tell jokes? They'd crack each other up! 🥚"
+                    "Why don't scientists trust atoms? Because they make up everything!",
+                    "What do you call a fake noodle? An impasta!",
+                    "Why did the scarecrow win an award? He was outstanding in his field!",
+                    "What do you call a bear with no teeth? A gummy bear!",
+                    "Why don't eggs tell jokes? They'd crack each other up!"
                 ],
                 "random": []
             }

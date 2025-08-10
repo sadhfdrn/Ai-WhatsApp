@@ -227,7 +227,7 @@ class PersonalityEngine:
             
             if suggestions and random.random() < 0.7:
                 suggestion = random.choice(suggestions)
-                response += f"\n\n💡 {suggestion}"
+                response += f"\n\n{suggestion}"
             
             return response
             
@@ -239,24 +239,24 @@ class PersonalityEngine:
         """Get personality-appropriate response for different moods"""
         mood_responses = {
             'excited': [
-                "I love that energy! Let's keep this momentum going! 🚀",
+                "I love that energy! Let's keep this momentum going!",
                 "Your excitement is contagious! What's got you so pumped?",
-                "Yes! This is exactly the kind of vibe I'm here for! ⚡"
+                "Yes! This is exactly the kind of vibe I'm here for!"
             ],
             'curious': [
-                "Great question! I love when people dig deeper into things! 🤔",
+                "Great question! I love when people dig deeper into things!",
                 "Now that's the kind of curiosity that leads to awesome discoveries!",
-                "I'm always up for exploring interesting topics together! 🔍"
+                "I'm always up for exploring interesting topics together!"
             ],
             'frustrated': [
-                "I hear you! Let's tackle this together and turn it around! 💪",
+                "I hear you! Let's tackle this together and turn it around!",
                 "Frustration means you care - let's channel that into solutions!",
-                "Sometimes the best breakthroughs come after the toughest challenges! 🌈"
+                "Sometimes the best breakthroughs come after the toughest challenges!"
             ],
             'confused': [
-                "No worries! Confusion just means we're learning something new! 🧠",
+                "No worries! Confusion just means we're learning something new!",
                 "Let's break this down step by step - I'm here to help clarify!",
-                "Questions are the beginning of understanding - let's explore this! 🗺️"
+                "Questions are the beginning of understanding - let's explore this!"
             ]
         }
         

@@ -254,8 +254,16 @@ class WhatsAppBridge {
                 return false;
             }
 
-            const result = await this.sock.sendMessage(to, { text: message });
-            console.log(`📤 Message sent to ${to}`);
+            // Prepare message object
+            const messageObj = { text: message };
+            
+            // Add AI flag if specified
+            if (options.ai === true) {
+                messageObj.ai = true;
+            }
+
+            const result = await this.sock.sendMessage(to, messageObj);
+            console.log(`📤 Message sent to ${to}${options.ai ? ' (with AI icon)' : ''}`);
             return true;
 
         } catch (error) {
@@ -292,7 +300,11 @@ class WhatsAppBridge {
                     
                     for (const msg of messages) {
                         if (!msg.sent) {
-                            await this.sendMessage(msg.to, msg.message, msg.options || {});
+                            const options = msg.options || {};
+                            if (msg.ai) {
+                                options.ai = true;
+                            }
+                            await this.sendMessage(msg.to, msg.message, options);
                             msg.sent = true;
                         }
                     }

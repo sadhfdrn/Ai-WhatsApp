@@ -705,23 +705,20 @@ Keep the conversation going for more detailed analysis!"""
 
     async def handle_unknown_command(self, sender: str, command: str):
         """Handle unknown command"""
-        response = f"🤔 I don't recognize the command '{command}'. Type !help to see available commands!"
+        response = f"I don't recognize the command '{command}'. Type !help to see available commands!"
         await self.send_message(sender, response, add_ai_icon=True)
     
     async def send_message(self, to: str, message: str, add_ai_icon: bool = False):
         """Send text message via baileys bridge"""
         try:
-            if add_ai_icon:
-                message = f"🤖 {message}"
-            
-            # Sanitize message
+            # Sanitize message (no emoji prefix)
             clean_message = sanitize_text(message)
             
             # Log outgoing message
             logger.info(f"📤 Sending to {to}: {clean_message[:100]}...")
             
-            # Send via baileys bridge
-            await self.send_via_bridge(to, clean_message)
+            # Send via baileys bridge with AI icon option
+            await self.send_via_bridge(to, clean_message, ai=add_ai_icon)
             
             return True
             
@@ -729,10 +726,10 @@ Keep the conversation going for more detailed analysis!"""
             logger.error(f"❌ Failed to send message: {e}")
             return False
     
-    async def send_via_bridge(self, to: str, message: str):
+    async def send_via_bridge(self, to: str, message: str, ai: bool = False):
         """Send message via Node.js baileys bridge"""
         try:
-            logger.info(f"🌉 Sending message via bridge to {to}: {message[:50]}...")
+            logger.info(f"🌉 Sending message via bridge to {to}: {message[:50]}... (AI: {ai})")
             outgoing_file = "outgoing_messages.json"
             
             # Load existing messages
@@ -742,10 +739,11 @@ Keep the conversation going for more detailed analysis!"""
                     messages = json.load(f)
                 logger.info(f"📋 Loaded {len(messages)} existing outgoing messages")
             
-            # Add new message
+            # Add new message with AI flag
             new_message = {
                 'to': to,
                 'message': message,
+                'ai': ai,
                 'sent': False,
                 'timestamp': datetime.now().isoformat()
             }
