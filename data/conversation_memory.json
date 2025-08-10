@@ -1,20 +1,18 @@
 {
-  "last_updated": "2025-08-10T19:00:00.356465Z",
+  "last_updated": "2025-08-10T19:00:01.440937Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:00:00.323206Z",
-      "message": "Omo I over fed my self there \n😌 3 plates of rice",
+      "timestamp": "2025-08-10T19:00:01.388837Z",
+      "message": "So how have you been",
       "patterns": {
-        "length": 48,
-        "word_count": 12,
+        "length": 20,
+        "word_count": 5,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.041666666666666664,
-        "emoji_usage": {
-          "😌": 1
-        },
+        "caps_ratio": 0.05,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
@@ -34,20 +32,14 @@
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [
-          "there",
-          "over",
-          "rice",
-          "plates",
-          "self"
-        ],
+        "topic_keywords": [],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": 1754852398
+        "sender": "2349136038978@s.whatsapp.net",
+        "timestamp": 1754852400
       }
     }
   ]
