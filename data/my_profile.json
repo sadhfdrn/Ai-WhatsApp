@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:16.063640Z",
+  "last_updated": "2025-08-10T10:05:16.225422Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -9,7 +9,7 @@
       "😴🙂": 0.2,
       "🙏🏽": 0.2,
       "🏽😇": 0.2,
-      "🙏": 0.2,
+      "🙏": 0.36000000000000004,
       "𝘛𝘩𝘪𝘴": 0.2,
       "𝘤𝘩𝘢𝘯𝘯𝘦𝘭": 0.2,
       "𝘸𝘢𝘴": 0.2,
@@ -22,9 +22,9 @@
       "💻": 0.4,
       "😊😊": 0.2
     },
-    "response_length_preference": "medium",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.09239001437169087
+    "caps_usage_frequency": 0.1045795843630932
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -54,6 +54,7 @@
       "test",
       "azin",
       "grateful",
+      "thank",
       "youtube",
       "https",
       "forever",
@@ -88,8 +89,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 16,
-    "last_learning_session": "2025-08-10T10:05:16.063629Z",
+    "total_messages_analyzed": 17,
+    "last_learning_session": "2025-08-10T10:05:16.225416Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
