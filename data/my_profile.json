@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:48.781258Z",
+  "last_updated": "2025-08-10T20:34:48.870643Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -69,7 +69,7 @@
     },
     "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.05573817074287479
+    "caps_usage_frequency": 0.051228183455821356
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -97,15 +97,14 @@
       "less",
       "exams",
       "already",
-      "test",
       "lord",
       "meet",
       "than",
       "cant",
       "people",
+      "someone",
       "forget",
       "abeg",
-      "someone",
       "surviving",
       "functions",
       "makes",
@@ -132,7 +131,6 @@
       "based",
       "talk",
       "anymore",
-      "tell",
       "make",
       "there",
       "abeokuta",
@@ -140,7 +138,9 @@
       "tempt",
       "clips",
       "post",
-      "needed"
+      "needed",
+      "test",
+      "tell"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -160,8 +160,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 114,
-    "last_learning_session": "2025-08-10T20:34:48.781248Z",
+    "total_messages_analyzed": 115,
+    "last_learning_session": "2025-08-10T20:34:48.870632Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
