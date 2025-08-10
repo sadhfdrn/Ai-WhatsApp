@@ -1,51 +1,80 @@
 {
-  "last_updated": "2025-08-10T19:55:36.511922Z",
+  "last_updated": "2025-08-10T19:56:30.865251Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:55:36.469126Z",
-      "message": "Rashford empty net 🤦🏼‍♀️🤦🏼‍♀️🤦🏼‍♀️",
+      "timestamp": "2025-08-10T19:56:30.756673Z",
+      "message": "Imagine surviving 60 minutes of Pedro Neto, Cole Palmer and João Pedro cooking you alive, then you look at the touchline and see Liam Delap, Willian Estevão, Jamie Gittens and Xavi Simons warming up. \nJust know that, Chelsea aren’t playing football anymore they’re hosting a talent show every matchday....! 💙🔥✊️",
       "patterns": {
-        "length": 34,
-        "word_count": 4,
-        "sentence_count": 1,
-        "exclamation_count": 0,
+        "length": 311,
+        "word_count": 50,
+        "sentence_count": 3,
+        "exclamation_count": 1,
         "question_count": 0,
-        "caps_ratio": 0.029411764705882353,
+        "caps_ratio": 0.05466237942122187,
         "emoji_usage": {
-          "🏼": 3,
-          "♀️": 3
+          "💙🔥✊️": 1
         },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.0,
+          "emphatic": 0.02,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
           "multiple_questions": false,
-          "ellipsis_usage": false,
-          "comma_frequency": 0.0,
+          "ellipsis_usage": true,
+          "comma_frequency": 0.01607717041800643,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "empty",
-          "rashford"
+          "aren",
+          "pedro",
+          "anymore",
+          "football",
+          "jamie",
+          "surviving",
+          "imagine",
+          "gittens",
+          "touchline",
+          "simons",
+          "liam",
+          "matchday",
+          "neto",
+          "hosting",
+          "every",
+          "palmer",
+          "xavi",
+          "playing",
+          "look",
+          "talent",
+          "alive",
+          "then",
+          "cooking",
+          "chelsea",
+          "show",
+          "know",
+          "willian",
+          "just",
+          "minutes",
+          "warming",
+          "delap",
+          "cole"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.0
+        "excitement_level": 0.3
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T19:55:35"
+        "timestamp": "2025-08-10T19:56:20"
       }
     }
   ]
