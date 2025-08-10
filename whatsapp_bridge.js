@@ -1,4 +1,4 @@
-const { makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
 const fs = require('fs');
@@ -23,15 +23,48 @@ class WhatsAppBridge {
                 fs.mkdirSync(authDir);
             }
 
+            // Check if we have existing creds from environment variable
+            const waCredsEnv = process.env.WHATSAPP_CREDS;
+            if (waCredsEnv) {
+                console.log('✅ Found WhatsApp credentials in environment');
+                try {
+                    const credsData = JSON.parse(waCredsEnv);
+                    const credsPath = path.join(authDir, 'creds.json');
+                    fs.writeFileSync(credsPath, JSON.stringify(credsData, null, 2));
+                    console.log('✅ WhatsApp credentials loaded from environment');
+                } catch (error) {
+                    console.log('❌ Failed to parse WHATSAPP_CREDS:', error.message);
+                }
+            } else {
+                console.log('❌ WHATSAPP_CREDS environment variable not found');
+            }
+
             // Load auth state
             const { state, saveCreds } = await useMultiFileAuthState(authDir);
+            
+            // Get latest Baileys version
+            let version;
+            try {
+                const baileyVersion = await fetchLatestBaileysVersion();
+                version = baileyVersion.version;
+                console.log(`📱 Using Baileys version: ${version.join('.')}`);
+            } catch (error) {
+                console.log('⚠️ Could not fetch latest version, using default');
+            }
 
-            // Create WhatsApp socket
+            // Create WhatsApp socket with enhanced configuration
             this.sock = makeWASocket({
+                version,
                 auth: state,
                 logger: P({ level: 'silent' }),
-                printQRInTerminal: true,
+                printQRInTerminal: false,  // We'll handle QR differently
                 defaultQueryTimeoutMs: 60000,
+                generateHighQualityLinkPreview: true,
+                getMessage: async (key) => {
+                    return { conversation: 'Hello' };
+                },
+                syncFullHistory: false,
+                markOnlineOnConnect: true,
             });
 
             // Handle credentials update
@@ -56,19 +89,57 @@ class WhatsAppBridge {
     }
 
     handleConnectionUpdate(update) {
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr, isNewLogin } = update;
+        
+        if (qr) {
+            console.log('📱 QR Code generated - scan with WhatsApp mobile app');
+            // Generate QR code in terminal for easier scanning
+            const QR = require('qrcode-terminal');
+            QR.generate(qr, { small: true });
+            console.log('⬆️ Scan the QR code above with your WhatsApp mobile app');
+        }
         
         if (connection === 'close') {
             const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            
             console.log('🔌 Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
+            console.log(`📊 Status code: ${statusCode}, Reason: ${this.getDisconnectReason(statusCode)}`);
             
             if (shouldReconnect) {
+                this.connected = false;
                 setTimeout(() => this.initialize(), 5000);
+            } else {
+                console.log('🚫 Logged out - will not reconnect automatically');
+                this.connected = false;
             }
         } else if (connection === 'open') {
             console.log('✅ WhatsApp Web connected successfully!');
             this.connected = true;
             this.notifyPython('connected');
+        } else if (connection === 'connecting') {
+            console.log('🔄 Connecting to WhatsApp...');
+        }
+    }
+    
+    getDisconnectReason(statusCode) {
+        switch (statusCode) {
+            case DisconnectReason.badSession:
+                return 'Bad Session File';
+            case DisconnectReason.connectionClosed:
+                return 'Connection Closed';
+            case DisconnectReason.connectionLost:
+                return 'Connection Lost';
+            case DisconnectReason.connectionReplaced:
+                return 'Connection Replaced';
+            case DisconnectReason.loggedOut:
+                return 'Device Logged Out';
+            case DisconnectReason.restartRequired:
+                return 'Restart Required';
+            case DisconnectReason.timedOut:
+                return 'Connection Timed Out';
+            default:
+                return `Unknown (${statusCode})`;
         }
     }
 
