@@ -1,19 +1,19 @@
 {
-  "last_updated": "2025-08-10T10:05:19.158421Z",
+  "last_updated": "2025-08-10T10:05:19.273556Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:19.075657Z",
-      "message": "Thank You God🙏",
+      "timestamp": "2025-08-10T10:05:19.222374Z",
+      "message": "ඔන්න ළමයි අද chemistry polls 👇✨",
       "patterns": {
-        "length": 14,
-        "word_count": 3,
+        "length": 31,
+        "word_count": 6,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.21428571428571427,
+        "caps_ratio": 0.0,
         "emoji_usage": {
-          "🙏": 1
+          "👇✨": 1
         },
         "common_phrases": {},
         "tone_indicators": {
@@ -35,15 +35,16 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "thank"
+          "chemistry",
+          "polls"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": 1754806036
+        "sender": "120363418066672336@newsletter",
+        "timestamp": 1754806568
       }
     }
   ]
