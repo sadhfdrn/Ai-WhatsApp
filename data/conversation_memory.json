@@ -1,23 +1,23 @@
 {
-  "last_updated": "2025-08-10T10:05:21.672691Z",
+  "last_updated": "2025-08-10T10:05:21.799355Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:21.600771Z",
-      "message": "Or u have someone to get it for u??",
+      "timestamp": "2025-08-10T10:05:21.744498Z",
+      "message": "Faut attendre le 21 pour le free food...\nSi je suis d'humeur bien-sûr",
       "patterns": {
-        "length": 35,
-        "word_count": 9,
+        "length": 69,
+        "word_count": 13,
         "sentence_count": 2,
         "exclamation_count": 0,
-        "question_count": 2,
-        "caps_ratio": 0.02857142857142857,
+        "question_count": 0,
+        "caps_ratio": 0.028985507246376812,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.2222222222222222,
+          "questioning": 0.0,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -25,23 +25,30 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
-          "multiple_questions": true,
-          "ellipsis_usage": false,
+          "multiple_questions": false,
+          "ellipsis_usage": true,
           "comma_frequency": 0.0,
-          "quotation_usage": false
+          "quotation_usage": true
         },
         "topic_keywords": [
-          "someone"
+          "food",
+          "humeur",
+          "attendre",
+          "pour",
+          "free",
+          "faut",
+          "bien",
+          "suis"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "2348086374888@s.whatsapp.net",
-        "timestamp": 1754811937
+        "sender": "status@broadcast",
+        "timestamp": 1754812164
       }
     }
   ]
