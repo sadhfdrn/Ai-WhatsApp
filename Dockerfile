@@ -62,7 +62,6 @@ RUN pip install --no-cache-dir \
     transformers==4.35.2 \
     accelerate==0.24.1 \
     sentence-transformers==2.2.2 \
-    torch-audio==0.13.1 \
     datasets==2.14.6 \
     tokenizers==0.15.0 \
     safetensors==0.4.0 \
