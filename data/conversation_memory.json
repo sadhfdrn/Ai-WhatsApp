@@ -1,31 +1,34 @@
 {
-  "last_updated": "2025-08-10T19:50:48.771921Z",
+  "last_updated": "2025-08-10T19:55:36.511922Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:50:48.725552Z",
-      "message": "Hello bot! This is a test message.",
+      "timestamp": "2025-08-10T19:55:36.469126Z",
+      "message": "Rashford empty net 🤦🏼‍♀️🤦🏼‍♀️🤦🏼‍♀️",
       "patterns": {
         "length": 34,
-        "word_count": 7,
-        "sentence_count": 3,
-        "exclamation_count": 1,
+        "word_count": 4,
+        "sentence_count": 1,
+        "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.058823529411764705,
-        "emoji_usage": {},
+        "caps_ratio": 0.029411764705882353,
+        "emoji_usage": {
+          "🏼": 3,
+          "♀️": 3
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.14285714285714285,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
@@ -33,17 +36,16 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "message",
-          "test",
-          "hello"
+          "empty",
+          "rashford"
         ],
-        "greeting_patterns": "casual",
+        "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.3
+        "excitement_level": 0.0
       },
       "context": {
-        "sender": "test_user@c.us",
-        "timestamp": "2025-08-10T19:50:48.720923"
+        "sender": "status@broadcast",
+        "timestamp": "2025-08-10T19:55:35"
       }
     }
   ]
