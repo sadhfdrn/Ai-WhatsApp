@@ -1,20 +1,19 @@
 {
-  "last_updated": "2025-08-10T20:34:52.747807Z",
+  "last_updated": "2025-08-10T20:34:52.927552Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:52.644663Z",
-      "message": "*Life is teaching me detachment rn..no begging , no chasing, no forcing 🙂‍↔️💯*\n*I really don't mind dating one person forever as long as we don't fool each other  *",
+      "timestamp": "2025-08-10T20:34:52.828104Z",
+      "message": "===================\nBut you'd realize that we're majorly concerned and carried away by the reason of the image that we so lose sight of the Responsibilities📍",
       "patterns": {
-        "length": 164,
-        "word_count": 30,
-        "sentence_count": 2,
+        "length": 157,
+        "word_count": 25,
+        "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.012195121951219513,
+        "caps_ratio": 0.012738853503184714,
         "emoji_usage": {
-          "🙂": 1,
-          "️💯": 1
+          "📍": 1
         },
         "common_phrases": {},
         "tone_indicators": {
@@ -28,37 +27,32 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.012195121951219513,
+          "comma_frequency": 0.0,
           "quotation_usage": true
         },
         "topic_keywords": [
-          "really",
-          "begging",
-          "person",
-          "long",
-          "forcing",
-          "mind",
-          "teaching",
-          "other",
-          "chasing",
-          "fool",
-          "life",
-          "forever",
-          "dating",
-          "each",
-          "detachment"
+          "lose",
+          "sight",
+          "responsibilities",
+          "majorly",
+          "realize",
+          "carried",
+          "away",
+          "image",
+          "concerned",
+          "reason"
         ],
         "greeting_patterns": null,
-        "agreement_patterns": "disagreement",
+        "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:23:17"
+        "timestamp": "2025-08-10T20:23:36"
       }
     }
   ]
