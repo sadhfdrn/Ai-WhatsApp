@@ -1,23 +1,23 @@
 {
-  "last_updated": "2025-08-10T19:02:57.227454Z",
+  "last_updated": "2025-08-10T19:04:41.147563Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:02:57.167392Z",
-      "message": "Am fyn",
+      "timestamp": "2025-08-10T19:04:41.097313Z",
+      "message": "https://chat.whatsapp.com/BNB8ncrpw7n6tP2uIlKbZm?mode=ac_t",
       "patterns": {
-        "length": 6,
-        "word_count": 2,
-        "sentence_count": 1,
+        "length": 58,
+        "word_count": 1,
+        "sentence_count": 4,
         "exclamation_count": 0,
-        "question_count": 0,
-        "caps_ratio": 0.16666666666666666,
+        "question_count": 1,
+        "caps_ratio": 0.1206896551724138,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.0,
+          "questioning": 1.0,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -25,21 +25,26 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [],
+        "topic_keywords": [
+          "mode",
+          "https",
+          "chat",
+          "whatsapp"
+        ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "2349136038978@s.whatsapp.net",
-        "timestamp": "2025-08-10T19:02:57"
+        "sender": "status@broadcast",
+        "timestamp": "2025-08-10T19:04:40"
       }
     }
   ]
