@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:17.050585Z",
+  "last_updated": "2025-08-10T10:05:17.217811Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -22,11 +22,22 @@
       "💻": 0.4,
       "😊😊": 0.2,
       "👇✨": 0.2,
-      "💓": 0.2
+      "💓": 0.2,
+      "😌💔": 0.2,
+      "⚖️𝐏𝐨𝐰𝐞𝐫𝐞𝐝": 0.2,
+      "𝐁𝐲": 0.2,
+      "𝐌𝐑": 0.2,
+      "𝐌𝐀𝐍𝐔𝐋": 0.2,
+      "𝐎𝐅𝐂": 0.2,
+      "💚": 0.2,
+      "🙂": 0.2,
+      "𝚁⚉𝙲𝙺𝚈": 0.2,
+      "𝑅𝐷": 0.2,
+      "⚉𝐹𝐶": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.08311930424362056
+    "caps_usage_frequency": 0.08821519504830878
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -54,8 +65,9 @@
       "open",
       "forex",
       "gloo",
-      "delete",
       "test",
+      "delete",
+      "channel",
       "azin",
       "holiness",
       "grateful",
@@ -71,6 +83,7 @@
       "trading",
       "alhamdulillah",
       "requests",
+      "whatsapp",
       "free",
       "replying",
       "from",
@@ -95,9 +108,7 @@
       "unto",
       "become",
       "pase",
-      "life",
-      "everlasting",
-      "chemistry"
+      "life"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -114,8 +125,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 21,
-    "last_learning_session": "2025-08-10T10:05:17.050580Z",
+    "total_messages_analyzed": 22,
+    "last_learning_session": "2025-08-10T10:05:17.217804Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
