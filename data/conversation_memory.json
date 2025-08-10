@@ -1,27 +1,25 @@
 {
-  "last_updated": "2025-08-10T10:05:22.120360Z",
+  "last_updated": "2025-08-10T10:05:22.259058Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:22.061074Z",
-      "message": "Morning fams\nHappy Sunday⚜️",
+      "timestamp": "2025-08-10T10:05:22.185326Z",
+      "message": "U sure??",
       "patterns": {
-        "length": 27,
-        "word_count": 4,
-        "sentence_count": 1,
+        "length": 8,
+        "word_count": 2,
+        "sentence_count": 2,
         "exclamation_count": 0,
-        "question_count": 0,
-        "caps_ratio": 0.1111111111111111,
-        "emoji_usage": {
-          "⚜️": 1
-        },
+        "question_count": 2,
+        "caps_ratio": 0.125,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.0,
+          "questioning": 1.0,
           "emphatic": 0.0,
-          "positive": 0.25,
+          "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
@@ -29,24 +27,21 @@
         "punctuation_style": {
           "uses_periods": false,
           "multiple_exclamations": false,
-          "multiple_questions": false,
+          "multiple_questions": true,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "happy",
-          "sunday",
-          "fams",
-          "morning"
+          "sure"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": 1754812546
+        "sender": "2348086374888@s.whatsapp.net",
+        "timestamp": 1754812604
       }
     }
   ]
