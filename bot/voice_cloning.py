@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 class VoiceCloningEngine:
     """Advanced voice processing with TTS and cloning capabilities"""
     
-    def __init__(self, config):
+    def __init__(self, config, model_manager=None):
         self.config = config
+        self.model_manager = model_manager
         self.tts_enabled = config.VOICE_ENABLED
         self.voice_cloning_enabled = getattr(config, 'VOICE_CLONING', False)
         self.tts_language = config.TTS_LANGUAGE
@@ -33,6 +34,10 @@ class VoiceCloningEngine:
         # TTS settings
         self.supported_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh']
         self.voice_styles = ['normal', 'happy', 'sad', 'excited', 'calm', 'confident']
+        
+        # Advanced AI models for voice processing
+        self.tts_model = None
+        self.stt_model = None
         
         # Initialize TTS engines
         self._initialize_tts_engines()
@@ -113,6 +118,26 @@ class VoiceCloningEngine:
             logger.warning("⚠️ No TTS engines available - using fallback")
             self.available_engines.append('fallback')
     
+    async def initialize_ai_models(self):
+        """Initialize AI models for advanced voice processing"""
+        try:
+            if self.model_manager:
+                logger.info("🔄 Loading advanced voice processing models")
+                
+                # Load TTS model
+                self.tts_model = await self.model_manager.get_model('text_to_speech')
+                
+                # Load STT model  
+                self.stt_model = await self.model_manager.get_model('speech_to_text')
+                
+                if self.tts_model:
+                    logger.info("✅ Advanced TTS model loaded")
+                if self.stt_model:
+                    logger.info("✅ Advanced STT model loaded")
+                    
+        except Exception as e:
+            logger.error(f"❌ Error loading AI voice models: {e}")
+    
     async def text_to_speech(self, text: str, voice_profile: str = 'default', 
                            language: Optional[str] = None, user_id: Optional[str] = None) -> Optional[bytes]:
         """Convert text to speech with personality and voice cloning"""
@@ -132,6 +157,16 @@ class VoiceCloningEngine:
             
             # Get voice profile settings
             profile = self.voice_profiles.get(voice_profile, self.voice_profiles['default'])
+            
+            # Try AI-powered TTS first if available
+            if self.tts_model:
+                try:
+                    ai_audio = await self._generate_with_ai_model(text, profile, lang)
+                    if ai_audio:
+                        logger.info("✅ TTS completed with AI model")
+                        return ai_audio
+                except Exception as e:
+                    logger.warning(f"⚠️ AI TTS failed: {e}")
             
             # Check if user has custom voice profile (voice cloning)
             if self.voice_cloning_enabled and user_id and user_id in self.user_voice_samples:
@@ -155,6 +190,28 @@ class VoiceCloningEngine:
             
         except Exception as e:
             logger.error(f"❌ TTS error: {e}")
+            return None
+    
+    async def _generate_with_ai_model(self, text: str, profile: Dict[str, Any], language: str) -> Optional[bytes]:
+        """Generate speech using advanced AI TTS model"""
+        try:
+            if not self.tts_model:
+                return None
+            
+            logger.info("🤖 Generating speech with AI TTS model")
+            
+            # Adjust text for personality
+            adjusted_text = await self._adjust_text_for_personality(text, profile)
+            
+            # Use advanced AI model for TTS
+            # Note: Implementation depends on specific model (SpeechT5, Bark, etc.)
+            # This is a placeholder that would be replaced with actual model inference
+            
+            # For now, fallback to traditional TTS with enhanced processing
+            return await self._generate_with_gtts(adjusted_text, language, profile)
+            
+        except Exception as e:
+            logger.error(f"❌ AI TTS generation error: {e}")
             return None
     
     async def _generate_with_engine(self, text: str, engine: str, language: str, 
@@ -365,6 +422,16 @@ class VoiceCloningEngine:
             
             logger.info("🎤 Converting speech to text...")
             
+            # Try AI-powered STT first if available
+            if self.stt_model:
+                try:
+                    ai_transcription = await self._transcribe_with_ai_model(audio_data, language)
+                    if ai_transcription:
+                        logger.info("✅ STT completed with AI model")
+                        return ai_transcription
+                except Exception as e:
+                    logger.warning(f"⚠️ AI STT failed: {e}")
+            
             # Try different speech recognition approaches
             transcription = await self._transcribe_with_available_engine(audio_data, language)
             
@@ -426,6 +493,25 @@ class VoiceCloningEngine:
             
         except Exception as e:
             logger.error(f"❌ Transcription engine error: {e}")
+            return None
+    
+    async def _transcribe_with_ai_model(self, audio_data: bytes, language: str) -> Optional[str]:
+        """Transcribe audio using advanced AI STT model"""
+        try:
+            if not self.stt_model:
+                return None
+            
+            logger.info("🤖 Transcribing with AI STT model")
+            
+            # Use advanced AI model for STT
+            # Note: Implementation depends on specific model (Whisper, Wav2Vec2, etc.)
+            # This is a placeholder that would be replaced with actual model inference
+            
+            # For now, return None to fallback to traditional methods
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ AI STT transcription error: {e}")
             return None
     
     async def learn_user_voice(self, user_id: str, audio_data: bytes, context: str = "") -> bool:

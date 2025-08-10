@@ -11,8 +11,8 @@ import tempfile
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 
-from bot.ai_processor import AIProcessor
-from bot.voice_handler import VoiceHandler
+from enhanced_ai_processor import EnhancedAIProcessor
+from bot.voice_cloning import VoiceCloningEngine
 from bot.web_search import WebSearchHandler
 from bot.meme_generator import MemeGenerator
 from bot.auto_reply import AutoReplyManager
@@ -29,9 +29,13 @@ class WhatsAppClient:
         self.connection_attempts = 0
         self.max_reconnect_attempts = 5
         
-        # Initialize AI components
-        self.ai_processor = AIProcessor(config)
-        self.voice_handler = VoiceHandler(config) if config.VOICE_ENABLED else None
+        # Initialize AI components with enhanced model management
+        self.ai_processor = EnhancedAIProcessor(config)
+        self.voice_handler = VoiceCloningEngine(config) if config.VOICE_ENABLED else None
+        
+        # Share model manager between components
+        if self.voice_handler and hasattr(self.ai_processor, 'model_manager'):
+            self.voice_handler.model_manager = self.ai_processor.model_manager
         self.web_search = WebSearchHandler(config) if config.SEARCH_ENABLED else None
         self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
         self.auto_reply = AutoReplyManager(config)
@@ -66,6 +70,14 @@ class WhatsAppClient:
         """Connect to WhatsApp Web via Node.js baileys bridge"""
         try:
             logger.info("🔌 Starting WhatsApp Web connection...")
+            
+            # Initialize AI models with smart management
+            logger.info("🧠 Initializing AI models...")
+            await self.ai_processor.initialize_model()
+            
+            # Initialize voice AI models if enabled
+            if self.voice_handler and hasattr(self.voice_handler, 'initialize_ai_models'):
+                await self.voice_handler.initialize_ai_models()
             
             # Start Node.js baileys bridge
             await self.start_baileys_bridge()

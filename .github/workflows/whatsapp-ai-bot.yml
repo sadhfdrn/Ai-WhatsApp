@@ -130,9 +130,41 @@ jobs:
           numpy \
           scikit-learn \
           nltk \
-          googletrans==4.0.0rc1
+          googletrans==4.0.0rc1 \
+          huggingface-hub \
+          sentence-transformers
           
         echo "📦 Python dependencies installed successfully"
+    
+    - name: Setup Smart Model Caching
+      run: |
+        echo "🧠 Setting up smart model caching for GitHub Actions..."
+        
+        # Create model cache directory
+        mkdir -p ~/.cache/huggingface/transformers
+        mkdir -p ~/.cache/models
+        
+        # Set environment variables for model optimization
+        export HF_HOME=~/.cache/huggingface
+        export TRANSFORMERS_CACHE=~/.cache/huggingface/transformers
+        export HF_DATASETS_CACHE=~/.cache/huggingface/datasets
+        export GITHUB_ACTIONS_ENV=true
+        
+        # Pre-download essential models for caching (lightweight conversation model)
+        python3 -c "
+        import os
+        os.environ['GITHUB_ACTIONS_ENV'] = 'true'
+        try:
+            from transformers import AutoTokenizer, AutoModelForCausalLM
+            print('📥 Pre-caching conversation model...')
+            tokenizer = AutoTokenizer.from_pretrained('microsoft/DialoGPT-small')
+            model = AutoModelForCausalLM.from_pretrained('microsoft/DialoGPT-small')
+            print('✅ Conversation model cached successfully')
+        except Exception as e:
+            print(f'⚠️ Model pre-caching failed: {e}')
+        "
+        
+        echo "✅ Smart model caching setup complete"
 
     - name: Install Node.js Dependencies for WhatsApp
       run: |
@@ -143,6 +175,36 @@ jobs:
           qrcode-terminal \
           pino
         echo "✅ Node.js dependencies installed"
+    
+    - name: Configure Environment for Enhanced AI
+      run: |
+        echo "⚙️ Configuring environment for enhanced AI capabilities..."
+        
+        # Setup environment variables for model management
+        echo "GITHUB_ACTIONS_ENV=true" >> $GITHUB_ENV
+        echo "MODEL_CACHE_DIR=$HOME/.cache/models" >> $GITHUB_ENV
+        echo "HF_HOME=$HOME/.cache/huggingface" >> $GITHUB_ENV
+        echo "TRANSFORMERS_CACHE=$HOME/.cache/huggingface/transformers" >> $GITHUB_ENV
+        echo "USE_STREAMING=true" >> $GITHUB_ENV
+        echo "AI_MODEL=microsoft/DialoGPT-small" >> $GITHUB_ENV
+        echo "MAX_RESPONSE_LENGTH=300" >> $GITHUB_ENV
+        echo "TEMPERATURE=0.8" >> $GITHUB_ENV
+        
+        # Enhanced voice and personality settings
+        echo "VOICE_ENABLED=true" >> $GITHUB_ENV
+        echo "VOICE_CLONING=false" >> $GITHUB_ENV
+        echo "TTS_LANGUAGE=en" >> $GITHUB_ENV
+        echo "VOICE_SPEED=1.0" >> $GITHUB_ENV
+        echo "PERSONALITY_STYLE=take_charge_humorous" >> $GITHUB_ENV
+        echo "AUTO_REPLY_ENABLED=true" >> $GITHUB_ENV
+        echo "SEARCH_ENABLED=true" >> $GITHUB_ENV
+        echo "MEME_GENERATION=true" >> $GITHUB_ENV
+        
+        # Progressive model downloading settings
+        echo "PROGRESSIVE_MODEL_DOWNLOAD=true" >> $GITHUB_ENV
+        echo "MODEL_OPTIMIZATION_LEVEL=github_actions" >> $GITHUB_ENV
+        
+        echo "✅ Environment configured for enhanced AI"
 
     - name: Setup Environment Variables
       run: |

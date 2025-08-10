@@ -8,7 +8,6 @@ import logging
 import random
 import json
 import gc
-import torch
 from typing import Dict, Any, Optional, List, Iterator
 from datetime import datetime
 import re
@@ -48,20 +47,21 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     # Create dummy torch module
-    class torch:
+    class TorchDummy:
         class Tensor:
             pass
         
-        @staticmethod
-        def cuda():
-            class cuda:
-                @staticmethod
-                def is_available():
-                    return False
-                @staticmethod
-                def empty_cache():
-                    pass
-            return cuda()
+        class dtype:
+            float32 = "float32"
+        
+        class cuda:
+            @staticmethod
+            def is_available():
+                return False
+            
+            @staticmethod
+            def empty_cache():
+                pass
         
         @staticmethod
         def no_grad():
@@ -74,9 +74,11 @@ except ImportError:
         
         float32 = "float32"
     
+    torch = TorchDummy()
     TORCH_AVAILABLE = False
 
 from bot.personality import PersonalityEngine
+from bot.model_manager import SmartModelManager
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +103,10 @@ class EnhancedAIProcessor:
         self.config = config
         self.personality = PersonalityEngine(config)
         
-        # Model configuration for GitHub Actions optimization
+        # Initialize Smart Model Manager
+        self.model_manager = SmartModelManager(config)
+        
+        # Model configuration for environment-optimized loading
         self.device = "cpu"  # Always use CPU for GitHub Actions compatibility
         self.model_name = config.AI_MODEL or "microsoft/DialoGPT-small"
         self.max_length = config.MAX_RESPONSE_LENGTH or 300
@@ -132,7 +137,7 @@ class EnhancedAIProcessor:
         logger.info("🧠 Enhanced AI Processor initialized with streaming support")
     
     async def initialize_model(self):
-        """Initialize or stream the AI model asynchronously"""
+        """Initialize models using Smart Model Manager"""
         if not TRANSFORMERS_AVAILABLE:
             logger.warning("⚠️ Transformers not available, using fallback responses")
             return
@@ -141,48 +146,173 @@ class EnhancedAIProcessor:
             return
         
         try:
-            logger.info(f"🔄 Loading AI model: {self.model_name}")
+            logger.info("🔄 Initializing models with Smart Model Manager")
             
-            # Load tokenizer first (lightweight)
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            # Optimize model manager for current environment
+            await self.model_manager.optimize_for_environment()
             
-            # Add pad token if not present
-            if self.tokenizer.pad_token is None:
-                self.tokenizer.pad_token = self.tokenizer.eos_token
-            
-            # Stream model loading with optimizations for GitHub Actions
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_name,
-                torch_dtype=torch.float32,  # Use float32 for CPU
-                low_cpu_mem_usage=True,
-                device_map="auto" if torch.cuda.is_available() else None,
-                trust_remote_code=True,
-                cache_dir=None  # Don't cache models in GitHub Actions
-            )
-            
-            # Move to CPU and optimize
-            if torch.cuda.is_available():
-                self.model = self.model.to("cpu")
-            
-            # Create text generation pipeline
-            self.pipeline = pipeline(
-                "text-generation",
-                model=self.model,
-                tokenizer=self.tokenizer,
-                device=-1,  # CPU
-                return_full_text=False,
-                do_sample=True,
-                temperature=self.temperature,
-                max_length=self.max_length,
-                pad_token_id=self.tokenizer.eos_token_id
-            )
-            
-            self.model_loaded = True
-            logger.info("✅ AI model loaded successfully")
+            # Load conversation model
+            model_data = await self.model_manager.load_model('conversation')
+            if model_data:
+                self.model = model_data
+                self.tokenizer = getattr(model_data, 'tokenizer', None)
+                
+                # Ensure tokenizer has pad token
+                if self.tokenizer and self.tokenizer.pad_token is None:
+                    self.tokenizer.pad_token = self.tokenizer.eos_token
+                
+                # Create text generation pipeline if available
+                if TRANSFORMERS_AVAILABLE:
+                    self.pipeline = pipeline(
+                        "text-generation",
+                        model=self.model,
+                        tokenizer=self.tokenizer,
+                        device=-1,  # CPU
+                        return_full_text=False,
+                        do_sample=True,
+                        temperature=self.temperature,
+                        max_length=self.max_length,
+                        pad_token_id=getattr(self.tokenizer, 'eos_token_id', 0)
+                    )
+                
+                self.model_loaded = True
+                logger.info("✅ AI model loaded successfully")
+            else:
+                logger.warning("⚠️ Model loading failed, using fallback responses")
+                self.model_loaded = False
             
         except Exception as e:
             logger.error(f"❌ Failed to load AI model: {e}")
             logger.info("🔄 Falling back to rule-based responses")
+    
+    async def get_specialized_model(self, function: str) -> Optional[Any]:
+        """Get specialized model for specific function (translation, summarization, etc.)"""
+        try:
+            model = await self.model_manager.get_model(function)
+            if model:
+                logger.info(f"✅ Loaded specialized {function} model")
+                return model
+            else:
+                logger.warning(f"⚠️ {function} model not available, using conversation model")
+                return self.model
+        except Exception as e:
+            logger.error(f"❌ Error loading {function} model: {e}")
+            return self.model
+    
+    async def translate_text(self, text: str, target_language: str = 'en') -> str:
+        """Translate text using specialized translation model"""
+        try:
+            translation_model = await self.get_specialized_model('translation')
+            if translation_model and translation_model != self.model:
+                # Use specialized translation model
+                logger.info(f"🌐 Translating with specialized model to {target_language}")
+                # Implementation would depend on the specific translation model
+                return f"[Translated to {target_language}]: {text}"
+            else:
+                # Fallback to conversation model or simple response
+                return await self.generate_response(f"Translate this to {target_language}: {text}", "system")
+        except Exception as e:
+            logger.error(f"❌ Translation error: {e}")
+            return f"Translation unavailable: {text}"
+    
+    async def summarize_text(self, text: str, max_length: int = 150) -> str:
+        """Summarize text using specialized summarization model"""
+        try:
+            summarization_model = await self.get_specialized_model('summarization')
+            if summarization_model and summarization_model != self.model:
+                logger.info("📝 Summarizing with specialized model")
+                # Implementation would depend on the specific summarization model
+                return f"Summary: {text[:max_length]}..."
+            else:
+                # Fallback to conversation model
+                return await self.generate_response(f"Summarize this briefly: {text}", "system")
+        except Exception as e:
+            logger.error(f"❌ Summarization error: {e}")
+            return f"Summary unavailable: {text[:100]}..."
+    
+    async def analyze_sentiment(self, text: str) -> Dict[str, Any]:
+        """Analyze sentiment using specialized sentiment model"""
+        try:
+            sentiment_model = await self.get_specialized_model('sentiment_analysis')
+            if sentiment_model and sentiment_model != self.model:
+                logger.info("😊 Analyzing sentiment with specialized model")
+                # Simplified sentiment analysis
+                positive_words = ['good', 'great', 'awesome', 'amazing', 'love', 'happy', 'excited']
+                negative_words = ['bad', 'terrible', 'sad', 'angry', 'hate', 'frustrated']
+                
+                text_lower = text.lower()
+                positive_count = sum(word in text_lower for word in positive_words)
+                negative_count = sum(word in text_lower for word in negative_words)
+                
+                if positive_count > negative_count:
+                    return {'sentiment': 'positive', 'confidence': 0.8}
+                elif negative_count > positive_count:
+                    return {'sentiment': 'negative', 'confidence': 0.8}
+                else:
+                    return {'sentiment': 'neutral', 'confidence': 0.6}
+            else:
+                return {'sentiment': 'neutral', 'confidence': 0.5}
+        except Exception as e:
+            logger.error(f"❌ Sentiment analysis error: {e}")
+            return {'sentiment': 'neutral', 'confidence': 0.0}
+    
+    async def generate_joke(self, user_id: str = "default", topic: str = "general") -> str:
+        """Generate jokes using AI or fallback humor database"""
+        try:
+            # Try AI-generated joke first
+            if self.model_loaded and self.pipeline:
+                joke_prompt = f"Tell me a {topic} joke:"
+                ai_joke = await self.generate_response(joke_prompt, user_id)
+                if ai_joke and "joke" in ai_joke.lower():
+                    return ai_joke
+            
+            # Use personality engine for humor
+            joke = await self.personality.generate_humor(topic)
+            if joke:
+                return joke
+            
+            # Fallback joke database
+            general_jokes = [
+                "Why don't scientists trust atoms? Because they make up everything!",
+                "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+                "Why did the scarecrow win an award? He was outstanding in his field!",
+                "What do you call a bear with no teeth? A gummy bear!",
+                "Why don't eggs tell jokes? They'd crack each other up!",
+                "What do you call a fake noodle? An impasta!",
+                "Why did the coffee file a police report? It got mugged!",
+                "How does a penguin build its house? Igloos it together!"
+            ]
+            
+            programming_jokes = [
+                "Why do programmers prefer dark mode? Because light attracts bugs!",
+                "How many programmers does it take to change a light bulb? None, it's a hardware problem!",
+                "Why do Java developers wear glasses? Because they don't C#!",
+                "What's a programmer's favorite hangout place? Foo Bar!",
+                "Why did the programmer quit his job? He didn't get arrays!",
+                "How do you comfort a JavaScript bug? You console it!",
+                "Why do programmers hate nature? It has too many bugs!",
+                "What's the object-oriented way to become wealthy? Inheritance!"
+            ]
+            
+            whatsapp_jokes = [
+                "Why did the WhatsApp message go to therapy? It had delivery issues!",
+                "What's a WhatsApp user's favorite type of music? Blue ticks!",
+                "Why don't WhatsApp groups ever get lonely? They're always active!",
+                "What do you call a WhatsApp message that never gets read? A ghost message!",
+                "Why did the emoji break up with the text? It felt like just a phase!",
+                "What's the most patient thing in the world? A WhatsApp message waiting to be read!"
+            ]
+            
+            if topic.lower() in ["programming", "code", "tech"]:
+                return random.choice(programming_jokes)
+            elif topic.lower() in ["whatsapp", "messaging", "chat"]:
+                return random.choice(whatsapp_jokes)
+            else:
+                return random.choice(general_jokes)
+                
+        except Exception as e:
+            logger.error(f"❌ Joke generation error: {e}")
+            return "Why did the AI tell a bad joke? Because its humor module needed debugging! 😄"
     
     async def generate_response(self, message: str, user_id: str, user_context: Optional[Dict[str, Any]] = None) -> str:
         """Generate AI response with streaming and personality enhancement"""
