@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:45:06.529682Z",
+  "last_updated": "2025-08-10T20:45:36.614821Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -82,9 +82,9 @@
       "️💯": 0.2,
       "✨": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.07255324210015654
+    "caps_usage_frequency": 0.07118027083131737
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -107,9 +107,9 @@
   "conversation_context": {
     "favorite_topics": [
       "responsibilities",
-      "finds",
-      "towards",
       "awaken",
+      "towards",
+      "finds",
       "everything",
       "nothing",
       "holy",
@@ -120,7 +120,6 @@
       "devil",
       "sister",
       "beacon",
-      "lord",
       "came",
       "live",
       "meant",
@@ -155,7 +154,8 @@
       "movie",
       "chelsea",
       "spirit",
-      "bought"
+      "bought",
+      "test"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -175,8 +175,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 152,
-    "last_learning_session": "2025-08-10T20:45:06.529674Z",
+    "total_messages_analyzed": 153,
+    "last_learning_session": "2025-08-10T20:45:36.614812Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
