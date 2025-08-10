@@ -1,53 +1,49 @@
 {
-  "last_updated": "2025-08-10T20:34:49.089972Z",
+  "last_updated": "2025-08-10T20:34:49.358583Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:49.052797Z",
-      "message": "Oh wow, that reminds me of something! You know what's funny?",
+      "timestamp": "2025-08-10T20:34:49.308028Z",
+      "message": "Without a doubt. exactly.",
       "patterns": {
-        "length": 60,
-        "word_count": 11,
+        "length": 25,
+        "word_count": 4,
         "sentence_count": 3,
-        "exclamation_count": 1,
-        "question_count": 1,
-        "caps_ratio": 0.03333333333333333,
+        "exclamation_count": 0,
+        "question_count": 0,
+        "caps_ratio": 0.04,
         "emoji_usage": {},
-        "common_phrases": {
-          "wow": 2
-        },
+        "common_phrases": {},
         "tone_indicators": {
-          "excited": 0.09090909090909091,
+          "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.09090909090909091,
-          "emphatic": 0.09090909090909091,
+          "questioning": 0.0,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
-          "humorous": 0.09090909090909091
+          "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.016666666666666666,
-          "quotation_usage": true
+          "comma_frequency": 0.0,
+          "quotation_usage": false
         },
         "topic_keywords": [
-          "funny",
-          "know",
-          "reminds",
-          "what",
-          "something"
+          "doubt",
+          "exactly",
+          "without"
         ],
         "greeting_patterns": null,
-        "agreement_patterns": null,
-        "excitement_level": 0.7
+        "agreement_patterns": "agreement",
+        "excitement_level": 0.0
       },
       "context": {
         "sender": "2349113085799@s.whatsapp.net",
-        "timestamp": "2025-08-10T19:32:18"
+        "timestamp": "2025-08-10T19:42:38"
       }
     }
   ]
