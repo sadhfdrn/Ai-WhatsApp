@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:20.125705Z",
+  "last_updated": "2025-08-10T10:05:20.297564Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -38,10 +38,10 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.10897564863505926
+    "caps_usage_frequency": 0.10641141710488668
   },
   "learned_patterns": {
-    "greeting_style": "casual",
+    "greeting_style": "formal",
     "goodbye_style": "see you later",
     "agreement_phrases": [
       "yes",
@@ -67,8 +67,8 @@
       "forex",
       "gloo",
       "present",
-      "test",
       "delete",
+      "test",
       "channel",
       "azin",
       "holiness",
@@ -91,6 +91,7 @@
       "from",
       "guys",
       "afmweca",
+      "morning",
       "servants",
       "past",
       "being",
@@ -108,8 +109,7 @@
       "deployments",
       "romans",
       "messages",
-      "hack",
-      "hello"
+      "hack"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -126,8 +126,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 35,
-    "last_learning_session": "2025-08-10T10:05:20.125697Z",
+    "total_messages_analyzed": 36,
+    "last_learning_session": "2025-08-10T10:05:20.297557Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
