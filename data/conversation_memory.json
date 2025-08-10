@@ -1,25 +1,27 @@
 {
-  "last_updated": "2025-08-10T10:05:20.356469Z",
+  "last_updated": "2025-08-10T10:05:20.516706Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:20.297534Z",
-      "message": "Good morning",
+      "timestamp": "2025-08-10T10:05:20.472537Z",
+      "message": "THANK YOU JESUS 🙏🙏🙏",
       "patterns": {
-        "length": 12,
-        "word_count": 2,
+        "length": 19,
+        "word_count": 4,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.08333333333333333,
-        "emoji_usage": {},
+        "caps_ratio": 0.6842105263157895,
+        "emoji_usage": {
+          "🙏🙏🙏": 1
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
           "emphatic": 0.0,
-          "positive": 0.5,
+          "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
@@ -33,16 +35,16 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "morning",
-          "good"
+          "jesus",
+          "thank"
         ],
-        "greeting_patterns": "formal",
+        "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.0
+        "excitement_level": 1.5
       },
       "context": {
-        "sender": "2348086374888@s.whatsapp.net",
-        "timestamp": 1754809255
+        "sender": "status@broadcast",
+        "timestamp": 1754809654
       }
     }
   ]
