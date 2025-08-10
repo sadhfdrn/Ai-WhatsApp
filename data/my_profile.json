@@ -1,0 +1,53 @@
+{
+  "user_id": "owner",
+  "created": "2025-08-10T09:39:26.032878Z",
+  "last_updated": "2025-08-10T09:39:26.032895Z",
+  "communication_style": {
+    "tone": "casual, tech-savvy, direct",
+    "common_phrases": {},
+    "emoji_usage": {},
+    "response_length_preference": "medium",
+    "punctuation_style": "standard",
+    "caps_usage_frequency": 0.1
+  },
+  "learned_patterns": {
+    "greeting_style": "hey there",
+    "goodbye_style": "see you later",
+    "agreement_phrases": [
+      "yes",
+      "absolutely",
+      "definitely",
+      "for sure"
+    ],
+    "disagreement_style": "not really",
+    "excitement_indicators": [
+      "wow",
+      "amazing",
+      "awesome"
+    ],
+    "question_patterns": "direct_questions",
+    "topic_transitions": "smooth_transitions"
+  },
+  "conversation_context": {
+    "favorite_topics": [],
+    "preferred_times": [],
+    "mood_patterns": {
+      "excited": "enthusiastic_responses",
+      "casual": "relaxed_tone",
+      "focused": "professional_language"
+    },
+    "response_triggers": {}
+  },
+  "voice_characteristics": {
+    "pace": "medium",
+    "tone_preference": "friendly",
+    "accent_notes": "neutral",
+    "pause_patterns": "natural_pauses"
+  },
+  "learning_metadata": {
+    "total_messages_analyzed": 0,
+    "last_learning_session": "2025-08-10T09:39:26.032892Z",
+    "confidence_score": 0.0,
+    "pattern_reliability": "initializing"
+  }
+}
