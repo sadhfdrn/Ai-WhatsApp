@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:29:53.070564Z",
+  "last_updated": "2025-08-10T19:29:54.154726Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -55,7 +55,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.10318588834759367
+    "caps_usage_frequency": 0.0928672995128343
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -88,8 +88,8 @@
       "great",
       "palmpay",
       "test",
-      "what",
       "clips",
+      "what",
       "hello",
       "shey",
       "making",
@@ -146,8 +146,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 84,
-    "last_learning_session": "2025-08-10T19:29:53.070556Z",
+    "total_messages_analyzed": 85,
+    "last_learning_session": "2025-08-10T19:29:54.154715Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
