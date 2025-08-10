@@ -65,6 +65,12 @@ class Config:
         # AI Model Performance Configuration
         self.LOW_MEMORY_MODE = os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"  # Default true for Replit
         
+        # Database Configuration
+        self.DATABASE_URL = os.getenv("DATABASE_URL")
+        
+        # Your WhatsApp User ID for style learning
+        self.YOUR_USER_ID = os.getenv("YOUR_USER_ID", "your_phone_number@c.us")  # Replace with your actual WhatsApp ID
+        
         # Auto-reply Configuration
         self.AUTO_REPLY_ENABLED = os.getenv("AUTO_REPLY_ENABLED", "false").lower() == "true"
         self.AUTO_REPLY_DELAY_MIN = int(os.getenv("AUTO_REPLY_DELAY_MIN", "5"))

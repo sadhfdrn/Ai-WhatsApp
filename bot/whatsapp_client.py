@@ -19,6 +19,7 @@ from bot.auto_reply import AutoReplyManager
 from bot.github_profile_manager import GitHubProfileManager
 from bot.personality_learner import PersonalityLearner
 from bot.style_mimicker import StyleMimicker
+from database.db_manager import DatabaseManager
 from utils.helpers import sanitize_text, format_timestamp
 
 logger = logging.getLogger(__name__)
@@ -43,9 +44,14 @@ class WhatsAppClient:
         self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
         self.auto_reply = AutoReplyManager(config)
         
-        # Initialize personality learning system
+        # Initialize personality learning system (keep GitHub for backup)
         self.profile_manager = GitHubProfileManager()
         self.personality_learner = PersonalityLearner(self.profile_manager)
+        
+        # Initialize database-based learning system
+        # For now, use a default user ID - this should be configured based on your actual WhatsApp ID
+        your_whatsapp_id = config.YOUR_USER_ID if hasattr(config, 'YOUR_USER_ID') else "your_phone_number@c.us"
+        self.db_manager = DatabaseManager(your_whatsapp_id)
         
         # Load user profile and initialize style mimicker
         user_profile = self.profile_manager.load_profile()
@@ -87,7 +93,10 @@ class WhatsAppClient:
             'learning': self.handle_learning_stats,
             'time': self.handle_time_request,
             'weather': self.handle_weather_request,
-            'timezone': self.handle_timezone_change
+            'timezone': self.handle_timezone_change,
+            'mystyle': self.handle_style_summary,
+            'suggest': self.handle_response_suggestion,
+            'dbstats': self.handle_database_stats
         }
     
     async def connect(self):
@@ -287,11 +296,37 @@ class WhatsAppClient:
             
             logger.info("🤖 Generating AI response...")
             
+            # Store message in database for style learning
+            try:
+                await self.db_manager.process_message(
+                    message=message,
+                    sender_id=sender,
+                    sentiment_data=None  # Will be filled by AI processor
+                )
+            except Exception as e:
+                logger.warning(f"⚠️ Database storage failed: {e}")
+            
             # Generate AI response using enhanced AI system
             if hasattr(self.ai_processor, 'process_message_with_search'):
                 response = await self.ai_processor.process_message_with_search(message, sender)
             else:
                 response = self.ai_processor.generate_response(message, sender, self.get_user_context(sender))
+            
+            # Store bot response in database
+            try:
+                # Get sentiment data if available
+                sentiment_data = None
+                if hasattr(self.ai_processor, 'analyze_sentiment'):
+                    sentiment_data = self.ai_processor.analyze_sentiment(message)
+                
+                await self.db_manager.process_message(
+                    message=message,
+                    sender_id=sender,
+                    bot_response=response,
+                    sentiment_data=sentiment_data
+                )
+            except Exception as e:
+                logger.warning(f"⚠️ Database response storage failed: {e}")
             
             # Ensure we have a valid response
             if not response:
@@ -415,6 +450,11 @@ class WhatsAppClient:
 • !time [timezone] - Get current time
 • !timezone <zone> - Change timezone
 • !weather [location] - Get weather info
+
+**Database-Powered Style Learning:**
+• !mystyle - View your communication style summary
+• !suggest <message> - Get response suggestions based on your style
+• !dbstats - View database learning statistics
 
 **Creative Features:**
 • !meme <top text>|<bottom text> - Generate meme
@@ -1051,3 +1091,131 @@ Note: This change is temporary for this session. To make it permanent, update yo
         except Exception as e:
             logger.error(f"❌ Timezone change error: {e}")
             await self.send_message(sender, "❌ Couldn't change timezone. Try: !timezone America/New_York")
+    
+    async def handle_style_summary(self, sender: str, args: str, timestamp: str):
+        """Show your learned communication style summary"""
+        try:
+            summary = self.db_manager.get_style_summary()
+            
+            if "error" in summary:
+                response = f"❌ {summary['error']}"
+            else:
+                confidence = summary.get('confidence_score', 0)
+                total_msgs = summary.get('total_messages_analyzed', 0)
+                
+                response = f"""🧠 **Your Communication Style Summary**
+                
+**Learning Progress:**
+• Messages analyzed: {total_msgs}
+• Style confidence: {confidence:.1%}
+• Preferred tone: {summary.get('preferred_tone', 'neutral')}
+• Response length: {summary.get('response_length_preference', 'medium')}
+• Formality level: {summary.get('formality_level', 0.5):.1%}
+
+**Your Top Phrases:**
+{chr(10).join([f'• "{phrase}"' for phrase in summary.get('top_phrases', [])[:5]]) or '• Still learning your phrases...'}
+
+**Your Top Emojis:**
+{' '.join(summary.get('top_emojis', [])[:10]) or 'Still learning your emoji style...'}
+
+**Response Templates:**
+• Greetings: {summary.get('greeting_templates_count', 0)} learned
+• Responses: {summary.get('response_templates_count', 0)} learned
+
+The more you chat, the better I understand your style for helping with responses to others! 🎯"""
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Style summary error: {e}")
+            await self.send_message(sender, "❌ Couldn't retrieve style summary right now")
+    
+    async def handle_response_suggestion(self, sender: str, args: str, timestamp: str):
+        """Suggest how you would respond to someone else's message"""
+        try:
+            if not args.strip():
+                response = """💡 **Response Suggestion Help**
+                
+Usage: !suggest [their message]
+
+Example: !suggest Hey, how was your day?
+
+I'll analyze their message and suggest how you would typically respond based on your learned communication style."""
+                await self.send_message(sender, response, add_ai_icon=True)
+                return
+            
+            their_message = args.strip()
+            
+            # Get conversation context (last few messages if available)
+            conversation_context = self.db_manager.get_user_conversation_history(sender, limit=3)
+            context_messages = [conv["user_message"] for conv in conversation_context]
+            
+            suggestion = await self.db_manager.suggest_response(
+                other_user_id=sender,
+                their_message=their_message,
+                conversation_context=context_messages
+            )
+            
+            if suggestion.get("suggestion"):
+                confidence = suggestion.get("confidence", 0)
+                tone = suggestion.get("tone", "neutral")
+                reasoning = suggestion.get("reasoning", "Based on your style patterns")
+                
+                response = f"""💡 **Response Suggestion**
+                
+**Their message:** {their_message}
+
+**Suggested response:** {suggestion['suggestion']}
+
+**Tone:** {tone}
+**Confidence:** {confidence:.1%}
+**Reasoning:** {reasoning}
+
+This suggestion is based on your learned communication style. Feel free to modify it to fit the specific situation! 🎯"""
+            else:
+                reason = suggestion.get("reason", "Unknown error")
+                response = f"❌ Couldn't generate suggestion: {reason}"
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Response suggestion error: {e}")
+            await self.send_message(sender, "❌ Couldn't generate response suggestion right now")
+    
+    async def handle_database_stats(self, sender: str, args: str, timestamp: str):
+        """Show database statistics and learning progress"""
+        try:
+            db_stats = self.db_manager.get_database_stats()
+            user_stats = self.db_manager.get_user_stats(sender)
+            
+            if "error" in db_stats:
+                response = f"❌ Database error: {db_stats['error']}"
+            else:
+                response = f"""📊 **Database Learning Statistics**
+                
+**Overall System:**
+• Total users: {db_stats.get('total_users', 0)}
+• Total conversations: {db_stats.get('total_conversations', 0)}
+• Phrases learned: {db_stats.get('total_phrases', 0)}
+• Emojis tracked: {db_stats.get('total_emojis', 0)}
+• Users with style learning: {db_stats.get('users_with_style_learning', 0)}
+• Response suggestions: {db_stats.get('total_response_suggestions', 0)}
+
+**Your Statistics:**"""
+                
+                if "error" not in user_stats:
+                    response += f"""
+• Your messages: {user_stats.get('total_messages', 0)}
+• Learning confidence: {user_stats.get('learning_confidence', 0):.1%}
+• Last interaction: {user_stats.get('last_interaction', 'Never')[:19] if user_stats.get('last_interaction') else 'Never'}
+• Recent topics: {', '.join(user_stats.get('recent_topics', [])[:5]) or 'None yet'}"""
+                else:
+                    response += f"\n• Error loading your stats: {user_stats['error']}"
+                
+                response += "\n\n🗄️ All data is stored securely in PostgreSQL database for persistent learning across restarts!"
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Database stats error: {e}")
+            await self.send_message(sender, "❌ Couldn't retrieve database statistics right now")

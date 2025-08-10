@@ -69,7 +69,10 @@ RUN pip install --no-cache-dir \
     speechrecognition \
     pillow \
     psutil \
-    openai
+    openai \
+    sqlalchemy \
+    psycopg2-binary \
+    alembic
 
 # Copy application code
 COPY . .
