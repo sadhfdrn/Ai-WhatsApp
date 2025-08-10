@@ -42,20 +42,39 @@ class GitHubProfileManager:
         """Configure git credentials using GitHub token"""
         try:
             # Set git configuration
-            subprocess.run(['git', 'config', '--global', 'user.name', 'WhatsApp AI Bot'], 
+            subprocess.run(['git', 'config', 'user.name', 'WhatsApp AI Bot'], 
                           cwd=self.repo_path, check=True)
-            subprocess.run(['git', 'config', '--global', 'user.email', 'bot@github.com'], 
+            subprocess.run(['git', 'config', 'user.email', 'bot@github.com'], 
                           cwd=self.repo_path, check=True)
             
             # Set up authentication if token is available
             if self.github_token:
-                repo_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], 
-                                                  cwd=self.repo_path, text=True).strip()
-                if repo_url.startswith('https://'):
-                    # Update remote URL to include token
-                    auth_url = repo_url.replace('https://', f'https://{self.github_token}@')
-                    subprocess.run(['git', 'remote', 'set-url', 'origin', auth_url], 
-                                  cwd=self.repo_path, check=True)
+                # Use git credential helper for token authentication
+                subprocess.run(['git', 'config', 'credential.helper', ''], 
+                              cwd=self.repo_path, check=True)
+                
+                # Get the original repository URL
+                try:
+                    repo_url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], 
+                                                      cwd=self.repo_path, text=True).strip()
+                    
+                    if repo_url.startswith('https://github.com/'):
+                        # Extract the repository path (e.g., username/repo.git)
+                        repo_path = repo_url.replace('https://github.com/', '')
+                        
+                        # Set the authenticated URL using token as username
+                        auth_url = f'https://{self.github_token}@github.com/{repo_path}'
+                        subprocess.run(['git', 'remote', 'set-url', 'origin', auth_url], 
+                                      cwd=self.repo_path, check=True)
+                        
+                        logger.info("✅ Git remote URL configured with token authentication")
+                    else:
+                        logger.warning(f"⚠️ Unexpected repository URL format: {repo_url}")
+                        
+                except subprocess.CalledProcessError:
+                    logger.warning("⚠️ Could not get repository URL, authentication may not work")
+            else:
+                logger.warning("⚠️ GITHUB_TOKEN not available, Git push operations will fail")
                 
             logger.info("✅ Git configured successfully")
             
@@ -151,7 +170,7 @@ class GitHubProfileManager:
             return []
     
     def commit_changes(self, message: str):
-        """Add, commit, and push changes to repository"""
+        """Add, commit, and push changes to repository with improved error handling"""
         try:
             # Add all files in data directory
             subprocess.run(['git', 'add', 'data/'], cwd=self.repo_path, check=True)
@@ -161,22 +180,63 @@ class GitHubProfileManager:
                                   cwd=self.repo_path, capture_output=True)
             
             if result.returncode != 0:  # There are changes
-                # Commit changes
+                # Commit changes locally first
                 subprocess.run(['git', 'commit', '-m', message], 
                               cwd=self.repo_path, check=True)
+                logger.info(f"✅ Changes committed locally: {message}")
                 
-                # Push to repository
-                subprocess.run(['git', 'push', 'origin', self.branch], 
-                              cwd=self.repo_path, check=True)
-                
-                logger.info(f"✅ Committed and pushed: {message}")
+                # Attempt to push to repository with improved error handling
+                if self.github_token:
+                    try:
+                        push_result = subprocess.run(
+                            ['git', 'push', 'origin', self.branch], 
+                            cwd=self.repo_path, 
+                            check=True, 
+                            capture_output=True, 
+                            text=True,
+                            timeout=30
+                        )
+                        logger.info(f"✅ Changes pushed to repository: {message}")
+                        return True
+                        
+                    except subprocess.TimeoutExpired:
+                        logger.error("❌ Git push timed out")
+                    except subprocess.CalledProcessError as e:
+                        logger.error(f"❌ Git push failed: {e}")
+                        
+                        # If authentication failed, try to reconfigure git
+                        if "Authentication failed" in str(e.stderr):
+                            logger.info("🔧 Authentication failed, attempting to reconfigure...")
+                            self._configure_git()
+                            
+                            # Try push once more after reconfiguration
+                            try:
+                                subprocess.run(
+                                    ['git', 'push', 'origin', self.branch], 
+                                    cwd=self.repo_path, 
+                                    check=True, 
+                                    capture_output=True, 
+                                    timeout=30
+                                )
+                                logger.info("✅ Push successful after reconfiguration")
+                                return True
+                            except Exception:
+                                logger.error("❌ Push failed even after reconfiguration")
+                else:
+                    logger.warning("⚠️ No GitHub token available, cannot push to remote")
+                    
+                logger.info("💾 Changes committed locally but not pushed to remote")
+                return False
             else:
                 logger.info("ℹ️ No changes to commit")
+                return True
                 
         except subprocess.CalledProcessError as e:
             logger.error(f"❌ Git operation failed: {e}")
+            return False
         except Exception as e:
             logger.error(f"❌ Commit error: {e}")
+            return False
     
     def create_default_profile(self) -> Dict[str, Any]:
         """Generate initial personality profile structure"""

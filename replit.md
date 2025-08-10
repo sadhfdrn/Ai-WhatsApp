@@ -28,6 +28,8 @@ This is a comprehensive AI-powered WhatsApp bot that provides conversational AI 
 **Model Status**: Environment-optimized loading with graceful fallback to rule-based responses
 **Connection Status**: WhatsApp bridge active, waiting for QR code authentication
 **Persistence Status**: Personality data automatically saved to GitHub repository every 10 interactions
+**Git Authentication**: Enhanced with improved token handling and error recovery mechanisms
+**Workflow Status**: Three GitHub Actions workflows available (whatsapp-bot.yml, whatsapp-ai-bot.yml, deploy-bot.yml)
 
 ## User Preferences
 
