@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:16:55.622853Z",
+  "last_updated": "2025-08-10T19:21:09.020039Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -49,11 +49,12 @@
       "👀🍑": 0.2,
       "❝": 0.2,
       "❞": 0.2,
-      "💕⬆️": 0.2
+      "💕⬆️": 0.2,
+      "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.12200300018985946
+    "caps_usage_frequency": 0.11013056902333253
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -75,7 +76,6 @@
   },
   "conversation_context": {
     "favorite_topics": [
-      "rice",
       "mode",
       "test",
       "making",
@@ -98,19 +98,23 @@
       "grass",
       "people",
       "zssggxfon",
-      "whatsapp",
       "palmpay",
       "marriage",
       "someone",
       "doesn",
+      "tiktok",
       "secretly",
+      "cant",
       "from",
+      "clips",
+      "lord",
       "intelligence",
       "live",
       "olumo",
       "risk",
       "yourself",
       "https",
+      "present",
       "check",
       "chat",
       "open",
@@ -119,12 +123,9 @@
       "body",
       "hello",
       "sunday",
-      "after",
-      "present",
-      "clips",
-      "collected",
-      "tiktok",
-      "errors"
+      "rice",
+      "whatsapp",
+      "collected"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -144,8 +145,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 79,
-    "last_learning_session": "2025-08-10T19:16:55.622845Z",
+    "total_messages_analyzed": 80,
+    "last_learning_session": "2025-08-10T19:21:09.020029Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
