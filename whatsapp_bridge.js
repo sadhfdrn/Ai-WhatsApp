@@ -11,6 +11,7 @@ class WhatsAppBridge {
         this.pythonProcess = null;
         this.messageQueue = [];
         this.processingQueue = false;
+        this.sentMessageIds = new Set(); // Track messages sent by bot to avoid loops
     }
 
     async initialize() {
@@ -162,11 +163,16 @@ class WhatsAppBridge {
             const messages = m.messages || [];
             
             for (const message of messages) {
-                if (message.key.fromMe) continue; // Skip messages sent by bot
+                // Skip messages sent by the bot itself to avoid infinite loops
+                if (message.key.fromMe && this.sentMessageIds.has(message.key.id)) {
+                    console.log('🤖 Skipping bot message to avoid loop');
+                    continue;
+                }
                 
                 const messageData = this.parseMessage(message);
                 if (messageData) {
-                    console.log(`📨 New message from ${messageData.from}: ${messageData.body || messageData.type}`);
+                    const senderInfo = message.key.fromMe ? 'you (self-chat)' : messageData.from;
+                    console.log(`📨 New message from ${senderInfo}: ${messageData.body || messageData.type}`);
                     await this.sendToPython(messageData);
                 }
             }
@@ -263,6 +269,19 @@ class WhatsAppBridge {
             }
 
             const result = await this.sock.sendMessage(to, messageObj);
+            
+            // Track messages sent by the bot to prevent loops
+            if (result && result.key && result.key.id) {
+                this.sentMessageIds.add(result.key.id);
+                
+                // Clean up old message IDs periodically (keep last 100)
+                if (this.sentMessageIds.size > 100) {
+                    const idsArray = Array.from(this.sentMessageIds);
+                    this.sentMessageIds.clear();
+                    idsArray.slice(-50).forEach(id => this.sentMessageIds.add(id));
+                }
+            }
+            
             console.log(`📤 Message sent to ${to}${options.ai ? ' (with AI icon)' : ''}`);
             return true;
 
