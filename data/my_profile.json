@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:43:05.034284Z",
+  "last_updated": "2025-08-10T20:43:53.502917Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -82,9 +82,9 @@
       "️💯": 0.2,
       "✨": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.08477886372506235
+    "caps_usage_frequency": 0.0801931929214184
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -106,56 +106,56 @@
   },
   "conversation_context": {
     "favorite_topics": [
+      "bought",
+      "lives",
       "towards",
       "hello",
       "cant",
+      "temple",
       "living",
       "little",
       "delap",
       "test",
+      "live",
       "fascinates",
       "movie",
       "general",
       "than",
+      "because",
       "maturity",
       "everything",
-      "tomorrow",
       "chelsea",
       "what",
       "message",
       "funny",
       "responsibilities",
+      "christ",
+      "which",
       "cooking",
       "secure",
+      "finds",
       "chosen",
       "else",
       "awaken",
       "question",
+      "meant",
       "about",
       "want",
       "like",
       "lord",
+      "silver",
       "know",
       "come",
       "hypocrisy",
       "primarily",
       "started",
+      "gold",
+      "spirit",
+      "such",
+      "expression",
       "unkind",
       "bible",
-      "without",
-      "doubt",
-      "protect",
-      "soon",
-      "gittens",
-      "makes",
-      "bringing",
-      "choose",
-      "jealousy",
-      "dreams",
-      "full",
-      "focus",
-      "must",
-      "fruits"
+      "without"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -175,8 +175,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 149,
-    "last_learning_session": "2025-08-10T20:43:05.034276Z",
+    "total_messages_analyzed": 150,
+    "last_learning_session": "2025-08-10T20:43:53.502906Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
