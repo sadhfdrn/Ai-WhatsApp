@@ -1,25 +1,26 @@
 {
-  "last_updated": "2025-08-10T20:34:52.119868Z",
+  "last_updated": "2025-08-10T20:34:52.366963Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:52.067946Z",
-      "message": "Let me make it very clear for us to understand📍\n\n_________________________\n*WHAT ARE THE ELEMENTS OF BECOMING AWARE/KNOWING ONESELF?*",
+      "timestamp": "2025-08-10T20:34:52.310803Z",
+      "message": "Sweep🙂‍↔️",
       "patterns": {
-        "length": 133,
-        "word_count": 19,
-        "sentence_count": 2,
+        "length": 9,
+        "word_count": 1,
+        "sentence_count": 1,
         "exclamation_count": 0,
-        "question_count": 1,
-        "caps_ratio": 0.3609022556390977,
+        "question_count": 0,
+        "caps_ratio": 0.1111111111111111,
         "emoji_usage": {
-          "📍": 1
+          "🙂": 1,
+          "️": 1
         },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.05263157894736842,
+          "questioning": 0.0,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -35,24 +36,15 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "make",
-          "very",
-          "elements",
-          "knowing",
-          "clear",
-          "what",
-          "aware",
-          "oneself",
-          "understand",
-          "becoming"
+          "sweep"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 2.0
+        "excitement_level": 0.0
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:23:00"
+        "timestamp": "2025-08-10T20:23:09"
       }
     }
   ]
