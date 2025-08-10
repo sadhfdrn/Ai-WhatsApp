@@ -1,12 +1,13 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:48.952514Z",
+  "last_updated": "2025-08-10T20:34:49.052836Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
       "yeah": 0.2,
-      "cool": 0.2
+      "cool": 0.2,
+      "wow": 0.4
     },
     "emoji_usage": {
       "😴🙂": 0.2,
@@ -69,7 +70,7 @@
     },
     "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.04716919489747327
+    "caps_usage_frequency": 0.045785608741059275
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -103,16 +104,20 @@
       "cant",
       "people",
       "forget",
-      "someone",
       "abeg",
+      "someone",
+      "funny",
       "surviving",
       "functions",
+      "know",
       "makes",
       "waiting",
       "sale",
+      "what",
       "imagine",
       "carry",
       "interesting",
+      "something",
       "just",
       "cult",
       "message",
@@ -136,11 +141,7 @@
       "abeokuta",
       "choke",
       "tempt",
-      "clips",
-      "post",
-      "needed",
-      "test",
-      "tell"
+      "clips"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -160,8 +161,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 116,
-    "last_learning_session": "2025-08-10T20:34:48.952339Z",
+    "total_messages_analyzed": 117,
+    "last_learning_session": "2025-08-10T20:34:49.052820Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
