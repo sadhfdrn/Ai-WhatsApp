@@ -1,23 +1,23 @@
 {
-  "last_updated": "2025-08-10T19:15:02.769513Z",
+  "last_updated": "2025-08-10T19:15:42.912676Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:15:02.726163Z",
-      "message": "What's the time now? In zim",
+      "timestamp": "2025-08-10T19:15:42.862321Z",
+      "message": "Oh ok",
       "patterns": {
-        "length": 27,
-        "word_count": 6,
-        "sentence_count": 2,
+        "length": 5,
+        "word_count": 2,
+        "sentence_count": 1,
         "exclamation_count": 0,
-        "question_count": 1,
-        "caps_ratio": 0.07407407407407407,
+        "question_count": 0,
+        "caps_ratio": 0.2,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.16666666666666666,
+          "questioning": 0.0,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -30,19 +30,16 @@
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
-          "quotation_usage": true
+          "quotation_usage": false
         },
-        "topic_keywords": [
-          "what",
-          "time"
-        ],
+        "topic_keywords": [],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
         "sender": "263719647303@s.whatsapp.net",
-        "timestamp": "2025-08-10T19:15:02"
+        "timestamp": "2025-08-10T19:15:42"
       }
     }
   ]
