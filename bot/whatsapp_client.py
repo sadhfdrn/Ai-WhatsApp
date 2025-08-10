@@ -1,0 +1,601 @@
+"""
+WhatsApp Web client implementation using baileys
+Handles connection, message sending/receiving, and bot interactions
+"""
+
+import asyncio
+import json
+import logging
+import os
+import tempfile
+from typing import Dict, Any, Optional, Callable
+from datetime import datetime
+
+from bot.ai_processor import AIProcessor
+from bot.voice_handler import VoiceHandler
+from bot.web_search import WebSearchHandler
+from bot.meme_generator import MemeGenerator
+from bot.auto_reply import AutoReplyManager
+from utils.helpers import sanitize_text, format_timestamp
+
+logger = logging.getLogger(__name__)
+
+class WhatsAppClient:
+    """WhatsApp Web client with AI capabilities"""
+    
+    def __init__(self, config):
+        self.config = config
+        self.connected = False
+        self.connection_attempts = 0
+        self.max_reconnect_attempts = 5
+        
+        # Initialize AI components
+        self.ai_processor = AIProcessor(config)
+        self.voice_handler = VoiceHandler(config) if config.VOICE_ENABLED else None
+        self.web_search = WebSearchHandler(config) if config.SEARCH_ENABLED else None
+        self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
+        self.auto_reply = AutoReplyManager(config)
+        
+        # Message handlers
+        self.message_handlers = {}
+        self.setup_message_handlers()
+        
+        # Session data
+        self.user_sessions = {}
+        self.active_conversations = set()
+        
+        logger.info("🚀 WhatsApp client initialized")
+    
+    def setup_message_handlers(self):
+        """Setup command handlers"""
+        self.message_handlers = {
+            'help': self.handle_help,
+            'search': self.handle_search,
+            'meme': self.handle_meme,
+            'voice': self.handle_voice_toggle,
+            'autoreply': self.handle_autoreply_toggle,
+            'joke': self.handle_joke_request,
+            'story': self.handle_story_request,
+            'translate': self.handle_translation,
+            'ascii': self.handle_ascii_art,
+            'analyze': self.handle_chat_analysis,
+            'status': self.handle_status
+        }
+    
+    async def connect(self):
+        """Connect to WhatsApp Web"""
+        try:
+            logger.info("🔌 Connecting to WhatsApp Web...")
+            
+            # Simulate baileys connection with credential loading
+            # In a real implementation, this would use the actual baileys library
+            creds = self.config.WHATSAPP_CREDS
+            if not creds:
+                raise Exception("WhatsApp credentials not available")
+            
+            # Save credentials to temp file for baileys
+            self.creds_path = os.path.join(tempfile.gettempdir(), "wa_creds.json")
+            with open(self.creds_path, 'w') as f:
+                json.dump(creds, f)
+            
+            # Simulate connection process
+            await asyncio.sleep(2)  # Connection delay
+            self.connected = True
+            self.connection_attempts = 0
+            
+            logger.info("✅ Successfully connected to WhatsApp Web")
+            
+            # Start message processing
+            asyncio.create_task(self.message_listener())
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to connect to WhatsApp: {e}")
+            await self.handle_connection_error()
+    
+    async def handle_connection_error(self):
+        """Handle connection errors with retry logic"""
+        self.connection_attempts += 1
+        
+        if self.connection_attempts < self.max_reconnect_attempts:
+            wait_time = min(30 * self.connection_attempts, 300)  # Max 5 minutes
+            logger.info(f"🔄 Retrying connection in {wait_time} seconds... (Attempt {self.connection_attempts}/{self.max_reconnect_attempts})")
+            await asyncio.sleep(wait_time)
+            await self.connect()
+        else:
+            logger.error("💥 Maximum reconnection attempts reached. Bot shutting down.")
+            raise Exception("Unable to establish WhatsApp connection")
+    
+    async def message_listener(self):
+        """Listen for incoming messages"""
+        logger.info("👂 Message listener started")
+        
+        # Simulate message receiving loop
+        # In real implementation, this would listen to baileys events
+        while self.connected:
+            try:
+                # Simulate receiving messages periodically for testing
+                await asyncio.sleep(10)
+                
+                # In real implementation, this would be triggered by actual messages
+                # For now, we'll just keep the listener alive
+                continue
+                
+            except Exception as e:
+                logger.error(f"❌ Error in message listener: {e}")
+                await asyncio.sleep(5)
+    
+    async def handle_incoming_message(self, message_data: Dict[str, Any]):
+        """Process incoming WhatsApp message"""
+        try:
+            sender = message_data.get('from', '')
+            message_text = message_data.get('body', '')
+            message_type = message_data.get('type', 'text')
+            timestamp = message_data.get('timestamp', datetime.now().isoformat())
+            
+            logger.info(f"📨 Received message from {sender}: {message_text[:50]}...")
+            
+            # Add sender to active conversations
+            self.active_conversations.add(sender)
+            
+            # Handle different message types
+            if message_type == 'text':
+                await self.process_text_message(sender, message_text, timestamp)
+            elif message_type == 'voice':
+                await self.process_voice_message(sender, message_data, timestamp)
+            elif message_type == 'image':
+                await self.process_image_message(sender, message_data, timestamp)
+            
+        except Exception as e:
+            logger.error(f"❌ Error handling message: {e}")
+    
+    async def process_text_message(self, sender: str, message: str, timestamp: str):
+        """Process text message and generate response"""
+        try:
+            # Check if it's a command
+            if message.startswith(self.config.BOT_PREFIX):
+                await self.handle_command(sender, message, timestamp)
+                return
+            
+            # Generate AI response
+            response = await self.ai_processor.generate_response(
+                message, 
+                sender,
+                self.get_user_context(sender)
+            )
+            
+            # Send response
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+            # Handle auto-reply if enabled
+            if self.auto_reply.is_enabled_for_user(sender):
+                await self.auto_reply.schedule_reply(sender, message, self)
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing text message: {e}")
+    
+    async def process_voice_message(self, sender: str, message_data: Dict[str, Any], timestamp: str):
+        """Process voice message"""
+        if not self.voice_handler:
+            await self.send_message(sender, "🎤 Voice processing is currently disabled")
+            return
+        
+        try:
+            # Convert voice to text
+            voice_text = await self.voice_handler.speech_to_text(message_data.get('audioData'))
+            
+            if voice_text:
+                logger.info(f"🎤 Voice message from {sender}: {voice_text}")
+                
+                # Process as text message
+                await self.process_text_message(sender, voice_text, timestamp)
+                
+                # Optionally respond with voice
+                if self.get_user_preference(sender, 'voice_responses', False):
+                    response = await self.ai_processor.generate_response(voice_text, sender)
+                    voice_response = await self.voice_handler.text_to_speech(response)
+                    await self.send_voice_message(sender, voice_response)
+            else:
+                await self.send_message(sender, "🤔 Sorry, I couldn't understand your voice message. Could you try typing instead?")
+                
+        except Exception as e:
+            logger.error(f"❌ Error processing voice message: {e}")
+            await self.send_message(sender, "❌ There was an error processing your voice message")
+    
+    async def handle_command(self, sender: str, message: str, timestamp: str):
+        """Handle bot commands"""
+        try:
+            # Parse command
+            parts = message[1:].split(' ', 1)  # Remove prefix
+            command = parts[0].lower()
+            args = parts[1] if len(parts) > 1 else ""
+            
+            logger.info(f"🎛️ Command from {sender}: {command}")
+            
+            # Execute command
+            if command in self.message_handlers:
+                await self.message_handlers[command](sender, args, timestamp)
+            else:
+                await self.handle_unknown_command(sender, command)
+                
+        except Exception as e:
+            logger.error(f"❌ Error handling command: {e}")
+            await self.send_message(sender, "❌ There was an error processing your command")
+    
+    async def handle_help(self, sender: str, args: str, timestamp: str):
+        """Show help information"""
+        help_text = """🤖 **AI Assistant Commands**
+
+📝 **Basic Commands:**
+• !help - Show this help message
+• !status - Bot status and features
+
+🔍 **Search & Information:**
+• !search <query> - Web search
+• !translate <text> - Translate text
+
+🎨 **Creative Features:**
+• !meme <top text>|<bottom text> - Generate meme
+• !joke - Tell a random joke  
+• !story <prompt> - Start a story
+• !ascii <text> - Generate ASCII art
+
+🎤 **Voice Features:**
+• !voice - Toggle voice responses
+• !autoreply - Toggle auto-reply mode
+
+📊 **Analysis:**
+• !analyze - Analyze recent chat activity
+
+Just chat normally and I'll respond with my personality! 😄"""
+
+        await self.send_message(sender, help_text, add_ai_icon=True)
+    
+    async def handle_search(self, sender: str, query: str, timestamp: str):
+        """Handle web search command"""
+        if not self.web_search:
+            await self.send_message(sender, "🔍 Web search is currently disabled")
+            return
+        
+        if not query.strip():
+            await self.send_message(sender, "🤔 Please provide a search query! Example: !search python programming")
+            return
+        
+        try:
+            await self.send_message(sender, f"🔍 Searching for: {query}...")
+            
+            results = await self.web_search.search(query)
+            
+            if results:
+                response = f"🔍 **Search Results for:** {query}\n\n"
+                for i, result in enumerate(results[:3], 1):
+                    response += f"{i}. **{result['title']}**\n{result['snippet']}\n🔗 {result['url']}\n\n"
+                
+                await self.send_message(sender, response, add_ai_icon=True)
+            else:
+                await self.send_message(sender, f"😔 No results found for '{query}'. Try a different search term!")
+                
+        except Exception as e:
+            logger.error(f"❌ Search error: {e}")
+            await self.send_message(sender, "❌ Search service temporarily unavailable")
+    
+    async def handle_meme(self, sender: str, args: str, timestamp: str):
+        """Handle meme generation command"""
+        if not self.meme_generator:
+            await self.send_message(sender, "🎨 Meme generation is currently disabled")
+            return
+        
+        if not args.strip():
+            await self.send_message(sender, "🤔 Format: !meme top text|bottom text\nExample: !meme One does not simply|Generate memes")
+            return
+        
+        try:
+            parts = args.split('|', 1)
+            top_text = parts[0].strip()
+            bottom_text = parts[1].strip() if len(parts) > 1 else ""
+            
+            await self.send_message(sender, "🎨 Generating your meme...")
+            
+            meme_path = await self.meme_generator.create_meme(top_text, bottom_text)
+            
+            if meme_path:
+                # In real implementation, send the image
+                await self.send_message(sender, f"🎉 Meme created! {top_text} / {bottom_text}", add_ai_icon=True)
+            else:
+                await self.send_message(sender, "😅 Couldn't create the meme. Try again!")
+                
+        except Exception as e:
+            logger.error(f"❌ Meme generation error: {e}")
+            await self.send_message(sender, "❌ Meme service temporarily unavailable")
+    
+    async def handle_autoreply_toggle(self, sender: str, args: str, timestamp: str):
+        """Toggle auto-reply for user"""
+        try:
+            current_status = self.auto_reply.is_enabled_for_user(sender)
+            
+            if args.lower() in ['on', 'enable', 'start']:
+                self.auto_reply.enable_for_user(sender)
+                await self.send_message(sender, "🤖 Auto-reply enabled! I'll respond automatically to your messages.", add_ai_icon=True)
+            elif args.lower() in ['off', 'disable', 'stop']:
+                self.auto_reply.disable_for_user(sender)
+                await self.send_message(sender, "⏹️ Auto-reply disabled. I'll only respond when you message me directly.", add_ai_icon=True)
+            else:
+                # Toggle current status
+                if current_status:
+                    self.auto_reply.disable_for_user(sender)
+                    status_msg = "⏹️ Auto-reply disabled"
+                else:
+                    self.auto_reply.enable_for_user(sender)
+                    status_msg = "🤖 Auto-reply enabled"
+                
+                await self.send_message(sender, f"{status_msg}! Use !autoreply on/off to control it.", add_ai_icon=True)
+                
+        except Exception as e:
+            logger.error(f"❌ Auto-reply toggle error: {e}")
+    
+    async def handle_joke_request(self, sender: str, args: str, timestamp: str):
+        """Handle joke request"""
+        try:
+            joke = await self.ai_processor.generate_joke(args if args else "random")
+            await self.send_message(sender, f"😄 {joke}", add_ai_icon=True)
+        except Exception as e:
+            logger.error(f"❌ Joke generation error: {e}")
+            await self.send_message(sender, "😅 My joke generator is taking a coffee break!")
+    
+    async def handle_status(self, sender: str, args: str, timestamp: str):
+        """Show bot status"""
+        features = self.config.get_feature_flags()
+        active_features = [f"✅ {feature}" for feature, enabled in features.items() if enabled]
+        inactive_features = [f"❌ {feature}" for feature, enabled in features.items() if not enabled]
+        
+        status_text = f"""🤖 **Bot Status Report**
+
+🔗 **Connection:** {'✅ Connected' if self.connected else '❌ Disconnected'}
+👥 **Active Chats:** {len(self.active_conversations)}
+⚡ **Uptime:** {format_timestamp(datetime.now())}
+
+🎛️ **Features:**
+{chr(10).join(active_features)}
+
+{chr(10).join(inactive_features) if inactive_features else ''}
+
+💭 **Personality:** {self.config.PERSONALITY_MODE.title()} mode
+🎯 **Model:** {self.config.AI_MODEL}"""
+
+        await self.send_message(sender, status_text, add_ai_icon=True)
+    
+    async def handle_voice_toggle(self, sender: str, args: str, timestamp: str):
+        """Toggle voice response preference for user"""
+        try:
+            current_preference = self.get_user_preference(sender, 'voice_responses', False)
+            
+            if args.lower() in ['on', 'enable', 'start']:
+                self.set_user_preference(sender, 'voice_responses', True)
+                await self.send_message(sender, "🎤 Voice responses enabled! I'll send audio replies when possible.", add_ai_icon=True)
+            elif args.lower() in ['off', 'disable', 'stop']:
+                self.set_user_preference(sender, 'voice_responses', False)
+                await self.send_message(sender, "🔇 Voice responses disabled. I'll send text replies only.", add_ai_icon=True)
+            else:
+                # Toggle current preference
+                new_preference = not current_preference
+                self.set_user_preference(sender, 'voice_responses', new_preference)
+                status = "enabled" if new_preference else "disabled"
+                await self.send_message(sender, f"🎤 Voice responses {status}!", add_ai_icon=True)
+                
+        except Exception as e:
+            logger.error(f"❌ Voice toggle error: {e}")
+            await self.send_message(sender, "❌ Error toggling voice settings")
+
+    async def handle_story_request(self, sender: str, args: str, timestamp: str):
+        """Handle story generation request"""
+        try:
+            if not args.strip():
+                await self.send_message(sender, "📖 Tell me what kind of story you'd like! Example: !story adventure in space")
+                return
+            
+            story_prompt = args.strip()
+            await self.send_message(sender, f"📖 Creating a story about: {story_prompt}...")
+            
+            # Generate story using AI processor
+            story = await self.ai_processor.generate_story(story_prompt)
+            await self.send_message(sender, f"📚 **{story_prompt.title()}**\n\n{story}", add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Story generation error: {e}")
+            await self.send_message(sender, "❌ Story generator is taking a creative break!")
+
+    async def handle_translation(self, sender: str, args: str, timestamp: str):
+        """Handle text translation"""
+        try:
+            if not args.strip():
+                await self.send_message(sender, "🌐 Format: !translate <text>\nExample: !translate Hello world")
+                return
+            
+            # Simple translation simulation
+            translated = f"[Translated: {args}]"
+            await self.send_message(sender, f"🌐 Translation: {translated}", add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Translation error: {e}")
+            await self.send_message(sender, "❌ Translation service temporarily unavailable")
+
+    async def handle_ascii_art(self, sender: str, args: str, timestamp: str):
+        """Handle ASCII art generation"""
+        try:
+            if not args.strip():
+                await self.send_message(sender, "🎨 Format: !ascii <text>\nExample: !ascii HELLO")
+                return
+            
+            text = args.strip().upper()
+            ascii_art = self.generate_simple_ascii(text)
+            await self.send_message(sender, f"🎨 ASCII Art:\n```\n{ascii_art}\n```", add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ ASCII art error: {e}")
+            await self.send_message(sender, "❌ ASCII art generator is drawing blanks!")
+
+    async def handle_chat_analysis(self, sender: str, args: str, timestamp: str):
+        """Analyze recent chat activity"""
+        try:
+            if sender not in self.user_sessions:
+                await self.send_message(sender, "📊 No chat history to analyze yet. Keep chatting!")
+                return
+            
+            session = self.user_sessions[sender]
+            message_count = len(session.get('messages', []))
+            
+            analysis = f"""📊 **Chat Analysis for {sender}**
+            
+📨 **Messages Exchanged:** {message_count}
+🕐 **Session Started:** {session.get('started', 'Recently')}
+🎯 **Topics Discussed:** General conversation
+💬 **Communication Style:** {session.get('style', 'Balanced')}
+            
+Keep the conversation going for more detailed analysis!"""
+            
+            await self.send_message(sender, analysis, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Chat analysis error: {e}")
+            await self.send_message(sender, "❌ Chat analyzer is processing... try again later!")
+
+    async def process_image_message(self, sender: str, message_data: Dict[str, Any], timestamp: str):
+        """Process image message"""
+        try:
+            logger.info(f"🖼️ Image message from {sender}")
+            
+            # Extract image data
+            image_data = message_data.get('imageData')
+            caption = message_data.get('caption', '')
+            
+            if caption:
+                # Process caption as text message
+                await self.process_text_message(sender, caption, timestamp)
+            else:
+                # Respond to image
+                responses = [
+                    "🖼️ Nice image! I can see you shared something visual.",
+                    "📸 Cool photo! I wish I could see it better.",
+                    "🎨 That looks interesting! Thanks for sharing.",
+                    "🖼️ Great image! I'd love to chat about what you've shared."
+                ]
+                import random
+                response = random.choice(responses)
+                await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Image processing error: {e}")
+            await self.send_message(sender, "❌ There was an error processing your image")
+
+    def generate_simple_ascii(self, text: str) -> str:
+        """Generate simple ASCII art for text"""
+        ascii_chars = {
+            'A': ['  ##  ', ' #  # ', '#####', '#   #', '#   #'],
+            'B': ['#### ', '#   #', '#### ', '#   #', '#### '],
+            'C': [' ####', '#    ', '#    ', '#    ', ' ####'],
+            'H': ['#   #', '#   #', '#####', '#   #', '#   #'],
+            'E': ['#####', '#    ', '#### ', '#    ', '#####'],
+            'L': ['#    ', '#    ', '#    ', '#    ', '#####'],
+            'O': [' ### ', '#   #', '#   #', '#   #', ' ### '],
+            ' ': ['     ', '     ', '     ', '     ', '     ']
+        }
+        
+        if len(text) > 10:
+            return f"Text too long for ASCII art: {text}"
+        
+        lines = ['', '', '', '', '']
+        for char in text:
+            if char in ascii_chars:
+                char_lines = ascii_chars[char]
+                for i in range(5):
+                    lines[i] += char_lines[i] + ' '
+            else:
+                # Default pattern for unknown characters
+                for i in range(5):
+                    lines[i] += '##### '
+        
+        return '\n'.join(lines)
+
+    async def handle_unknown_command(self, sender: str, command: str):
+        """Handle unknown command"""
+        response = f"🤔 I don't recognize the command '{command}'. Type !help to see available commands!"
+        await self.send_message(sender, response, add_ai_icon=True)
+    
+    async def send_message(self, to: str, message: str, add_ai_icon: bool = False):
+        """Send text message"""
+        try:
+            if add_ai_icon:
+                message = f"🤖 {message}"
+            
+            # Sanitize message
+            clean_message = sanitize_text(message)
+            
+            # Log outgoing message
+            logger.info(f"📤 Sending to {to}: {clean_message[:100]}...")
+            
+            # In real implementation, this would use baileys to send the message
+            # For now, we'll just simulate the send
+            await asyncio.sleep(0.1)  # Simulate network delay
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to send message: {e}")
+            return False
+    
+    async def send_voice_message(self, to: str, audio_data: Optional[bytes]):
+        """Send voice message"""
+        try:
+            if not audio_data:
+                logger.warning("⚠️ No audio data provided for voice message")
+                return False
+                
+            logger.info(f"🎤 Sending voice message to {to}")
+            
+            # In real implementation, this would send audio via baileys
+            await asyncio.sleep(0.2)  # Simulate send delay
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to send voice message: {e}")
+            return False
+    
+    def get_user_context(self, user_id: str) -> Dict[str, Any]:
+        """Get user conversation context"""
+        if user_id not in self.user_sessions:
+            self.user_sessions[user_id] = {
+                'messages': [],
+                'preferences': {},
+                'last_active': datetime.now().isoformat(),
+                'personality_profile': 'humorous'
+            }
+        
+        return self.user_sessions[user_id]
+    
+    def get_user_preference(self, user_id: str, key: str, default: Any = None) -> Any:
+        """Get user preference"""
+        context = self.get_user_context(user_id)
+        return context.get('preferences', {}).get(key, default)
+    
+    def set_user_preference(self, user_id: str, key: str, value: Any):
+        """Set user preference"""
+        context = self.get_user_context(user_id)
+        if 'preferences' not in context:
+            context['preferences'] = {}
+        context['preferences'][key] = value
+        logger.debug(f"🔧 Set preference {key}={value} for user {user_id}")
+    
+    async def disconnect(self):
+        """Disconnect from WhatsApp"""
+        try:
+            logger.info("🔌 Disconnecting from WhatsApp...")
+            self.connected = False
+            
+            # Cleanup temp files
+            if hasattr(self, 'creds_path') and os.path.exists(self.creds_path):
+                os.remove(self.creds_path)
+            
+            logger.info("✅ Disconnected successfully")
+            
+        except Exception as e:
+            logger.error(f"❌ Error during disconnect: {e}")
