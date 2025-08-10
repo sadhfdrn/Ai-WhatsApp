@@ -1,23 +1,23 @@
 {
-  "last_updated": "2025-08-10T10:05:18.695733Z",
+  "last_updated": "2025-08-10T10:05:18.840641Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:18.647037Z",
-      "message": "༒BløodRazeX༒\nShey u get .....?",
+      "timestamp": "2025-08-10T10:05:18.778136Z",
+      "message": "You can stream our services live on YouTube using @afmweca",
       "patterns": {
-        "length": 30,
-        "word_count": 5,
-        "sentence_count": 2,
+        "length": 58,
+        "word_count": 10,
+        "sentence_count": 1,
         "exclamation_count": 0,
-        "question_count": 1,
-        "caps_ratio": 0.13333333333333333,
+        "question_count": 0,
+        "caps_ratio": 0.05172413793103448,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.2,
+          "questioning": 0.0,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -25,15 +25,20 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
-          "ellipsis_usage": true,
+          "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "shey"
+          "youtube",
+          "live",
+          "afmweca",
+          "using",
+          "services",
+          "stream"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -41,7 +46,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": 1754804529
+        "timestamp": 1754805241
       }
     }
   ]
