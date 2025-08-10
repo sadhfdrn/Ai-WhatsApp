@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:16.900358Z",
+  "last_updated": "2025-08-10T10:05:17.050585Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -21,11 +21,12 @@
       "👨": 0.4,
       "💻": 0.4,
       "😊😊": 0.2,
-      "👇✨": 0.2
+      "👇✨": 0.2,
+      "💓": 0.2
     },
-    "response_length_preference": "medium",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.08412432981801461
+    "caps_usage_frequency": 0.08311930424362056
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -53,8 +54,8 @@
       "open",
       "forex",
       "gloo",
-      "test",
       "delete",
+      "test",
       "azin",
       "holiness",
       "grateful",
@@ -65,6 +66,7 @@
       "forever",
       "always",
       "polls",
+      "sunday",
       "facebook",
       "trading",
       "alhamdulillah",
@@ -83,6 +85,7 @@
       "made",
       "share",
       "manage",
+      "happy",
       "fruit",
       "deployments",
       "romans",
@@ -94,8 +97,7 @@
       "pase",
       "life",
       "everlasting",
-      "chemistry",
-      "stream"
+      "chemistry"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -112,8 +114,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 20,
-    "last_learning_session": "2025-08-10T10:05:16.900352Z",
+    "total_messages_analyzed": 21,
+    "last_learning_session": "2025-08-10T10:05:17.050580Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
