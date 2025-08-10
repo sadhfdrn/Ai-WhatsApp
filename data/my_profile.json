@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:20.861067Z",
+  "last_updated": "2025-08-10T10:05:21.034114Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -40,7 +40,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.1413903516110555
+    "caps_usage_frequency": 0.13201322121185474
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -70,8 +70,8 @@
       "forex",
       "gloo",
       "present",
-      "delete",
       "test",
+      "delete",
       "channel",
       "azin",
       "holiness",
@@ -87,6 +87,7 @@
       "sunday",
       "blessing",
       "facebook",
+      "pushed",
       "trading",
       "alhamdulillah",
       "everyone",
@@ -110,8 +111,7 @@
       "land",
       "message",
       "made",
-      "share",
-      "manage"
+      "haven"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -128,8 +128,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 40,
-    "last_learning_session": "2025-08-10T10:05:20.861059Z",
+    "total_messages_analyzed": 41,
+    "last_learning_session": "2025-08-10T10:05:21.034107Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
