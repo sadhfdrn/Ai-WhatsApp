@@ -1,17 +1,17 @@
 {
-  "last_updated": "2025-08-10T19:00:01.440937Z",
+  "last_updated": "2025-08-10T19:00:03.527961Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:00:01.388837Z",
-      "message": "So how have you been",
+      "timestamp": "2025-08-10T19:00:03.493366Z",
+      "message": "Back from prison",
       "patterns": {
-        "length": 20,
-        "word_count": 5,
+        "length": 16,
+        "word_count": 3,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.05,
+        "caps_ratio": 0.0625,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
@@ -32,14 +32,18 @@
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [],
+        "topic_keywords": [
+          "back",
+          "from",
+          "prison"
+        ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "2349136038978@s.whatsapp.net",
-        "timestamp": 1754852400
+        "sender": "status@broadcast",
+        "timestamp": 1754852403
       }
     }
   ]
