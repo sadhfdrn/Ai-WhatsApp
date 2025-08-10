@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:45:50.300592Z",
+  "last_updated": "2025-08-10T19:46:34.757793Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -57,9 +57,9 @@
       "👈": 0.36000000000000004,
       "😂😂": 0.2
     },
-    "response_length_preference": "medium",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.16630457012072614
+    "caps_usage_frequency": 0.15171492943518414
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -82,6 +82,7 @@
   "conversation_context": {
     "favorite_topics": [
       "marriage",
+      "fear",
       "forget",
       "lord",
       "carry",
@@ -97,6 +98,7 @@
       "smartcontract",
       "above",
       "smart",
+      "them",
       "test",
       "clips",
       "hello",
@@ -128,9 +130,7 @@
       "people",
       "meet",
       "includes",
-      "covers",
-      "check",
-      "transformers"
+      "covers"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -150,8 +150,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 95,
-    "last_learning_session": "2025-08-10T19:45:50.300585Z",
+    "total_messages_analyzed": 96,
+    "last_learning_session": "2025-08-10T19:46:34.757785Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
