@@ -1,24 +1,22 @@
 {
-  "last_updated": "2025-08-10T10:05:21.208399Z",
+  "last_updated": "2025-08-10T10:05:21.298703Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:21.148480Z",
-      "message": "But yeah",
+      "timestamp": "2025-08-10T10:05:21.252013Z",
+      "message": "Ok bro",
       "patterns": {
-        "length": 8,
+        "length": 6,
         "word_count": 2,
         "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.125,
+        "caps_ratio": 0.16666666666666666,
         "emoji_usage": {},
-        "common_phrases": {
-          "yeah": 1
-        },
+        "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
-          "casual": 0.5,
+          "casual": 0.0,
           "questioning": 0.0,
           "emphatic": 0.0,
           "positive": 0.0,
@@ -34,16 +32,14 @@
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [
-          "yeah"
-        ],
+        "topic_keywords": [],
         "greeting_patterns": null,
-        "agreement_patterns": "agreement",
+        "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
         "sender": "263719647303@s.whatsapp.net",
-        "timestamp": 1754811175
+        "timestamp": 1754811224
       }
     }
   ]
