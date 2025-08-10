@@ -237,9 +237,16 @@ class WhatsAppClient:
             logger.info("✅ Response sent successfully")
             
             # Handle auto-reply if enabled
-            if self.auto_reply.is_enabled_for_user(sender):
-                logger.info("🔄 Scheduling auto-reply...")
-                await self.auto_reply.schedule_reply(sender, message, self)
+            if self.auto_reply.is_enabled(sender):
+                logger.info("🔄 Checking for auto-reply...")
+                if await self.auto_reply.should_auto_reply(sender, message, self.get_user_context(sender)):
+                    auto_response = await self.auto_reply.generate_auto_reply(
+                        sender, message, self.get_user_context(sender), self.ai_processor
+                    )
+                    if auto_response:
+                        delay = await self.auto_reply.get_auto_reply_delay(sender)
+                        await asyncio.sleep(delay)
+                        await self.send_message(sender, auto_response, add_ai_icon=True)
             
         except Exception as e:
             logger.error(f"❌ Error processing text message: {e}")
@@ -387,24 +394,22 @@ Just chat normally and I'll respond with my personality! 😄"""
     async def handle_autoreply_toggle(self, sender: str, args: str, timestamp: str):
         """Toggle auto-reply for user"""
         try:
-            current_status = self.auto_reply.is_enabled_for_user(sender)
+            current_status = self.auto_reply.is_enabled(sender)
             
             if args.lower() in ['on', 'enable', 'start']:
-                self.auto_reply.enable_for_user(sender)
-                await self.send_message(sender, "🤖 Auto-reply enabled! I'll respond automatically to your messages.", add_ai_icon=True)
+                response = await self.auto_reply.enable_auto_reply(sender, self.ai_processor)
+                await self.send_message(sender, response, add_ai_icon=True)
             elif args.lower() in ['off', 'disable', 'stop']:
-                self.auto_reply.disable_for_user(sender)
-                await self.send_message(sender, "⏹️ Auto-reply disabled. I'll only respond when you message me directly.", add_ai_icon=True)
+                response = await self.auto_reply.disable_auto_reply(sender)
+                await self.send_message(sender, response, add_ai_icon=True)
             else:
                 # Toggle current status
                 if current_status:
-                    self.auto_reply.disable_for_user(sender)
-                    status_msg = "⏹️ Auto-reply disabled"
+                    response = await self.auto_reply.disable_auto_reply(sender)
                 else:
-                    self.auto_reply.enable_for_user(sender)
-                    status_msg = "🤖 Auto-reply enabled"
+                    response = await self.auto_reply.enable_auto_reply(sender, self.ai_processor)
                 
-                await self.send_message(sender, f"{status_msg}! Use !autoreply on/off to control it.", add_ai_icon=True)
+                await self.send_message(sender, response, add_ai_icon=True)
                 
         except Exception as e:
             logger.error(f"❌ Auto-reply toggle error: {e}")

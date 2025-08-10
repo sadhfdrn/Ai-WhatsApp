@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "beautifulsoup4>=4.13.4",
     "gtts>=2.5.4",
+    "openai>=1.99.6",
     "pillow>=11.3.0",
     "psutil>=7.0.0",
     "pydub>=0.25.1",
