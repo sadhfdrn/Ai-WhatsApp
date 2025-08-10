@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:51.710763Z",
+  "last_updated": "2025-08-10T20:34:51.901793Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -73,9 +73,9 @@
       "🙇": 0.2,
       "♂️": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.06315206884278304
+    "caps_usage_frequency": 0.06012153349135146
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -105,17 +105,21 @@
       "bible",
       "without",
       "chelsea",
+      "fruits",
+      "responsibilities",
       "awaken",
       "full",
       "unkind",
       "hypocrisy",
       "lord",
       "soon",
+      "choose",
       "want",
       "than",
       "meet",
       "question",
       "cant",
+      "everything",
       "doubt",
       "towards",
       "started",
@@ -126,27 +130,23 @@
       "primarily",
       "insights",
       "must",
+      "also",
+      "fascinates",
       "jealousy",
       "funny",
       "bringing",
+      "about",
+      "else",
       "like",
       "delap",
       "living",
+      "come",
       "general",
       "know",
       "cooking",
       "makes",
       "what",
-      "actually",
-      "imagine",
-      "going",
-      "evil",
-      "interesting",
-      "nourishment",
-      "pedro",
-      "simply",
-      "carriage",
-      "spiritual"
+      "actually"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -166,8 +166,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 132,
-    "last_learning_session": "2025-08-10T20:34:51.710756Z",
+    "total_messages_analyzed": 133,
+    "last_learning_session": "2025-08-10T20:34:51.901786Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
