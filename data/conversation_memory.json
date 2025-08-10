@@ -1,82 +1,58 @@
 {
-  "last_updated": "2025-08-10T20:34:51.246475Z",
+  "last_updated": "2025-08-10T20:34:51.505410Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:51.190766Z",
-      "message": "1 Peter 2:1-9 NLT\r\n[1] So get rid of all evil behavior. Be done with all deceit, hypocrisy, jealousy, and all unkind speech. \n[2] Like newborn babies, you must crave pure spiritual milk so that you will grow into a full experience of salvation. Cry out for this nourishment,\n[3] now that you have had a taste of the Lord’s kindness.\n[4] You are coming to Christ, who is the living cornerstone of God’s temple. He was rejected by people, but he was chosen by God for great honor. ",
+      "timestamp": "2025-08-10T20:34:51.411943Z",
+      "message": "I want us to understand that the degree of your knowing would be known by simply looking at your dispositions and carriage🙇‍♂️",
       "patterns": {
-        "length": 479,
-        "word_count": 89,
-        "sentence_count": 7,
+        "length": 126,
+        "word_count": 22,
+        "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.029227557411273485,
-        "emoji_usage": {},
+        "caps_ratio": 0.007936507936507936,
+        "emoji_usage": {
+          "🙇": 1,
+          "♂️": 1
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
           "emphatic": 0.0,
-          "positive": 0.02247191011235955,
+          "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.014613778705636743,
+          "comma_frequency": 0.0,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "temple",
-          "unkind",
-          "milk",
-          "full",
-          "hypocrisy",
-          "lord",
-          "honor",
-          "coming",
-          "people",
-          "must",
-          "behavior",
-          "chosen",
-          "jealousy",
-          "salvation",
-          "like",
-          "living",
-          "taste",
-          "evil",
-          "nourishment",
-          "christ",
-          "speech",
-          "spiritual",
-          "cornerstone",
-          "grow",
-          "pure",
-          "crave",
-          "peter",
-          "kindness",
-          "newborn",
-          "deceit",
-          "into",
-          "done",
-          "babies",
-          "rejected",
-          "experience",
-          "great"
+          "dispositions",
+          "simply",
+          "carriage",
+          "degree",
+          "looking",
+          "knowing",
+          "want",
+          "understand",
+          "known"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.5
+        "excitement_level": 0.0
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:22:22"
+        "timestamp": "2025-08-10T20:22:24"
       }
     }
   ]
