@@ -1,83 +1,5 @@
 [
   {
-    "id": "3A633776ADDAA8DC591A",
-    "from": "status@broadcast",
-    "timestamp": {
-      "low": 1754856163,
-      "high": 0,
-      "unsigned": true
-    },
-    "type": "text",
-    "body": "Netflix logs needed \ud83d\ude2a\ud83e\udd32",
-    "media": null,
-    "processed": true,
-    "received_at": "2025-08-10T20:02:54.464Z"
-  },
-  {
-    "id": "3A150803FBF434B735E6",
-    "from": "status@broadcast",
-    "timestamp": 1754856175,
-    "type": "image",
-    "body": "\u201c\u201d\u201dsuffer make money",
-    "media": {
-      "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m269/AQMjMCcFOfKbMDTyNgaFUoHRCFNyv7d8-8Gul2YPnBLghY94fCDdX0DQZpacNlAnKrWoTWX1ZG2aCjpSOboEHD3mGQnE1QmHU8PBv0TDDg?ccb=9-4&oh=01_Q5Aa2QEKmI_iWab7_2RTVRxaoO5IHlYTrs9VyllgoWKP8BiPPQ&oe=68C05C7E&_nc_sid=e6ed6c&mms3=true",
-      "mimetype": "image/jpeg",
-      "caption": "\u201c\u201d\u201dsuffer make money",
-      "fileSha256": "/7904IorpOn02wU9vhPsVnk/z7HUeu82g2VjoMmrK6w=",
-      "fileLength": "36248",
-      "height": 441,
-      "width": 1080,
-      "mediaKey": "eUljhAAbIzLxz4qYPIYl7Zglc+hCNxirfsLlzN/O838=",
-      "fileEncSha256": "LAGTGEY4h1jYYkpTSmIqI66StGKz8DWPps16o5Cop60=",
-      "directPath": "/o1/v/t24/f2/m269/AQMjMCcFOfKbMDTyNgaFUoHRCFNyv7d8-8Gul2YPnBLghY94fCDdX0DQZpacNlAnKrWoTWX1ZG2aCjpSOboEHD3mGQnE1QmHU8PBv0TDDg?ccb=9-4&oh=01_Q5Aa2QEKmI_iWab7_2RTVRxaoO5IHlYTrs9VyllgoWKP8BiPPQ&oe=68C05C7E&_nc_sid=e6ed6c",
-      "mediaKeyTimestamp": "1754856152",
-      "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABEMDQ8NCxEPDg8TEhEUGSocGRcXGTQlJx8qPTZBQDw2OzpETGJTREhcSTo7VXRWXGVobW5tQlJ4gHdqf2JrbWn/2wBDARITExkWGTIcHDJpRjtGaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWn/wgARCAAnAGADASIAAhEBAxEB/8QAGgAAAgMBAQAAAAAAAAAAAAAAAwQAAgUBBv/EABgBAAMBAQAAAAAAAAAAAAAAAAABAgME/9oADAMBAAIQAxAAAACuXtDzvQe8n6xFe37IHh6MVXdGzNTYDafLy2VZhX0LW5cPID0oELB6SKRT0szadW0mbslI15NWTojrkiPYMyY6BRka/8QAGxEAAwEAAwEAAAAAAAAAAAAAAAEREAISITH/2gAIAQIBAT8ATOXmp6vVCMjO6sOLxfclGoxH/8QAGREAAwADAAAAAAAAAAAAAAAAAAEREiAw/9oACAEDAQE/AOFKjFyj3//EACwQAAIBAwMCBAYDAQAAAAAAAAECAwAEERIhMRNBBRQiUSMyYXGBoRBC8JH/2gAIAQEAAT8AaISxlT+KliMcoyCNJrw+8t7yFjpIdWOR9M7VmBtzHj7bd6UQ4GoHOO3vR8uf6HA718EFcJn1AnPt7UfLnOUNOLdnJ0ELp4Hc1OtswwFbkZ+1SCyKNpVw4Bxnuew/3tQFIKvLbqx61HqH7FWdw1hdrMBleGX3FJcpLCDGq6XGcjvXVXGOmOK1NkkRDSQNsbUJDnIg75ziuoUTBi/JHejMqs2IwQcbH/fWvMLqGuJSB3AGauFxJqAwGNY3pVxSir+10NqUelv1Xgt2Y38rIdm3Q+x9qFCV1GAdvtXXkHcf8p5WaMKcfemFOKmTUpH8AUBTxiRCjcGrjwxVKMk4R+TqPHG4qzkSa2DmZSw2Y8d8Zq4urSCBpmuEZFxnScnfiluLR30rdxdzuw4H5q/uUtrbrRusi6sFhuF+pxVrcdW2jeRMtIM5+X9U5iZVCatY+bPFSLU6vHOdJyG3ANLQFCvEjEsDO5wyjPHNTX0hLCMlEbYgHkVrc8sayQMVY+J3NkfhP6Sd1PBrw6/TxCDqKpUjZgexoinFXiZj1Dld6//+AAMA/9k=",
-      "contextInfo": {
-        "featureEligibilities": {
-          "canBeReshared": false
-        },
-        "statusSourceType": "IMAGE"
-      },
-      "firstScanSidecar": "MTRrlJdwdBBeLg==",
-      "firstScanLength": 4107,
-      "scansSidecar": "MTRrlJdwdBBeLnlltLwc8WjNECbIzdge5FG5JNUkUni0Hz1ynJWTtg==",
-      "scanLengths": [
-        4107,
-        14212,
-        6038,
-        11889
-      ],
-      "midQualityFileSha256": "WjjynUY49BlJ1dJezbsCd5f14r/VeHKMEPB8Qt8i20o=",
-      "imageSourceType": "USER_IMAGE"
-    },
-    "processed": true,
-    "received_at": "2025-08-10T20:02:55.445Z"
-  },
-  {
-    "id": "3A633776ADDAA8DC591A",
-    "from": "status@broadcast",
-    "timestamp": 1754856188,
-    "type": "text",
-    "body": "Netflix logs needed \ud83d\ude2a\ud83e\udd32",
-    "media": null,
-    "processed": true,
-    "received_at": "2025-08-10T20:03:08.354Z"
-  },
-  {
-    "id": "BDFB19B30D3509A09FC745682D279C9D",
-    "from": "status@broadcast",
-    "timestamp": {
-      "low": 1754856208,
-      "high": 0,
-      "unsigned": true
-    },
-    "type": "text",
-    "body": "See omo \ud83d\ude02tomorrow abeg see message wtf",
-    "media": null,
-    "processed": true,
-    "received_at": "2025-08-10T20:03:36.371Z"
-  },
-  {
     "id": "E274076CEB3925868AA5943C9E1DD946",
     "from": "status@broadcast",
     "timestamp": 1754856280,
@@ -2454,5 +2376,45 @@
     },
     "processed": true,
     "received_at": "2025-08-10T20:42:09.692Z"
+  },
+  {
+    "id": "435ED084997DB4343E021409CA6AD0AC",
+    "from": "status@broadcast",
+    "timestamp": 1754858584,
+    "type": "text",
+    "body": "*\u2728Protect your focus, secure your dreams. \u2705*",
+    "media": null,
+    "processed": true,
+    "received_at": "2025-08-10T20:43:04.665Z"
+  },
+  {
+    "id": "E5A657B7AA7AA76B42EF3A475FC0B9AC",
+    "from": "status@broadcast",
+    "timestamp": 1754858632,
+    "type": "text",
+    "body": "So Paul would say in 1 Corinthians that know ye not that you're the Temple of the Holy Spirit?\nYou've been bought with a price which wasn't gold nor silver but the Blood of the Lamb\nSuch that we're meant to Live, move and have our being in God because it's not us who lives in this body but Christ who lives and finds expression in us",
+    "media": null,
+    "processed": true,
+    "received_at": "2025-08-10T20:43:53.436Z"
+  },
+  {
+    "id": "86FB194DF697C0027D4320C314E92267",
+    "from": "status@broadcast",
+    "timestamp": 1754858635,
+    "type": "text",
+    "body": "====================\nSister!\nBrother!\n\nStop using the scriptures that \"The Violent taketh it by force...\" to justify your wrong approach to matters and your rude way of talking. That wasn't the context of the scriptures.\n\n*Do you realize that your Life is meant to be a Beacon of Change to that person?*\n\nSo ",
+    "media": null,
+    "processed": true,
+    "received_at": "2025-08-10T20:43:56.082Z"
+  },
+  {
+    "id": "A92482FB8B1B010E95FD8A10D5DC6FCA",
+    "from": "status@broadcast",
+    "timestamp": 1754858703,
+    "type": "text",
+    "body": "So Christ would say that the Devil came to me but He found nothing on me \nYou're telling me that being rude in speech, in the name of blunt, is who you are... How?\nDoes the Holy Spirit really resides in that Heart cos that's not how He functions in me",
+    "media": null,
+    "processed": true,
+    "received_at": "2025-08-10T20:45:03.704Z"
   }
 ]

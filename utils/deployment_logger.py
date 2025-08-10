@@ -80,7 +80,7 @@ class DeploymentLogger:
     def _check_environment_variables(self) -> Dict[str, Any]:
         """Check critical environment variables"""
         critical_vars = [
-            'DATABASE_URL', 'OPENAI_API_KEY', 'WHOOGLE_URL', 
+            'DATABASE_URL', 'WHOOGLE_URL', 
             'USE_STREAMING', 'STREAM_MODELS', 'MODEL_DOWNLOAD_ON_DEMAND',
             'WHOOGLE_INSTANCE_ACTIVE', 'LOW_MEMORY_MODE'
         ]
@@ -88,7 +88,7 @@ class DeploymentLogger:
         status = {}
         for var in critical_vars:
             value = os.getenv(var)
-            if var in ['DATABASE_URL', 'OPENAI_API_KEY']:
+            if var in ['DATABASE_URL']:
                 # Don't log sensitive values, just check presence
                 status[var] = "SET" if value else "NOT_SET"
             else:
@@ -127,7 +127,6 @@ class DeploymentLogger:
     def _check_network_connectivity(self) -> Dict[str, Any]:
         """Check network connectivity to key services"""
         urls_to_check = [
-            'https://api.openai.com',
             'https://huggingface.co',
             'https://search.benbusby.com',
             'https://whoogle.hectabit.co'

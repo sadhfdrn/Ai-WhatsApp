@@ -81,7 +81,6 @@ RUN pip install --no-cache-dir \
     speechrecognition \
     pillow \
     psutil \
-    openai \
     sqlalchemy \
     psycopg2-binary \
     alembic

@@ -12,9 +12,6 @@ This deployment guide includes comprehensive logging, health monitoring, databas
 # Database Configuration (Required for learning features)
 DATABASE_URL=postgresql://username:password@host:port/database
 
-# OpenAI API (Required for advanced AI responses)
-OPENAI_API_KEY=your_openai_api_key_here
-
 # WhatsApp Credentials (Required)
 WHATSAPP_PHONE_NUMBER=+1234567890
 WHATSAPP_SESSION_PATH=/app/wa-auth
@@ -22,6 +19,8 @@ WHATSAPP_SESSION_PATH=/app/wa-auth
 # Optional but Recommended
 GITHUB_TOKEN=your_github_token_for_personality_persistence
 ```
+
+**Note**: This bot streams AI models directly from Hugging Face and does not require OpenAI API keys or any external paid AI services.
 
 ### Optional Configuration Variables (Pre-configured in Dockerfile)
 
@@ -59,7 +58,6 @@ docker build -t whatsapp-ai-bot:latest .
 Create `.env.docker`:
 ```bash
 DATABASE_URL=postgresql://user:pass@db:5432/whatsapp_bot
-OPENAI_API_KEY=sk-your-key-here
 WHATSAPP_PHONE_NUMBER=+1234567890
 GITHUB_TOKEN=ghp_your_token_here
 ```
@@ -81,7 +79,6 @@ docker run -d \
 docker run -d \
   --name whatsapp-ai-bot \
   -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
-  -e OPENAI_API_KEY="sk-your-key-here" \
   -e WHATSAPP_PHONE_NUMBER="+1234567890" \
   -e GITHUB_TOKEN="ghp_your_token_here" \
   -p 8080:8080 \
@@ -120,7 +117,6 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: "postgresql://botuser:secure_password@postgres:5432/whatsapp_bot"
-      OPENAI_API_KEY: "sk-your-key-here"
       WHATSAPP_PHONE_NUMBER: "+1234567890"
       GITHUB_TOKEN: "ghp_your_token_here"
     ports:
@@ -240,6 +236,32 @@ curl http://localhost:8080/status | jq '.database_available'
 
 # View database stats from deployment report
 docker exec whatsapp-ai-bot cat /app/logs/deployment_report.json | jq '.deployment_info.environment_variables.DATABASE_URL'
+
+### AI Model Streaming Issues
+
+1. **Verify streaming is enabled:**
+```bash
+curl http://localhost:8080/status | jq '.ai_models_ready'
+```
+
+2. **Check Hugging Face connectivity:**
+```bash
+# Test connection to Hugging Face
+docker exec whatsapp-ai-bot python3 -c "
+import requests
+try:
+    resp = requests.get('https://huggingface.co', timeout=10)
+    print(f'✅ Hugging Face reachable: {resp.status_code}')
+except Exception as e:
+    print(f'❌ Hugging Face error: {e}')
+"
+```
+
+3. **Monitor model downloads:**
+```bash
+# View model initialization and streaming
+docker logs whatsapp-ai-bot | grep -E "(Model|Transform|Streaming)"
+```
 ```
 
 ## 🔍 Troubleshooting
@@ -333,9 +355,9 @@ docker logs whatsapp-ai-bot | grep "Model.*initialized.*took.*s"
 
 ## 📋 Deployment Checklist
 
-- [ ] Database URL configured and accessible
-- [ ] OpenAI API key set and valid
+- [ ] Database URL configured and accessible (optional for basic functionality)
 - [ ] WhatsApp credentials available
+- [ ] AI models streaming from Hugging Face (no API keys needed)
 - [ ] Health endpoints responding (`:8080/health`, `:8080/status`)
 - [ ] Deployment report generated (`/app/logs/deployment_report.json`)
 - [ ] Database connection timing logged

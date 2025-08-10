@@ -6,7 +6,8 @@ This AI-powered WhatsApp bot provides conversational AI, voice processing, web s
 ## User Preferences
 - Preferred communication style: Simple, everyday language
 - Security: wa-auth directory should be in gitignore to protect authentication data
-- AI Models: Prefer streaming over pre-downloading to reduce container size and startup time
+- AI Models: Stream models directly from Hugging Face - NO external API keys required (OpenAI, etc.)
+- AI Architecture: Self-hosted AI models using Transformers library with streaming download
 - Health Checks: Expose port for health monitoring in Docker deployments
 - Search: Keep Whoogle instance active for privacy-preserving web searches
 
