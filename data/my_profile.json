@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:17:54.415974Z",
+  "last_updated": "2025-08-10T20:19:11.828552Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -64,11 +64,12 @@
       "🏾": 0.2,
       "😮": 0.2,
       "💨": 0.2,
-      "🔥🔥🔥": 0.2
+      "🔥🔥🔥": 0.2,
+      "😭😭": 0.2
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.060554741920544136
+    "caps_usage_frequency": 0.06074926772848972
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -105,8 +106,8 @@
       "functions",
       "less",
       "cant",
-      "liam",
       "logs",
+      "liam",
       "needed",
       "post",
       "netflix",
@@ -159,8 +160,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 112,
-    "last_learning_session": "2025-08-10T20:17:54.415964Z",
+    "total_messages_analyzed": 113,
+    "last_learning_session": "2025-08-10T20:19:11.828544Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
