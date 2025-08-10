@@ -97,16 +97,14 @@ RUN mkdir -p model_cache \
 # Set permissions
 RUN chmod +x main.py whatsapp_bridge.js
 
-# Configure AI models for streaming (no pre-download)
-RUN python3 -c "
-import os
-os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'
-os.environ['HF_HOME'] = '/app/model_cache'
-
-print('🚀 AI models configured for streaming download on demand')
-print('Models will be downloaded and streamed efficiently during first use')
-print('This reduces container size and startup time significantly')
-"
+# Configure AI models for streaming (no pre-download) - FIXED
+RUN python3 -c "\
+import os; \
+os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'; \
+os.environ['HF_HOME'] = '/app/model_cache'; \
+print('🚀 AI models configured for streaming download on demand'); \
+print('Models will be downloaded and streamed efficiently during first use'); \
+print('This reduces container size and startup time significantly')"
 
 # Environment configuration for optimal AI performance
 ENV TRANSFORMERS_CACHE=/app/model_cache
@@ -142,24 +140,22 @@ EXPOSE 8080 3000
 
 # Enhanced health check with comprehensive monitoring
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD python3 -c "
-import requests
-import sys
-try:
-    # Check main health endpoint
-    resp = requests.get('http://localhost:8080/health', timeout=5)
-    if resp.status_code == 200:
-        print('✅ Health check passed')
-        sys.exit(0)
-    else:
-        print(f'❌ Health check failed: {resp.status_code}')
-        sys.exit(1)
-except Exception as e:
-    print(f'❌ Health check error: {e}')
-    sys.exit(1)
-" || exit 1
+    CMD python3 -c "\
+import requests; \
+import sys; \
+try: \
+    resp = requests.get('http://localhost:8080/health', timeout=5); \
+    if resp.status_code == 200: \
+        print('✅ Health check passed'); \
+        sys.exit(0); \
+    else: \
+        print(f'❌ Health check failed: {resp.status_code}'); \
+        sys.exit(1); \
+except Exception as e: \
+    print(f'❌ Health check error: {e}'); \
+    sys.exit(1)" || exit 1
 
-# Create startup script
+# Create startup script with proper escaping
 RUN cat > start.sh << 'EOF'
 #!/bin/bash
 set -e
