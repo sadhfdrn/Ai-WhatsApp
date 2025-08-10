@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:05:01.071679Z",
+  "last_updated": "2025-08-10T19:05:51.437364Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -52,7 +52,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.07272709832607152
+    "caps_usage_frequency": 0.08545438849346437
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -76,8 +76,8 @@
     "favorite_topics": [
       "touch",
       "craves",
-      "sunday",
       "prison",
+      "sunday",
       "full",
       "palmpay",
       "secretly",
@@ -114,6 +114,7 @@
       "risk",
       "https",
       "mode",
+      "great",
       "away",
       "screenshot",
       "arranging",
@@ -122,15 +123,15 @@
       "fast",
       "please",
       "black",
-      "possiblen",
-      "facebook"
+      "possiblen"
     ],
     "preferred_times": [],
     "mood_patterns": {
       "excited": "enthusiastic_responses",
       "casual": "relaxed_tone",
       "focused": "professional_language",
-      "questioning": "expressive"
+      "questioning": "expressive",
+      "positive": "expressive"
     },
     "response_triggers": {}
   },
@@ -141,8 +142,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 66,
-    "last_learning_session": "2025-08-10T19:05:01.071667Z",
+    "total_messages_analyzed": 67,
+    "last_learning_session": "2025-08-10T19:05:51.437356Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
