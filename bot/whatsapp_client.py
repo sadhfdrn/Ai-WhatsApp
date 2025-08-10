@@ -402,41 +402,41 @@ class WhatsAppClient:
     
     async def handle_help(self, sender: str, args: str, timestamp: str):
         """Show help information"""
-        help_text = """🤖 **AI Assistant Commands**
+        help_text = """**AI Assistant Commands**
 
-📝 **Basic Commands:**
+**Basic Commands:**
 • !help - Show this help message
 • !status - Bot status and features
 
-🔍 **Search & Information:**
+**Search & Information:**
 • !search <query> - Web search
 • !translate <text> - Translate text
 
-🎨 **Creative Features:**
+**Creative Features:**
 • !meme <top text>|<bottom text> - Generate meme
 • !joke - Tell a random joke  
 • !story <prompt> - Start a story
 • !ascii <text> - Generate ASCII art
 
-🎤 **Voice Features:**
+**Voice Features:**
 • !voice - Toggle voice responses
 • !autoreply - Toggle auto-reply mode
 
-📊 **Analysis:**
+**Analysis:**
 • !analyze - Analyze recent chat activity
 
-🧠 **Personality Learning (NEW):**
+**Personality Learning (NEW):**
 • !profile - View your personality learning profile
 • !learning - See detailed learning statistics
 
-**🚀 Special Features:**
+**Special Features:**
 • I learn your communication style automatically
 • Every message helps me understand you better
 • Your patterns are saved to GitHub repository
 • I mimic your phrases, emojis, and tone
 • Memory persists across bot restarts
 
-Just chat normally and I'll learn your unique style! 🎭"""
+Just chat normally and I'll learn your unique style!"""
 
         await self.send_message(sender, help_text, add_ai_icon=True)
     
