@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:51.901793Z",
+  "last_updated": "2025-08-10T20:34:52.067972Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -69,13 +69,13 @@
       "🔥🔥🔥": 0.2,
       "😭😭": 0.2,
       "👀": 0.2,
-      "📍": 0.2,
+      "📍": 0.36000000000000004,
       "🙇": 0.2,
       "♂️": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.06012153349135146
+    "caps_usage_frequency": 0.09019960570612609
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -120,6 +120,7 @@
       "question",
       "cant",
       "everything",
+      "oneself",
       "doubt",
       "towards",
       "started",
@@ -145,8 +146,7 @@
       "know",
       "cooking",
       "makes",
-      "what",
-      "actually"
+      "what"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -166,8 +166,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 133,
-    "last_learning_session": "2025-08-10T20:34:51.901786Z",
+    "total_messages_analyzed": 134,
+    "last_learning_session": "2025-08-10T20:34:52.067966Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
