@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:22.429167Z",
+  "last_updated": "2025-08-10T10:05:22.536922Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -46,7 +46,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.08439738181064574
+    "caps_usage_frequency": 0.0792909769629145
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -79,14 +79,15 @@
       "kindly",
       "away",
       "forex",
+      "includes",
       "fast",
       "rich",
       "yeah",
       "below",
       "present",
       "fams",
-      "test",
       "delete",
+      "test",
       "adekoya",
       "palmpay",
       "risk",
@@ -116,8 +117,7 @@
       "suis",
       "after",
       "account",
-      "requests",
-      "humeur"
+      "requests"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -135,8 +135,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 53,
-    "last_learning_session": "2025-08-10T10:05:22.429158Z",
+    "total_messages_analyzed": 54,
+    "last_learning_session": "2025-08-10T10:05:22.536917Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
