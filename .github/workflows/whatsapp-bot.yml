@@ -1,0 +1,162 @@
+name: WhatsApp AI Bot with Personality Persistence
+
+on:
+  workflow_dispatch:
+
+env:
+  branchName: main
+
+jobs:
+  loop-task:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "WhatsApp AI Bot"
+          git config --global user.email "bot@github.com"
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install python-dotenv requests beautifulsoup4 gtts pillow pydub speechrecognition trafilatura psutil openai
+
+      - name: Install Node.js Dependencies
+        run: |
+          npm install @whiskeysockets/baileys @hapi/boom
+
+      - name: Load existing personality data
+        run: |
+          echo "Loading personality profile from repository..."
+          mkdir -p data
+          ls -la data/ || echo "No existing data directory found, will create new profiles"
+          if [ -f "data/my_profile.json" ]; then
+            echo "Found existing personality profile"
+            cat data/my_profile.json | head -20
+          else
+            echo "No existing personality profile found"
+          fi
+
+      - name: Create .env from secrets
+        run: |
+          echo "Creating environment configuration..."
+          touch .env
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> .env
+          
+          # Add other environment variables from secrets if they exist
+          if [ -n "${{ secrets.WHATSAPP_CREDS }}" ]; then
+            echo "WHATSAPP_CREDS=${{ secrets.WHATSAPP_CREDS }}" >> .env
+          fi
+          
+          if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          fi
+          
+          # Bot configuration
+          echo "BOT_NAME=AI Assistant 🤖" >> .env
+          echo "BOT_PREFIX=!" >> .env
+          echo "AI_MODEL=microsoft/DialoGPT-small" >> .env
+          echo "MAX_RESPONSE_LENGTH=500" >> .env
+          echo "TEMPERATURE=0.8" >> .env
+          echo "USE_STREAMING=true" >> .env
+          echo "TTS_LANGUAGE=en" >> .env
+          echo "VOICE_ENABLED=true" >> .env
+          echo "VOICE_SPEED=1.0" >> .env
+          echo "WHOOGLE_URL=https://search.benbusby.com" >> .env
+          echo "SEARCH_ENABLED=true" >> .env
+          echo "MAX_SEARCH_RESULTS=5" >> .env
+          echo "AUTO_REPLY_ENABLED=false" >> .env
+          echo "AUTO_REPLY_DELAY_MIN=5" >> .env
+          echo "AUTO_REPLY_DELAY_MAX=15" >> .env
+          echo "PERSONALITY_MODE=humorous" >> .env
+          echo "JOKE_FREQUENCY=0.3" >> .env
+          echo "PROACTIVE_MESSAGING=false" >> .env
+          echo "MEME_GENERATION=true" >> .env
+          echo "ASCII_ART=true" >> .env
+          echo "TRANSLATION=true" >> .env
+          echo "CHAT_ANALYSIS=true" >> .env
+          echo "WORKFLOW_TIMEOUT=18000" >> .env
+          echo "LOW_MEMORY_MODE=true" >> .env
+          echo "CACHE_SIZE=100" >> .env
+          
+          echo "✅ Environment configuration created"
+
+      - name: Run Bot with Personality Learning (loop & auto-restart if crash)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🤖 Starting WhatsApp AI Bot with Personality Persistence..."
+          echo "Bot will automatically learn and save communication patterns to repository"
+          echo "Profile data will persist across workflow restarts"
+          
+          # Run bot with auto-restart and timeout
+          timeout 18000 bash -c 'while true; do 
+            echo "=== Starting Bot Instance at $(date) ==="
+            python main.py || echo "Bot crashed at $(date), restarting in 5 seconds..."
+            echo "=== Bot instance ended at $(date) ==="
+            sleep 5
+          done' || echo "Bot session completed after 5 hours"
+
+      - name: Final Profile Save
+        if: always()
+        run: |
+          echo "💾 Performing final profile save..."
+          ls -la data/ || echo "No data directory found"
+          
+          if [ -f "data/my_profile.json" ]; then
+            echo "📊 Final personality profile stats:"
+            python -c "
+import json
+try:
+    with open('data/my_profile.json', 'r') as f:
+        profile = json.load(f)
+    metadata = profile.get('learning_metadata', {})
+    print(f'Messages analyzed: {metadata.get(\"total_messages_analyzed\", 0)}')
+    print(f'Confidence score: {metadata.get(\"confidence_score\", 0):.2f}')
+    print(f'Pattern reliability: {metadata.get(\"pattern_reliability\", \"unknown\")}')
+    print(f'Last updated: {profile.get(\"last_updated\", \"never\")}')
+    
+    phrases = profile.get('communication_style', {}).get('common_phrases', {})
+    print(f'Common phrases learned: {len(phrases)}')
+    
+    emojis = profile.get('communication_style', {}).get('emoji_usage', {})
+    print(f'Emoji patterns learned: {len(emojis)}')
+except Exception as e:
+    print(f'Error reading profile: {e}')
+            "
+          fi
+          
+          # Commit any final changes
+          git add -A
+          git diff --cached --quiet || (
+            git commit -m "Final personality profile save - $(date)"
+            git push origin $branchName || echo "Push failed, but data is committed locally"
+          )
+
+      - name: Re-Trigger Workflow
+        if: always()
+        run: |
+          echo "🔄 Re-triggering workflow for continuous operation..."
+          sleep 10  # Brief pause before restart
+          
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/whatsapp-bot.yml/dispatches \
+            -d '{"ref":"${{ env.branchName }}"}' || echo "Failed to trigger workflow restart"

@@ -16,6 +16,9 @@ from bot.voice_cloning import VoiceCloningEngine
 from bot.web_search import WebSearchHandler
 from bot.meme_generator import MemeGenerator
 from bot.auto_reply import AutoReplyManager
+from bot.github_profile_manager import GitHubProfileManager
+from bot.personality_learner import PersonalityLearner
+from bot.style_mimicker import StyleMimicker
 from utils.helpers import sanitize_text, format_timestamp
 
 logger = logging.getLogger(__name__)
@@ -40,6 +43,18 @@ class WhatsAppClient:
         self.meme_generator = MemeGenerator(config) if config.MEME_GENERATION else None
         self.auto_reply = AutoReplyManager(config)
         
+        # Initialize personality learning system
+        self.profile_manager = GitHubProfileManager()
+        self.personality_learner = PersonalityLearner(self.profile_manager)
+        
+        # Load user profile and initialize style mimicker
+        user_profile = self.profile_manager.load_profile()
+        self.style_mimicker = StyleMimicker(user_profile)
+        
+        # Update AI processor with learned personality
+        if hasattr(self.ai_processor, 'set_user_profile'):
+            self.ai_processor.set_user_profile(user_profile)
+        
         # Message handlers
         self.message_handlers = {}
         self.setup_message_handlers()
@@ -48,7 +63,7 @@ class WhatsAppClient:
         self.user_sessions = {}
         self.active_conversations = set()
         
-        logger.info("🚀 WhatsApp client initialized")
+        logger.info("🚀 WhatsApp client initialized with personality learning system")
     
     def setup_message_handlers(self):
         """Setup command handlers"""
@@ -63,7 +78,9 @@ class WhatsAppClient:
             'translate': self.handle_translation,
             'ascii': self.handle_ascii_art,
             'analyze': self.handle_chat_analysis,
-            'status': self.handle_status
+            'status': self.handle_status,
+            'profile': self.handle_profile_status,
+            'learning': self.handle_learning_stats
         }
     
     async def connect(self):
@@ -222,9 +239,17 @@ class WhatsAppClient:
             logger.error(f"❌ Error handling message: {e}")
     
     async def process_text_message(self, sender: str, message: str, timestamp: str):
-        """Process text message and generate response"""
+        """Process text message and generate response with personality learning"""
         try:
             logger.info(f"🔄 Processing text message from {sender}: {message}")
+            
+            # Learn from user's message patterns (only for main user, not from own responses)
+            if not message.startswith(self.config.BOT_PREFIX) and sender != 'bot':
+                await self.personality_learner.learn_from_user_message(
+                    message, 
+                    {'sender': sender, 'timestamp': timestamp}
+                )
+                logger.info("🧠 Learned patterns from user message")
             
             # Check if it's a command
             if message.startswith(self.config.BOT_PREFIX):
@@ -241,11 +266,17 @@ class WhatsAppClient:
                 self.get_user_context(sender)
             )
             
-            logger.info(f"💬 Generated response: {response[:100]}...")
+            # Apply learned user style to response
+            styled_response = self.style_mimicker.apply_user_style(
+                response, 
+                {'topic': self.extract_topic(message), 'sender': sender}
+            )
+            
+            logger.info(f"💬 Generated styled response: {styled_response[:100]}...")
             
             # Send response
             logger.info(f"📤 Sending response to {sender}...")
-            await self.send_message(sender, response, add_ai_icon=True)
+            await self.send_message(sender, styled_response, add_ai_icon=True)
             logger.info("✅ Response sent successfully")
             
             # Handle auto-reply if enabled
@@ -256,9 +287,11 @@ class WhatsAppClient:
                         sender, message, self.get_user_context(sender), self.ai_processor
                     )
                     if auto_response:
+                        # Apply learned style to auto-reply too
+                        styled_auto_response = self.style_mimicker.apply_user_style(auto_response)
                         delay = await self.auto_reply.get_auto_reply_delay(sender)
                         await asyncio.sleep(delay)
-                        await self.send_message(sender, auto_response, add_ai_icon=True)
+                        await self.send_message(sender, styled_auto_response, add_ai_icon=True)
             
         except Exception as e:
             logger.error(f"❌ Error processing text message: {e}")
@@ -342,7 +375,18 @@ class WhatsAppClient:
 📊 **Analysis:**
 • !analyze - Analyze recent chat activity
 
-Just chat normally and I'll respond with my personality! 😄"""
+🧠 **Personality Learning (NEW):**
+• !profile - View your personality learning profile
+• !learning - See detailed learning statistics
+
+**🚀 Special Features:**
+• I learn your communication style automatically
+• Every message helps me understand you better
+• Your patterns are saved to GitHub repository
+• I mimic your phrases, emojis, and tone
+• Memory persists across bot restarts
+
+Just chat normally and I'll learn your unique style! 🎭"""
 
         await self.send_message(sender, help_text, add_ai_icon=True)
     
@@ -727,3 +771,128 @@ Keep the conversation going for more detailed analysis!"""
             
         except Exception as e:
             logger.error(f"❌ Error during disconnect: {e}")
+    
+    def extract_topic(self, message: str) -> Optional[str]:
+        """Extract topic from message for contextual styling"""
+        try:
+            # Simple topic extraction based on keywords
+            message_lower = message.lower()
+            
+            if any(word in message_lower for word in ['code', 'programming', 'python', 'javascript', 'api']):
+                return 'technology'
+            elif any(word in message_lower for word in ['funny', 'joke', 'lol', 'haha', 'meme']):
+                return 'humor'
+            elif any(word in message_lower for word in ['help', 'problem', 'issue', 'error']):
+                return 'support'
+            elif any(word in message_lower for word in ['project', 'work', 'business', 'task']):
+                return 'work'
+            else:
+                return 'general'
+        except Exception:
+            return 'general'
+    
+    async def update_style_mimicker_profile(self):
+        """Update style mimicker with latest learned profile"""
+        try:
+            current_profile = self.profile_manager.load_profile()
+            self.style_mimicker.update_profile(current_profile)
+            logger.info("🔄 Style mimicker updated with latest profile")
+        except Exception as e:
+            logger.error(f"❌ Failed to update style mimicker: {e}")
+    
+    async def save_personality_data(self):
+        """Save all personality learning data"""
+        try:
+            await self.personality_learner.save_learned_data()
+            await self.update_style_mimicker_profile()
+            logger.info("💾 Personality data saved successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to save personality data: {e}")
+    
+    def get_learning_stats(self) -> Dict[str, Any]:
+        """Get personality learning statistics"""
+        try:
+            stats = self.personality_learner.get_learning_summary()
+            profile_stats = self.profile_manager.get_profile_stats()
+            
+            return {
+                'learning_progress': stats,
+                'profile_stats': profile_stats,
+                'style_mimicker_active': self.style_mimicker is not None
+            }
+        except Exception as e:
+            logger.error(f"❌ Failed to get learning stats: {e}")
+            return {}
+    
+    async def handle_profile_status(self, sender: str, args: str, timestamp: str):
+        """Show personality profile learning status"""
+        try:
+            stats = self.get_learning_stats()
+            profile_stats = stats.get('profile_stats', {})
+            learning_progress = stats.get('learning_progress', {})
+            
+            profile_text = f"""🧠 **Personality Learning Profile**
+
+📊 **Learning Progress:**
+• Messages analyzed: {learning_progress.get('messages_analyzed', 0)}
+• Interactions processed: {learning_progress.get('total_interactions', 0)}
+• Confidence score: {learning_progress.get('confidence_score', 0.0):.2f}/1.0
+• Pattern reliability: {learning_progress.get('reliability', 'Unknown')}
+
+🎭 **Style Patterns Learned:**
+• Common phrases: {learning_progress.get('phrases_learned', 0)}
+• Emoji patterns: {learning_progress.get('emojis_learned', 0)}
+• Topics discovered: {learning_progress.get('topics_discovered', 0)}
+
+📈 **Profile Statistics:**
+• Profile age: {profile_stats.get('profile_age_days', 0)} days
+• Last updated: {profile_stats.get('last_updated', 'Never')[:19]}
+• Learning status: {'Active' if stats.get('style_mimicker_active') else 'Inactive'}
+
+🔄 All patterns are automatically saved to GitHub repository for persistence!"""
+
+            await self.send_message(sender, profile_text, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Profile status error: {e}")
+            await self.send_message(sender, "❌ Unable to retrieve profile status")
+    
+    async def handle_learning_stats(self, sender: str, args: str, timestamp: str):
+        """Show detailed learning statistics"""
+        try:
+            # Get current profile data
+            current_profile = self.profile_manager.load_profile()
+            communication_style = current_profile.get('communication_style', {})
+            
+            # Top phrases and emojis
+            phrases = communication_style.get('common_phrases', {})
+            emojis = communication_style.get('emoji_usage', {})
+            
+            top_phrases = sorted(phrases.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_emojis = sorted(emojis.items(), key=lambda x: x[1], reverse=True)[:5]
+            
+            learning_text = f"""📚 **Detailed Learning Analysis**
+
+🗣️ **Your Top Phrases:**
+{chr(10).join([f'• "{phrase}": used {count:.1f} times' for phrase, count in top_phrases]) if top_phrases else '• Still learning your phrases...'}
+
+😊 **Your Top Emojis:**
+{chr(10).join([f'• {emoji}: used {count:.1f} times' for emoji, count in top_emojis]) if top_emojis else '• Still learning your emoji style...'}
+
+🎯 **Communication Style:**
+• Response length: {communication_style.get('response_length_preference', 'medium')}
+• Caps usage: {communication_style.get('caps_usage_frequency', 0.1)*100:.1f}%
+• Punctuation style: {communication_style.get('punctuation_style', 'standard')}
+
+💫 **Personality Traits:**
+• Greeting style: {current_profile.get('learned_patterns', {}).get('greeting_style', 'casual')}
+• Excitement level: Dynamic based on context
+• Topic interests: {len(current_profile.get('conversation_context', {}).get('favorite_topics', []))} topics discovered
+
+The more we chat, the better I learn your unique style! 🚀"""
+
+            await self.send_message(sender, learning_text, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Learning stats error: {e}")
+            await self.send_message(sender, "❌ Unable to retrieve learning statistics")
