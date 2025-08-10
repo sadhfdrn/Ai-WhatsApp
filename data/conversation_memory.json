@@ -1,10 +1,10 @@
 {
-  "last_updated": "2025-08-10T20:34:53.363702Z",
+  "last_updated": "2025-08-10T20:34:53.474317Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:53.304051Z",
-      "message": "I'm fully active 😭",
+      "timestamp": "2025-08-10T20:34:53.415920Z",
+      "message": "So wassup with you",
       "patterns": {
         "length": 18,
         "word_count": 4,
@@ -12,9 +12,7 @@
         "exclamation_count": 0,
         "question_count": 0,
         "caps_ratio": 0.05555555555555555,
-        "emoji_usage": {
-          "😭": 1
-        },
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
@@ -32,19 +30,18 @@
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
-          "quotation_usage": true
+          "quotation_usage": false
         },
         "topic_keywords": [
-          "fully",
-          "active"
+          "wassup"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:29:11"
+        "sender": "2349113085799@s.whatsapp.net",
+        "timestamp": "2025-08-10T20:30:57"
       }
     }
   ]
