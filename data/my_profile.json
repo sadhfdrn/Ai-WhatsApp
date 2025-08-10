@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:04:24.930152Z",
+  "last_updated": "2025-08-10T20:09:05.806508Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -44,7 +44,7 @@
       "✅": 0.2,
       "💯": 0.2,
       "⚜️": 0.2,
-      "😌": 0.2,
+      "😌": 0.36000000000000004,
       "🔞": 0.4,
       "😩🍆": 0.2,
       "👀🍑": 0.2,
@@ -60,11 +60,12 @@
       "♀️": 0.6000000000000001,
       "💙🔥✊️": 0.2,
       "😂": 0.52,
-      "😪": 0.36000000000000004
+      "😪": 0.36000000000000004,
+      "🏾": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.07835667745977137
+    "caps_usage_frequency": 0.07216035397608932
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -98,10 +99,12 @@
       "cole",
       "functions",
       "cant",
-      "liam",
       "logs",
+      "liam",
       "needed",
+      "post",
       "netflix",
+      "secret",
       "abeokuta",
       "minutes",
       "choke",
@@ -114,8 +117,10 @@
       "imagine",
       "tomorrow",
       "abeg",
+      "relationship",
       "make",
       "simons",
+      "cult",
       "test",
       "anymore",
       "just",
@@ -131,11 +136,7 @@
       "every",
       "head",
       "menu",
-      "strengthens",
-      "dollars",
-      "aren",
-      "more",
-      "base"
+      "strengthens"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -155,8 +156,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 108,
-    "last_learning_session": "2025-08-10T20:04:24.930141Z",
+    "total_messages_analyzed": 109,
+    "last_learning_session": "2025-08-10T20:09:05.806498Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
