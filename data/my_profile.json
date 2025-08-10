@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:50.571630Z",
+  "last_updated": "2025-08-10T20:34:50.700778Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -70,9 +70,9 @@
       "😭😭": 0.2,
       "👀": 0.2
     },
-    "response_length_preference": "medium",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.04163504617215975
+    "caps_usage_frequency": 0.04062469470809693
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -100,6 +100,7 @@
       "movie",
       "tomorrow",
       "without",
+      "bible",
       "chelsea",
       "exams",
       "exactly",
@@ -111,12 +112,17 @@
       "question",
       "cant",
       "doubt",
+      "maturity",
       "people",
       "forget",
       "someone",
       "abeg",
       "talent",
       "insights",
+      "started",
+      "towards",
+      "answer",
+      "bringing",
       "funny",
       "surviving",
       "come",
@@ -132,18 +138,12 @@
       "actually",
       "shinkini",
       "imagine",
+      "give",
       "pedro",
       "interesting",
+      "christ",
       "thoughts",
-      "palmer",
-      "cult",
-      "money",
-      "message",
-      "specific",
-      "smartcontract",
-      "every",
-      "matchday",
-      "football"
+      "something"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -163,8 +163,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 126,
-    "last_learning_session": "2025-08-10T20:34:50.571622Z",
+    "total_messages_analyzed": 127,
+    "last_learning_session": "2025-08-10T20:34:50.700771Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
