@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:43:53.502917Z",
+  "last_updated": "2025-08-10T20:43:56.683294Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -84,7 +84,7 @@
     },
     "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.0801931929214184
+    "caps_usage_frequency": 0.07574530220070513
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -106,6 +106,7 @@
   },
   "conversation_context": {
     "favorite_topics": [
+      "force",
       "bought",
       "lives",
       "towards",
@@ -117,6 +118,7 @@
       "delap",
       "test",
       "live",
+      "context",
       "fascinates",
       "movie",
       "general",
@@ -124,6 +126,8 @@
       "because",
       "maturity",
       "everything",
+      "sister",
+      "person",
       "chelsea",
       "what",
       "message",
@@ -132,30 +136,26 @@
       "christ",
       "which",
       "cooking",
+      "stop",
+      "beacon",
       "secure",
       "finds",
       "chosen",
       "else",
       "awaken",
+      "matters",
       "question",
       "meant",
       "about",
+      "change",
+      "wrong",
       "want",
       "like",
       "lord",
       "silver",
       "know",
       "come",
-      "hypocrisy",
-      "primarily",
-      "started",
-      "gold",
-      "spirit",
-      "such",
-      "expression",
-      "unkind",
-      "bible",
-      "without"
+      "hypocrisy"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -175,8 +175,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 150,
-    "last_learning_session": "2025-08-10T20:43:53.502906Z",
+    "total_messages_analyzed": 151,
+    "last_learning_session": "2025-08-10T20:43:56.683282Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
