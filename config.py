@@ -20,10 +20,36 @@ class Config:
         self.BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
         
         # AI Model Configuration
-        self.AI_MODEL = os.getenv("AI_MODEL", "microsoft/DialoGPT-small")
+        self.AI_MODELS = {
+            # Core conversation (300MB)
+            "main_chat": "microsoft/DialoGPT-small",
+            
+            # Text generation & tasks (300MB) 
+            "text_generation": "google/flan-t5-small",
+            
+            # Translation - covers 100+ languages (300MB)
+            "translation": "Helsinki-NLP/opus-mt-en-mul",
+            
+            # Sentiment & emotion detection (500MB)
+            "sentiment": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+            
+            # Text embeddings for similarity (80MB)
+            "embeddings": "sentence-transformers/all-MiniLM-L6-v2"
+        }
+        
+        self.AI_MODEL = os.getenv("AI_MODEL", self.AI_MODELS["main_chat"])
         self.MAX_RESPONSE_LENGTH = int(os.getenv("MAX_RESPONSE_LENGTH", "500"))
         self.TEMPERATURE = float(os.getenv("TEMPERATURE", "0.8"))
         self.USE_STREAMING = os.getenv("USE_STREAMING", "true").lower() == "true"
+        
+        # Timezone Configuration
+        self.TIMEZONE = os.getenv("TIMEZONE", "Africa/Lagos")
+        self.LOCALE = os.getenv("LOCALE", "en_NG")
+        
+        # Language Detection and Translation
+        self.AUTO_TRANSLATE = os.getenv("AUTO_TRANSLATE", "true").lower() == "true"
+        self.TARGET_LANGUAGE = os.getenv("TARGET_LANGUAGE", "en")
+        self.SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "ja", "ko", "zh", "ar", "hi", "yo", "ig", "ha"]
         
         # Voice Configuration
         self.TTS_LANGUAGE = os.getenv("TTS_LANGUAGE", "en")

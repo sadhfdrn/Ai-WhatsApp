@@ -11,7 +11,7 @@ import tempfile
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 
-from enhanced_ai_processor import EnhancedAIProcessor
+from bot.enhanced_ai_system import EnhancedAISystem
 from bot.voice_cloning import VoiceCloningEngine
 from bot.web_search import WebSearchHandler
 from bot.meme_generator import MemeGenerator
@@ -33,7 +33,7 @@ class WhatsAppClient:
         self.max_reconnect_attempts = 5
         
         # Initialize AI components with enhanced model management
-        self.ai_processor = EnhancedAIProcessor(config)
+        self.ai_processor = EnhancedAISystem(config)
         self.voice_handler = VoiceCloningEngine(config) if config.VOICE_ENABLED else None
         
         # Share model manager between components
@@ -84,7 +84,10 @@ class WhatsAppClient:
             'analyze': self.handle_chat_analysis,
             'status': self.handle_status,
             'profile': self.handle_profile_status,
-            'learning': self.handle_learning_stats
+            'learning': self.handle_learning_stats,
+            'time': self.handle_time_request,
+            'weather': self.handle_weather_request,
+            'timezone': self.handle_timezone_change
         }
     
     async def connect(self):
@@ -92,9 +95,8 @@ class WhatsAppClient:
         try:
             logger.info("🔌 Starting WhatsApp Web connection...")
             
-            # Initialize AI models with smart management
-            logger.info("🧠 Initializing AI models...")
-            await self.ai_processor.initialize_model()
+            # AI models are automatically initialized in the EnhancedAISystem constructor
+            logger.info("🧠 AI models ready")
             
             # Initialize voice AI models if enabled
             if self.voice_handler and hasattr(self.voice_handler, 'initialize_ai_models'):
@@ -285,12 +287,11 @@ class WhatsAppClient:
             
             logger.info("🤖 Generating AI response...")
             
-            # Generate AI response
-            response = await self.ai_processor.generate_response(
-                message, 
-                sender,
-                self.get_user_context(sender)
-            )
+            # Generate AI response using enhanced AI system
+            if hasattr(self.ai_processor, 'process_message_with_search'):
+                response = await self.ai_processor.process_message_with_search(message, sender)
+            else:
+                response = self.ai_processor.generate_response(message, sender, self.get_user_context(sender))
             
             # Ensure we have a valid response
             if not response:
@@ -411,6 +412,9 @@ class WhatsAppClient:
 **Search & Information:**
 • !search <query> - Web search
 • !translate <text> - Translate text
+• !time [timezone] - Get current time
+• !timezone <zone> - Change timezone
+• !weather [location] - Get weather info
 
 **Creative Features:**
 • !meme <top text>|<bottom text> - Generate meme
@@ -428,6 +432,14 @@ class WhatsAppClient:
 **Personality Learning (NEW):**
 • !profile - View your personality learning profile
 • !learning - See detailed learning statistics
+
+**Enhanced Features:**
+• Enhanced AI models (DialoGPT, FLAN-T5)
+• Multi-language translation support
+• Web search with real-time results
+• Timezone-aware responses
+• Self-chat message filtering
+• Automatic translation for group chats
 
 **Special Features:**
 • I learn your communication style automatically
@@ -944,3 +956,98 @@ The more we chat, the better I learn your unique style! 🚀"""
         except Exception as e:
             logger.error(f"❌ Learning stats error: {e}")
             await self.send_message(sender, "❌ Unable to retrieve learning statistics")
+    
+    async def handle_time_request(self, sender: str, args: str, timestamp: str):
+        """Handle time request with timezone support"""
+        try:
+            if args.strip():
+                # User specified a timezone
+                time_str = self.ai_processor.get_current_time(args.strip())
+                response = f"🕐 Current time in {args.strip()}: {time_str}"
+            else:
+                # Use default timezone
+                time_str = self.ai_processor.get_current_time()
+                response = f"🕐 Current time: {time_str}"
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Time request error: {e}")
+            response = "❌ Couldn't get time information. Try: !time or !time America/New_York"
+            await self.send_message(sender, response, add_ai_icon=True)
+    
+    async def handle_weather_request(self, sender: str, args: str, timestamp: str):
+        """Handle weather request (with search integration)"""
+        try:
+            location = args.strip() if args.strip() else "Lagos, Nigeria"
+            search_query = f"weather in {location} today current temperature"
+            
+            await self.send_message(sender, f"🌤️ Getting weather for {location}...")
+            
+            # Use the enhanced AI system's search capability
+            if hasattr(self.ai_processor, 'search_web'):
+                results = await self.ai_processor.search_web(search_query, max_results=2)
+                
+                if results:
+                    response = f"🌤️ **Weather for {location}:**\n\n"
+                    for result in results[:2]:
+                        response += f"• {result.get('snippet', 'No weather data')}\n"
+                        if result.get('url'):
+                            response += f"🔗 {result['url']}\n\n"
+                else:
+                    response = f"😔 Couldn't get weather for {location}. Try searching 'weather {location}' manually."
+            else:
+                response = f"🌤️ For current weather in {location}, try searching 'weather {location}' online."
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Weather request error: {e}")
+            await self.send_message(sender, "❌ Weather service temporarily unavailable")
+    
+    async def handle_timezone_change(self, sender: str, args: str, timestamp: str):
+        """Handle timezone change request"""
+        try:
+            if not args.strip():
+                response = """🕐 **Timezone Help**
+                
+Current timezone: Africa/Lagos
+
+To change timezone, use:
+• !timezone America/New_York
+• !timezone Europe/London
+• !timezone Asia/Tokyo
+• !timezone Australia/Sydney
+
+Format: Continent/City"""
+                await self.send_message(sender, response, add_ai_icon=True)
+                return
+            
+            new_timezone = args.strip()
+            
+            # Test if timezone is valid
+            test_time = self.ai_processor.get_current_time(new_timezone)
+            
+            if "error" not in test_time.lower():
+                response = f"""✅ Timezone updated to: {new_timezone}
+                
+🕐 Current time: {test_time}
+
+Note: This change is temporary for this session. To make it permanent, update your .env file."""
+                
+                # Update config for this session
+                self.config.TIMEZONE = new_timezone
+                if hasattr(self.ai_processor, 'timezone'):
+                    try:
+                        import pytz
+                        self.ai_processor.timezone = pytz.timezone(new_timezone)
+                    except:
+                        pass
+            else:
+                response = f"❌ Invalid timezone: {new_timezone}\n\nUse format like: America/New_York, Europe/London, etc."
+            
+            await self.send_message(sender, response, add_ai_icon=True)
+            
+        except Exception as e:
+            logger.error(f"❌ Timezone change error: {e}")
+            await self.send_message(sender, "❌ Couldn't change timezone. Try: !timezone America/New_York")

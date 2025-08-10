@@ -235,8 +235,16 @@ class WhatsAppBridge {
             
             let messages = [];
             if (fs.existsSync(messageFile)) {
-                const data = fs.readFileSync(messageFile, 'utf8');
-                messages = JSON.parse(data || '[]');
+                try {
+                    const data = fs.readFileSync(messageFile, 'utf8');
+                    messages = JSON.parse(data || '[]');
+                } catch (error) {
+                    console.error('❌ JSON parse error, reinitializing messages file:', error.message);
+                    messages = [];
+                    // Backup corrupted file
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    fs.writeFileSync(`${messageFile}.corrupt.${timestamp}`, fs.readFileSync(messageFile));
+                }
             }
             
             messages.push({
