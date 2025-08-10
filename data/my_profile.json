@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:20.472567Z",
+  "last_updated": "2025-08-10T10:05:20.616967Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -37,9 +37,9 @@
       "💀👀": 0.2,
       "🙏🙏🙏": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.16419132802597697
+    "caps_usage_frequency": 0.15447610583790441
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -68,8 +68,8 @@
       "forex",
       "gloo",
       "present",
-      "test",
       "delete",
+      "test",
       "channel",
       "azin",
       "holiness",
@@ -80,8 +80,10 @@
       "edit",
       "forever",
       "always",
+      "deuteronomy",
       "polls",
       "sunday",
+      "blessing",
       "facebook",
       "trading",
       "alhamdulillah",
@@ -93,24 +95,22 @@
       "guys",
       "afmweca",
       "morning",
+      "bless",
       "servants",
+      "lord",
       "past",
+      "barns",
       "being",
       "using",
       "issue",
       "services",
+      "land",
       "message",
       "made",
       "share",
       "manage",
       "happy",
-      "only",
-      "important",
-      "jesus",
-      "fruit",
-      "deployments",
-      "romans",
-      "messages"
+      "only"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -127,8 +127,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 37,
-    "last_learning_session": "2025-08-10T10:05:20.472559Z",
+    "total_messages_analyzed": 38,
+    "last_learning_session": "2025-08-10T10:05:20.616959Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
