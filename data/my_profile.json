@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:14:52.610860Z",
+  "last_updated": "2025-08-10T19:15:02.726191Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -53,7 +53,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.13599532022805083
+    "caps_usage_frequency": 0.12980319561265316
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -87,8 +87,8 @@
       "olumo",
       "prison",
       "touch",
-      "craves",
       "abeokuta",
+      "craves",
       "check",
       "sunday",
       "risk",
@@ -97,6 +97,7 @@
       "test",
       "errors",
       "after",
+      "what",
       "open",
       "body",
       "yourself",
@@ -110,6 +111,7 @@
       "collected",
       "zssggxfon",
       "from",
+      "time",
       "work",
       "full",
       "chat",
@@ -122,9 +124,7 @@
       "someone",
       "intelligence",
       "clips",
-      "present",
-      "fams",
-      "there"
+      "present"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -144,8 +144,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 75,
-    "last_learning_session": "2025-08-10T19:14:52.610852Z",
+    "total_messages_analyzed": 76,
+    "last_learning_session": "2025-08-10T19:15:02.726183Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
