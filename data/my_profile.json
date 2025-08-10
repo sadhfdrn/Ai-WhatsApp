@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:10:23.761270Z",
+  "last_updated": "2025-08-10T20:17:54.415974Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -63,11 +63,12 @@
       "😪": 0.36000000000000004,
       "🏾": 0.2,
       "😮": 0.2,
-      "💨": 0.2
+      "💨": 0.2,
+      "🔥🔥🔥": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.061992041287377085
+    "caps_usage_frequency": 0.060554741920544136
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -104,8 +105,8 @@
       "functions",
       "less",
       "cant",
-      "logs",
       "liam",
+      "logs",
       "needed",
       "post",
       "netflix",
@@ -123,6 +124,7 @@
       "tomorrow",
       "abeg",
       "movie",
+      "already",
       "relationship",
       "make",
       "simons",
@@ -137,8 +139,7 @@
       "message",
       "xavi",
       "carry",
-      "based",
-      "fear"
+      "based"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -158,8 +159,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 111,
-    "last_learning_session": "2025-08-10T20:10:23.761261Z",
+    "total_messages_analyzed": 112,
+    "last_learning_session": "2025-08-10T20:17:54.415964Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
