@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:35:23.896126Z",
+  "last_updated": "2025-08-10T20:40:12.605136Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -83,7 +83,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.07813720000723764
+    "caps_usage_frequency": 0.09532348000651389
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -174,8 +174,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 146,
-    "last_learning_session": "2025-08-10T20:35:23.896120Z",
+    "total_messages_analyzed": 147,
+    "last_learning_session": "2025-08-10T20:40:12.605119Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
