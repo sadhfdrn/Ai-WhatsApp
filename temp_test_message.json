@@ -1,0 +1,10 @@
+  {
+    "id": "TEST_HELP_COMMAND_NEW",
+    "from": "2349136038978@s.whatsapp.net", 
+    "timestamp": 1754853100,
+    "type": "text",
+    "body": "!help",
+    "media": null,
+    "processed": false,
+    "received_at": "2025-08-10T19:11:40.000Z"
+  },

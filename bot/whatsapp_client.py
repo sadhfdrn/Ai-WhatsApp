@@ -52,8 +52,12 @@ class WhatsAppClient:
         self.style_mimicker = StyleMimicker(user_profile)
         
         # Update AI processor with learned personality
-        if hasattr(self.ai_processor, 'set_user_profile'):
-            self.ai_processor.set_user_profile(user_profile)
+        try:
+            if hasattr(self.ai_processor, 'set_user_profile'):
+                self.ai_processor.set_user_profile(user_profile)
+        except AttributeError:
+            # Method may not exist in all AI processor versions
+            pass
         
         # Message handlers
         self.message_handlers = {}
@@ -378,16 +382,22 @@ class WhatsAppClient:
             command = parts[0].lower()
             args = parts[1] if len(parts) > 1 else ""
             
-            logger.info(f"🎛️ Command from {sender}: {command}")
+            logger.info(f"🎛️ Command from {sender}: {command} (args: {args})")
+            logger.info(f"🔍 Available commands: {list(self.message_handlers.keys())}")
             
             # Execute command
             if command in self.message_handlers:
+                logger.info(f"✅ Executing command handler for '{command}'")
                 await self.message_handlers[command](sender, args, timestamp)
+                logger.info(f"✅ Command '{command}' executed successfully")
             else:
+                logger.warning(f"❓ Unknown command: {command}")
                 await self.handle_unknown_command(sender, command)
                 
         except Exception as e:
             logger.error(f"❌ Error handling command: {e}")
+            import traceback
+            logger.error(f"❌ Command error traceback: {traceback.format_exc()}")
             await self.send_message(sender, "❌ There was an error processing your command")
     
     async def handle_help(self, sender: str, args: str, timestamp: str):
