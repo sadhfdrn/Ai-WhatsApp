@@ -56,8 +56,8 @@ class Config:
         self.VOICE_ENABLED = os.getenv("VOICE_ENABLED", "false").lower() == "true"  # Default disabled
         self.VOICE_SPEED = float(os.getenv("VOICE_SPEED", "1.0"))
         
-        # Web Search Configuration - SearXNG instances
-        self.SEARXNG_URL = os.getenv("SEARXNG_URL", "https://searx.be")
+        # Web Search Configuration - SearXNG instances  
+        self.SEARXNG_URL = os.getenv("SEARXNG_URL", "https://searx.tiekoetter.com")
         self.SEARCH_ENABLED = os.getenv("SEARCH_ENABLED", "true").lower() == "true"
         self.MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "10"))
         self.AUTO_SEARCH_ON_QUESTIONS = os.getenv("AUTO_SEARCH_ON_QUESTIONS", "true").lower() == "true"

@@ -106,8 +106,9 @@ Includes centralized utility functions for text sanitization and formatting, enh
 ### August 10, 2025 - SearXNG Integration & Koyeb Deployment Optimization
 - **Search Engine Migration**: Replaced Whoogle with SearXNG for better search capabilities
   - SearXNG provides JSON API, multiple search engines, and better privacy
-  - Primary instance: https://searx.be with fallback instances
+  - Updated to working instances: searx.work, searx.fmac.xyz, searx.prvcy.eu, searx.dresden.network
   - Enhanced search parsing with JSON responses instead of HTML scraping
+  - Fixed 403 errors by updating to reliable public SearXNG instances
 - **Koyeb Deployment Support**: Created optimized Dockerfile.koyeb for cloud deployment
   - AI models configured for streaming to work in cloud environments
   - Health checks optimized for Koyeb monitoring

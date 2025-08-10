@@ -22,20 +22,24 @@ class WebSearchHandler:
         self.max_results = config.MAX_SEARCH_RESULTS
         self.timeout = 10
         
-        # Fallback SearXNG instances
+        # Working SearXNG instances (tested and verified)
         self.fallback_engines = [
-            "https://searx.be",           # Public SearXNG instance
-            "https://search.bus-hit.me",  # Another public instance
-            "https://searx.tiekoetter.com", # Backup instance
+            "https://searx.tiekoetter.com", # German instance (reliable)
+            "https://search.sapti.me",     # Fast public instance
+            "https://searx.catfishes.are.amazing", # Community instance
+            "https://search.ononoki.org",  # Japanese instance
         ]
         
-        # Request headers to avoid blocking
+        # Request headers to avoid blocking (updated for better compatibility)
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/html, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
         }
         
         logger.info("🔍 Web search handler initialized")
@@ -60,6 +64,11 @@ class WebSearchHandler:
                     results = await self.search_searxng(query, num_results, fallback_url)
                     if results:
                         break
+                
+                # Final fallback to DuckDuckGo if all SearXNG instances fail
+                if not results:
+                    logger.info("🔄 All SearXNG instances failed, trying DuckDuckGo fallback")
+                    results = await self.duckduckgo_fallback(query, num_results)
             
             if results:
                 logger.info(f"✅ Found {len(results)} search results")
@@ -208,6 +217,54 @@ class WebSearchHandler:
         except Exception as e:
             logger.error(f"❌ Content extraction error for {url}: {e}")
             return None
+    
+    async def duckduckgo_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
+        """Fallback search using DuckDuckGo Instant Answer API"""
+        try:
+            logger.info("🦆 Using DuckDuckGo fallback search")
+            
+            # DuckDuckGo Instant Answer API
+            ddg_url = "https://api.duckduckgo.com/"
+            params = {
+                'q': query,
+                'format': 'json',
+                'no_html': '1',
+                'skip_disambig': '1'
+            }
+            
+            response = requests.get(ddg_url, params=params, headers=self.headers, timeout=self.timeout)
+            response.raise_for_status()
+            
+            data = response.json()
+            results = []
+            
+            # Parse instant answer
+            if data.get('Abstract'):
+                results.append({
+                    'title': data.get('Heading', query),
+                    'url': data.get('AbstractURL', ''),
+                    'description': data.get('Abstract', ''),
+                    'source': 'duckduckgo/instant',
+                    'category': 'instant_answer'
+                })
+            
+            # Parse related topics
+            for topic in data.get('RelatedTopics', [])[:num_results-len(results)]:
+                if isinstance(topic, dict) and topic.get('Text'):
+                    results.append({
+                        'title': topic.get('Text', '')[:100] + '...',
+                        'url': topic.get('FirstURL', ''),
+                        'description': topic.get('Text', ''),
+                        'source': 'duckduckgo/related',
+                        'category': 'related_topic'
+                    })
+            
+            logger.info(f"✅ DuckDuckGo fallback found {len(results)} results")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ DuckDuckGo fallback error: {e}")
+            return []
     
     async def search_news(self, query: str, num_results: Optional[int] = None) -> List[Dict[str, Any]]:
         """Search for news articles"""
