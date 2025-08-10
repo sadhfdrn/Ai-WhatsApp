@@ -1,24 +1,24 @@
 {
-  "last_updated": "2025-08-10T20:43:56.719065Z",
+  "last_updated": "2025-08-10T20:45:06.569991Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:43:56.683263Z",
-      "message": "====================\nSister!\nBrother!\n\nStop using the scriptures that \"The Violent taketh it by force...\" to justify your wrong approach to matters and your rude way of talking. That wasn't the context of the scriptures.\n\n*Do you realize that your Life is meant to be a Beacon of Change to that person?*\n\nSo ",
+      "timestamp": "2025-08-10T20:45:06.529650Z",
+      "message": "So Christ would say that the Devil came to me but He found nothing on me \nYou're telling me that being rude in speech, in the name of blunt, is who you are... How?\nDoes the Holy Spirit really resides in that Heart cos that's not how He functions in me",
       "patterns": {
-        "length": 308,
-        "word_count": 52,
-        "sentence_count": 7,
-        "exclamation_count": 2,
+        "length": 251,
+        "word_count": 51,
+        "sentence_count": 3,
+        "exclamation_count": 0,
         "question_count": 1,
-        "caps_ratio": 0.03571428571428571,
+        "caps_ratio": 0.043824701195219126,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.019230769230769232,
-          "emphatic": 0.038461538461538464,
+          "questioning": 0.0196078431372549,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
@@ -29,40 +29,35 @@
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": true,
-          "comma_frequency": 0.0,
+          "comma_frequency": 0.00796812749003984,
           "quotation_usage": true
         },
         "topic_keywords": [
-          "force",
-          "context",
-          "sister",
-          "person",
-          "stop",
-          "beacon",
-          "matters",
-          "meant",
-          "change",
-          "wrong",
-          "scriptures",
-          "life",
-          "talking",
-          "rude",
-          "realize",
-          "wasn",
-          "using",
-          "violent",
-          "approach",
-          "taketh",
-          "justify",
-          "brother"
+          "nothing",
+          "functions",
+          "speech",
+          "name",
+          "holy",
+          "really",
+          "heart",
+          "devil",
+          "resides",
+          "christ",
+          "being",
+          "blunt",
+          "came",
+          "found",
+          "spirit",
+          "telling",
+          "rude"
         ],
         "greeting_patterns": null,
-        "agreement_patterns": "disagreement",
-        "excitement_level": 0.6
+        "agreement_patterns": null,
+        "excitement_level": 0.0
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:43:55"
+        "timestamp": "2025-08-10T20:45:03"
       }
     }
   ]
