@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:22.061105Z",
+  "last_updated": "2025-08-10T10:05:22.185357Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -46,7 +46,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.09401557556572739
+    "caps_usage_frequency": 0.09711401800915465
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -85,8 +85,8 @@
       "below",
       "present",
       "fams",
-      "delete",
       "test",
+      "delete",
       "adekoya",
       "palmpay",
       "refer",
@@ -123,7 +123,8 @@
     "mood_patterns": {
       "excited": "enthusiastic_responses",
       "casual": "relaxed_tone",
-      "focused": "professional_language"
+      "focused": "professional_language",
+      "questioning": "expressive"
     },
     "response_triggers": {}
   },
@@ -134,8 +135,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 50,
-    "last_learning_session": "2025-08-10T10:05:22.061098Z",
+    "total_messages_analyzed": 51,
+    "last_learning_session": "2025-08-10T10:05:22.185349Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
