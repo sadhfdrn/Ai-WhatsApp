@@ -1,18 +1,20 @@
 {
-  "last_updated": "2025-08-10T10:05:21.799355Z",
+  "last_updated": "2025-08-10T10:05:21.898533Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:21.744498Z",
-      "message": "Faut attendre le 21 pour le free food...\nSi je suis d'humeur bien-sûr",
+      "timestamp": "2025-08-10T10:05:21.857945Z",
+      "message": "There's someone who is secretly arranging my marriage 😒I dey send that woman away on the first day 😒",
       "patterns": {
-        "length": 69,
-        "word_count": 13,
-        "sentence_count": 2,
+        "length": 100,
+        "word_count": 19,
+        "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.028985507246376812,
-        "emoji_usage": {},
+        "caps_ratio": 0.02,
+        "emoji_usage": {
+          "😒": 2
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
@@ -25,22 +27,23 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
-          "ellipsis_usage": true,
+          "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": true
         },
         "topic_keywords": [
-          "food",
-          "humeur",
-          "attendre",
-          "pour",
-          "free",
-          "faut",
-          "bien",
-          "suis"
+          "secretly",
+          "there",
+          "arranging",
+          "away",
+          "marriage",
+          "woman",
+          "someone",
+          "first",
+          "send"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -48,7 +51,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": 1754812164
+        "timestamp": 1754812487
       }
     }
   ]
