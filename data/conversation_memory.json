@@ -1,27 +1,27 @@
 {
-  "last_updated": "2025-08-10T20:34:49.627815Z",
+  "last_updated": "2025-08-10T20:34:49.738014Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:49.581067Z",
-      "message": "Great question! I actually have some thoughts on this: That's definitely something worth exploring further!",
+      "timestamp": "2025-08-10T20:34:49.678916Z",
+      "message": "Omo my dm don choke 😂😂Gwad see as Una wan ban but una no wan pay",
       "patterns": {
-        "length": 107,
-        "word_count": 15,
-        "sentence_count": 3,
-        "exclamation_count": 2,
+        "length": 64,
+        "word_count": 16,
+        "sentence_count": 1,
+        "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.028037383177570093,
-        "emoji_usage": {},
-        "common_phrases": {
-          "definitely": 1
+        "caps_ratio": 0.046875,
+        "emoji_usage": {
+          "😂😂": 1
         },
+        "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.13333333333333333,
-          "positive": 0.06666666666666667,
+          "emphatic": 0.0,
+          "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
@@ -32,27 +32,19 @@
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
-          "quotation_usage": true
+          "quotation_usage": false
         },
         "topic_keywords": [
-          "worth",
-          "further",
-          "question",
-          "actually",
-          "exploring",
-          "some",
-          "great",
-          "thoughts",
-          "definitely",
-          "something"
+          "choke",
+          "gwad"
         ],
         "greeting_patterns": null,
-        "agreement_patterns": "agreement",
-        "excitement_level": 0.6
+        "agreement_patterns": "disagreement",
+        "excitement_level": 0.0
       },
       "context": {
-        "sender": "2349113085799@s.whatsapp.net",
-        "timestamp": "2025-08-10T19:45:29"
+        "sender": "status@broadcast",
+        "timestamp": "2025-08-10T19:45:43"
       }
     }
   ]
