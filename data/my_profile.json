@@ -1,10 +1,12 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:21.034114Z",
+  "last_updated": "2025-08-10T10:05:21.148503Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
-    "common_phrases": {},
+    "common_phrases": {
+      "yeah": 0.2
+    },
     "emoji_usage": {
       "😴🙂": 0.2,
       "🙏🏽": 0.2,
@@ -40,7 +42,7 @@
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.13201322121185474
+    "caps_usage_frequency": 0.1313118990906693
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -68,10 +70,11 @@
       "live",
       "open",
       "forex",
+      "yeah",
       "gloo",
       "present",
-      "test",
       "delete",
+      "test",
       "channel",
       "azin",
       "holiness",
@@ -110,8 +113,7 @@
       "services",
       "land",
       "message",
-      "made",
-      "haven"
+      "made"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -128,8 +130,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 41,
-    "last_learning_session": "2025-08-10T10:05:21.034107Z",
+    "total_messages_analyzed": 42,
+    "last_learning_session": "2025-08-10T10:05:21.148497Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
