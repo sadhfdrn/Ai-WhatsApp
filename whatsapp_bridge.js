@@ -1,4 +1,4 @@
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys-mod');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
 const fs = require('fs');
@@ -23,7 +23,7 @@ class WhatsAppBridge {
                 fs.mkdirSync(authDir);
             }
 
-            // Check if we have existing creds from environment variable
+            // Load credentials from environment variable (JSON format)
             const waCredsEnv = process.env.WHATSAPP_CREDS;
             if (waCredsEnv) {
                 console.log('✅ Found WhatsApp credentials in environment');
@@ -32,11 +32,18 @@ class WhatsAppBridge {
                     const credsPath = path.join(authDir, 'creds.json');
                     fs.writeFileSync(credsPath, JSON.stringify(credsData, null, 2));
                     console.log('✅ WhatsApp credentials loaded from environment');
+                    
+                    // Also create session-data.json for baileys-mod compatibility
+                    const sessionPath = path.join(authDir, 'session-data.json');
+                    fs.writeFileSync(sessionPath, JSON.stringify(credsData, null, 2));
+                    
                 } catch (error) {
                     console.log('❌ Failed to parse WHATSAPP_CREDS:', error.message);
+                    console.log('Expected format: JSON object with WhatsApp session data');
                 }
             } else {
                 console.log('❌ WHATSAPP_CREDS environment variable not found');
+                console.log('ℹ️  Please provide WhatsApp session credentials in JSON format');
             }
 
             // Load auth state
@@ -52,19 +59,22 @@ class WhatsAppBridge {
                 console.log('⚠️ Could not fetch latest version, using default');
             }
 
-            // Create WhatsApp socket with enhanced configuration
+            // Create WhatsApp socket with baileys-mod configuration
             this.sock = makeWASocket({
                 version,
                 auth: state,
                 logger: P({ level: 'silent' }),
-                printQRInTerminal: false,  // We'll handle QR differently
-                defaultQueryTimeoutMs: 60000,
+                printQRInTerminal: false,  // Disable QR since we're using creds
+                defaultQueryTimeoutMs: 90000,
+                connectTimeoutMs: 60000,
                 generateHighQualityLinkPreview: true,
                 getMessage: async (key) => {
-                    return { conversation: 'Hello' };
+                    return { conversation: 'Hello from Bot' };
                 },
                 syncFullHistory: false,
                 markOnlineOnConnect: true,
+                browser: ['WhatsApp AI Bot', 'Chrome', '10.0'],
+                mobile: false,
             });
 
             // Handle credentials update
@@ -92,11 +102,15 @@ class WhatsAppBridge {
         const { connection, lastDisconnect, qr, isNewLogin } = update;
         
         if (qr) {
-            console.log('📱 QR Code generated - scan with WhatsApp mobile app');
-            // Generate QR code in terminal for easier scanning
-            const QR = require('qrcode-terminal');
-            QR.generate(qr, { small: true });
-            console.log('⬆️ Scan the QR code above with your WhatsApp mobile app');
+            console.log('📱 QR Code generated - but credentials should be provided via WHATSAPP_CREDS');
+            console.log('⚠️  If you see this, please provide WhatsApp session credentials in environment variable');
+            // Generate QR code only if no credentials are available
+            if (!process.env.WHATSAPP_CREDS) {
+                const QR = require('qrcode-terminal');
+                QR.generate(qr, { small: true });
+                console.log('⬆️ Scan the QR code above with your WhatsApp mobile app');
+                console.log('💡 Or provide session credentials via WHATSAPP_CREDS environment variable');
+            }
         }
         
         if (connection === 'close') {

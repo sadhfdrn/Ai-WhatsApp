@@ -26,7 +26,7 @@ This is a comprehensive AI-powered WhatsApp bot that provides conversational AI 
 **Deployment Status**: Bot running with GitHub repository personality persistence system
 **Learning Status**: Active personality learning with automatic GitHub commits
 **Model Status**: Environment-optimized loading with graceful fallback to rule-based responses
-**Connection Status**: WhatsApp bridge active, waiting for QR code authentication
+**Connection Status**: WhatsApp bridge updated to baileys-mod, waiting for WHATSAPP_CREDS environment variable
 **Persistence Status**: Personality data automatically saved to GitHub repository every 10 interactions
 **Git Authentication**: Enhanced with GH_TOKEN support and improved error recovery mechanisms
 **Workflow Status**: Single unified workflow (whatsapp-ai-bot-unified.yml) with manual dispatch and GH_TOKEN self-triggering every 5 hours
