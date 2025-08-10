@@ -1,26 +1,26 @@
 {
-  "last_updated": "2025-08-10T20:09:05.846079Z",
+  "last_updated": "2025-08-10T20:09:50.461610Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:09:05.806478Z",
-      "message": "*Relationship is not a secret cult, so post your partner* 😌🤌🏾",
+      "timestamp": "2025-08-10T20:09:50.425929Z",
+      "message": "😮‍💨\nLess than a month to exams, \nAny movie suggestions?🫴",
       "patterns": {
-        "length": 61,
-        "word_count": 11,
-        "sentence_count": 1,
+        "length": 56,
+        "word_count": 10,
+        "sentence_count": 2,
         "exclamation_count": 0,
-        "question_count": 0,
-        "caps_ratio": 0.01639344262295082,
+        "question_count": 1,
+        "caps_ratio": 0.03571428571428571,
         "emoji_usage": {
-          "😌": 1,
-          "🏾": 1
+          "😮": 1,
+          "💨": 1
         },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.0,
+          "questioning": 0.1,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -32,15 +32,16 @@
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.01639344262295082,
+          "comma_frequency": 0.017857142857142856,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "relationship",
-          "secret",
-          "cult",
-          "partner",
-          "post"
+          "suggestions",
+          "month",
+          "than",
+          "exams",
+          "less",
+          "movie"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -48,7 +49,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:09:03"
+        "timestamp": "2025-08-10T20:09:49"
       }
     }
   ]
