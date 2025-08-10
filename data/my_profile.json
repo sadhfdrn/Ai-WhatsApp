@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:21.600798Z",
+  "last_updated": "2025-08-10T10:05:21.744526Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -43,9 +43,9 @@
       "✅": 0.2,
       "💯": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.11876454957530164
+    "caps_usage_frequency": 0.10978664534240916
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -70,8 +70,10 @@
       "urself",
       "fixed",
       "there",
+      "food",
       "shey",
       "live",
+      "attendre",
       "open",
       "kindly",
       "forex",
@@ -79,12 +81,12 @@
       "yeah",
       "below",
       "present",
-      "delete",
       "test",
+      "delete",
       "adekoya",
       "palmpay",
-      "holiness",
       "refer",
+      "holiness",
       "guaranteed",
       "forget",
       "friends",
@@ -99,10 +101,13 @@
       "scratch",
       "someone",
       "errors",
+      "faut",
       "possiblen",
+      "suis",
       "after",
       "account",
       "requests",
+      "humeur",
       "whatsapp",
       "free",
       "replying",
@@ -110,13 +115,8 @@
       "guys",
       "card",
       "afmweca",
-      "past",
-      "barns",
-      "being",
-      "using",
-      "issue",
-      "send",
-      "message"
+      "bien",
+      "past"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -133,8 +133,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 46,
-    "last_learning_session": "2025-08-10T10:05:21.600791Z",
+    "total_messages_analyzed": 47,
+    "last_learning_session": "2025-08-10T10:05:21.744518Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
