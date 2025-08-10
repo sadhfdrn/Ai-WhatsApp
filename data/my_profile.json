@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:15.692086Z",
+  "last_updated": "2025-08-10T10:05:15.893903Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -21,9 +21,9 @@
       "👨": 0.4,
       "💻": 0.4
     },
-    "response_length_preference": "short",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.1015806129671016
+    "caps_usage_frequency": 0.09659496546349489
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -45,22 +45,28 @@
   },
   "conversation_context": {
     "favorite_topics": [
+      "shey",
+      "live",
+      "open",
+      "forex",
+      "gloo",
+      "test",
+      "grateful",
+      "youtube",
+      "forever",
+      "always",
+      "trading",
       "alhamdulillah",
       "requests",
-      "shey",
-      "open",
-      "forever",
-      "forex",
       "guys",
-      "always",
+      "afmweca",
+      "using",
+      "services",
+      "message",
       "hack",
       "hello",
-      "gloo",
       "pase",
-      "test",
-      "trading",
-      "message",
-      "grateful"
+      "stream"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -77,8 +83,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 14,
-    "last_learning_session": "2025-08-10T10:05:15.691894Z",
+    "total_messages_analyzed": 15,
+    "last_learning_session": "2025-08-10T10:05:15.893897Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
