@@ -1,17 +1,17 @@
 {
-  "last_updated": "2025-08-10T19:29:54.196382Z",
+  "last_updated": "2025-08-10T19:32:18.210589Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:29:54.154689Z",
-      "message": "https://meet.google.com/pfb-vfyu-bcu",
+      "timestamp": "2025-08-10T19:32:18.171595Z",
+      "message": "So wassup with you",
       "patterns": {
-        "length": 36,
-        "word_count": 1,
-        "sentence_count": 3,
+        "length": 18,
+        "word_count": 4,
+        "sentence_count": 1,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.0,
+        "caps_ratio": 0.05555555555555555,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
@@ -25,7 +25,7 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
@@ -33,18 +33,15 @@
           "quotation_usage": false
         },
         "topic_keywords": [
-          "google",
-          "vfyu",
-          "meet",
-          "https"
+          "wassup"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": "2025-08-10T19:29:53"
+        "sender": "2349113085799@s.whatsapp.net",
+        "timestamp": "2025-08-10T19:32:17"
       }
     }
   ]
