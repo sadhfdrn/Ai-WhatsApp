@@ -28,6 +28,10 @@ class ChatStyleAnalyzer:
         """Analyze a message and update learning patterns"""
         
         db = get_db()
+        if db is None:
+            logger.warning("⚠️ Database not available, skipping message analysis")
+            return {"error": "Database not available"}
+            
         try:
             # Store conversation
             conversation = Conversation(
@@ -68,10 +72,12 @@ class ChatStyleAnalyzer:
             
         except Exception as e:
             logger.error(f"❌ Error analyzing message: {e}")
-            db.rollback()
-            return {}
+            if db:
+                db.rollback()
+            return {"error": str(e)}
         finally:
-            db.close()
+            if db:
+                db.close()
     
     def _learn_from_your_message(self, db: Session, message: str, sentiment_data: Dict = None):
         """Learn patterns from your messages to improve responses to others"""

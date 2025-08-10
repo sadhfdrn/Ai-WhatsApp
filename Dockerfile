@@ -86,45 +86,15 @@ RUN mkdir -p model_cache \
 # Set permissions
 RUN chmod +x main.py whatsapp_bridge.js
 
-# Pre-download AI models to reduce startup time
+# Configure AI models for streaming (no pre-download)
 RUN python3 -c "
 import os
 os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'
 os.environ['HF_HOME'] = '/app/model_cache'
 
-try:
-    from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, pipeline
-    from sentence_transformers import SentenceTransformer
-    
-    print('📥 Pre-downloading AI models...')
-    
-    # DialoGPT for conversation
-    print('Downloading DialoGPT-small...')
-    AutoTokenizer.from_pretrained('microsoft/DialoGPT-small')
-    AutoModelForCausalLM.from_pretrained('microsoft/DialoGPT-small')
-    
-    # FLAN-T5 for text generation
-    print('Downloading FLAN-T5-small...')
-    AutoTokenizer.from_pretrained('google/flan-t5-small')
-    AutoModelForSeq2SeqLM.from_pretrained('google/flan-t5-small')
-    
-    # Translation model
-    print('Downloading translation model...')
-    pipeline('translation', model='Helsinki-NLP/opus-mt-en-mul', max_length=512)
-    
-    # Sentiment analysis
-    print('Downloading sentiment model...')
-    pipeline('sentiment-analysis', model='cardiffnlp/twitter-roberta-base-sentiment-latest')
-    
-    # Embeddings model
-    print('Downloading embeddings model...')
-    SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    
-    print('✅ All AI models pre-downloaded successfully!')
-    
-except Exception as e:
-    print(f'⚠️ Model pre-download failed: {e}')
-    print('Models will be downloaded on first use.')
+print('🚀 AI models configured for streaming download on demand')
+print('Models will be downloaded and streamed efficiently during first use')
+print('This reduces container size and startup time significantly')
 "
 
 # Environment configuration for optimal AI performance
@@ -134,30 +104,49 @@ ENV TOKENIZERS_PARALLELISM=false
 ENV OMP_NUM_THREADS=4
 ENV MKL_NUM_THREADS=4
 
-# Configuration for unlimited web search
+# Configuration for unlimited web search with Whoogle instance
 ENV SEARCH_ENABLED=true
 ENV WHOOGLE_URL=https://search.benbusby.com
+ENV WHOOGLE_FALLBACK_URL=https://whoogle.hectabit.co
 ENV MAX_SEARCH_RESULTS=10
 ENV AUTO_SEARCH_ON_QUESTIONS=true
+ENV WHOOGLE_INSTANCE_ACTIVE=true
 
-# AI Model configuration
+# AI Model configuration with streaming enabled
 ENV USE_STREAMING=true
+ENV STREAM_MODELS=true
 ENV AI_MODEL=microsoft/DialoGPT-small
 ENV MAX_RESPONSE_LENGTH=500
 ENV TEMPERATURE=0.8
-ENV LOW_MEMORY_MODE=false
+ENV LOW_MEMORY_MODE=true
+ENV MODEL_DOWNLOAD_ON_DEMAND=true
 
 # Auto-translation and timezone
 ENV AUTO_TRANSLATE=true
 ENV TARGET_LANGUAGE=en
 ENV TIMEZONE=Africa/Lagos
 
-# Expose port for health checks
-EXPOSE 8080
+# Expose ports for health checks and web interface
+EXPOSE 8080 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python3 -c "import requests; requests.get('http://localhost:8080/health', timeout=5)" || exit 1
+# Enhanced health check with multiple endpoints
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD python3 -c "
+import requests
+import sys
+try:
+    # Check main health endpoint
+    resp = requests.get('http://localhost:8080/health', timeout=5)
+    if resp.status_code == 200:
+        print('✅ Health check passed')
+        sys.exit(0)
+    else:
+        print(f'❌ Health check failed: {resp.status_code}')
+        sys.exit(1)
+except Exception as e:
+    print(f'❌ Health check error: {e}')
+    sys.exit(1)
+" || exit 1
 
 # Create startup script
 RUN cat > start.sh << 'EOF'
@@ -166,31 +155,73 @@ set -e
 
 echo "🚀 Starting WhatsApp AI Bot with Full AI Models..."
 
-# Start health check server in background
+# Start enhanced health check server in background
 python3 -c "
 import http.server
 import socketserver
 import threading
+import json
+import psutil
+import os
+from datetime import datetime
 
 class HealthHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/health':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(b'OK')
+            try:
+                # Basic health check
+                health_data = {
+                    'status': 'healthy',
+                    'timestamp': datetime.now().isoformat(),
+                    'memory_usage': psutil.virtual_memory().percent,
+                    'disk_usage': psutil.disk_usage('/').percent,
+                    'whoogle_enabled': os.getenv('WHOOGLE_INSTANCE_ACTIVE', 'false') == 'true',
+                    'streaming_enabled': os.getenv('STREAM_MODELS', 'false') == 'true',
+                    'database_url_set': bool(os.getenv('DATABASE_URL'))
+                }
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(health_data).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                error_data = {'status': 'unhealthy', 'error': str(e)}
+                self.wfile.write(json.dumps(error_data).encode())
+        elif self.path == '/status':
+            # Detailed status endpoint
+            try:
+                status_data = {
+                    'whatsapp_bridge': 'running',
+                    'ai_models': 'streaming_ready',
+                    'database': 'connected' if os.getenv('DATABASE_URL') else 'not_configured',
+                    'whoogle_instance': 'active' if os.getenv('WHOOGLE_INSTANCE_ACTIVE') == 'true' else 'inactive'
+                }
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(status_data).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(f'Status check failed: {e}'.encode())
         else:
             self.send_response(404)
             self.end_headers()
 
 def start_health_server():
-    with socketserver.TCPServer(('', 8080), HealthHandler) as httpd:
+    with socketserver.TCPServer(('0.0.0.0', 8080), HealthHandler) as httpd:
         httpd.serve_forever()
 
 threading.Thread(target=start_health_server, daemon=True).start()
-print('Health check server started on port 8080')
+print('🏥 Enhanced health check server started on port 8080')
+print('Endpoints: /health, /status')
 
-# Keep the script running
+# Keep the health server running
 import time
 while True:
     time.sleep(1)

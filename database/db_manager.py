@@ -19,17 +19,25 @@ class DatabaseManager:
     def __init__(self, your_user_id: str):
         self.your_user_id = your_user_id
         self.style_analyzer = ChatStyleAnalyzer(your_user_id)
+        self.database_available = False
         
-        # Initialize database
-        if not init_database():
-            logger.error("❌ Failed to initialize database")
-            raise Exception("Database initialization failed")
-        
-        logger.info(f"🗄️ Database manager initialized for user: {your_user_id}")
+        # Try to initialize database
+        try:
+            if init_database():
+                self.database_available = True
+                logger.info(f"🗄️ Database manager initialized for user: {your_user_id}")
+            else:
+                logger.warning("⚠️ Database initialization failed, running without database features")
+        except Exception as e:
+            logger.warning(f"⚠️ Database not available: {e}. Running without database features.")
     
     async def process_message(self, message: str, sender_id: str, bot_response: str = None, 
                             sentiment_data: Dict = None) -> Dict[str, Any]:
         """Process and store a message with style learning"""
+        if not self.database_available:
+            logger.debug("📊 Database not available, skipping message processing")
+            return {"status": "skipped", "reason": "database_not_available"}
+            
         try:
             # Analyze and store the message
             analysis = self.style_analyzer.analyze_message(

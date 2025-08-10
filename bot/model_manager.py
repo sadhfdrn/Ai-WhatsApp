@@ -335,37 +335,88 @@ class SmartModelManager:
             return None
     
     async def _load_streaming(self, model_name: str, config: Dict[str, Any], function: str) -> Optional[Any]:
-        """Streaming strategy for cloud deployment - no persistent storage"""
+        """Enhanced streaming strategy for cloud deployment with on-demand loading"""
         try:
-            from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM
+            from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM, pipeline
             import torch
             
-            logger.info(f"🌊 Streaming {model_name} (no cache)")
+            logger.info(f"🌊 Streaming {model_name} with on-demand loading")
             
-            # Load directly from Hugging Face with minimal memory footprint
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            # Check if streaming is explicitly enabled
+            stream_enabled = os.getenv('STREAM_MODELS', 'false').lower() == 'true'
+            use_on_demand = os.getenv('MODEL_DOWNLOAD_ON_DEMAND', 'false').lower() == 'true'
             
+            if use_on_demand:
+                logger.info(f"⚡ Using on-demand streaming for {function}")
+                # Create a lightweight wrapper that loads on first use
+                return self._create_lazy_model_wrapper(model_name, config, function)
+            
+            # Standard streaming load
+            # Load tokenizer first (lightweight)
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_name,
+                use_fast=True,
+                trust_remote_code=True
+            )
+            
+            # Optimized model loading based on function
             if function in ['conversation', 'text_generation']:
                 model = AutoModelForCausalLM.from_pretrained(
                     model_name,
-                    torch_dtype=torch.float16,  # Always use fp16 for streaming
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
                     device_map='auto' if torch.cuda.is_available() else 'cpu',
                     low_cpu_mem_usage=True,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    use_cache=True,
+                    load_in_8bit=True if os.getenv('LOW_MEMORY_MODE') == 'true' else False
                 )
+            elif function in ['sentiment_analysis', 'translation', 'text_to_speech', 'speech_to_text']:
+                # Use pipeline for these functions (more efficient streaming)
+                if function == 'sentiment_analysis':
+                    model = pipeline('sentiment-analysis', model=model_name, tokenizer=tokenizer)
+                elif function == 'translation':
+                    model = pipeline('translation', model=model_name, tokenizer=tokenizer)
+                elif function == 'text_to_speech':
+                    model = pipeline('text-to-speech', model=model_name, tokenizer=tokenizer)
+                elif function == 'speech_to_text':
+                    model = pipeline('automatic-speech-recognition', model=model_name, tokenizer=tokenizer)
+                else:
+                    model = AutoModel.from_pretrained(
+                        model_name,
+                        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                        device_map='auto' if torch.cuda.is_available() else 'cpu',
+                        trust_remote_code=True
+                    )
             else:
                 model = AutoModel.from_pretrained(
                     model_name,
-                    torch_dtype=torch.float16,
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
                     device_map='auto' if torch.cuda.is_available() else 'cpu',
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             
-            model.tokenizer = tokenizer
+            # Attach tokenizer if not a pipeline
+            if not hasattr(model, '__call__') or not hasattr(model, 'tokenizer'):
+                model.tokenizer = tokenizer
+            
+            logger.info(f"✅ Streaming model {model_name} loaded successfully")
             return model
             
         except Exception as e:
-            logger.error(f"❌ Streaming load failed: {e}")
+            logger.error(f"❌ Streaming load failed for {model_name}: {e}")
+            # Try a fallback with a smaller model
+            fallback_models = {
+                'conversation': 'microsoft/DialoGPT-small',
+                'text_generation': 'gpt2',
+                'sentiment_analysis': 'cardiffnlp/twitter-roberta-base-sentiment-latest',
+                'translation': 'Helsinki-NLP/opus-mt-en-mul'
+            }
+            
+            if function in fallback_models and fallback_models[function] != model_name:
+                logger.info(f"🔄 Trying fallback model for {function}: {fallback_models[function]}")
+                return await self._load_streaming(fallback_models[function], config, function)
+            
             return None
     
     def _parse_memory(self, memory_str: str) -> float:
@@ -390,6 +441,54 @@ class SmartModelManager:
             'percent': memory.percent,
             'used': memory.used
         }
+    
+    def _create_lazy_model_wrapper(self, model_name: str, config: Dict[str, Any], function: str):
+        """Create a lazy loading wrapper for on-demand model streaming"""
+        class LazyModel:
+            def __init__(self, manager, model_name, config, function):
+                self._manager = manager
+                self._model_name = model_name
+                self._config = config
+                self._function = function
+                self._model = None
+                self._loading = False
+                
+            async def _ensure_loaded(self):
+                if self._model is None and not self._loading:
+                    self._loading = True
+                    logger.info(f"🔄 On-demand loading {self._function} model: {self._model_name}")
+                    try:
+                        # Load the actual model using standard streaming
+                        old_on_demand = os.environ.get('MODEL_DOWNLOAD_ON_DEMAND', 'false')
+                        os.environ['MODEL_DOWNLOAD_ON_DEMAND'] = 'false'  # Prevent infinite recursion
+                        self._model = await self._manager._load_streaming(self._model_name, self._config, self._function)
+                        os.environ['MODEL_DOWNLOAD_ON_DEMAND'] = old_on_demand
+                        logger.info(f"✅ On-demand model loaded: {self._function}")
+                    except Exception as e:
+                        logger.error(f"❌ On-demand loading failed: {e}")
+                        self._model = None
+                    finally:
+                        self._loading = False
+                return self._model
+                
+            async def __call__(self, *args, **kwargs):
+                model = await self._ensure_loaded()
+                if model and hasattr(model, '__call__'):
+                    return model(*args, **kwargs)
+                return None
+                
+            def __getattr__(self, name):
+                if name.startswith('_'):
+                    return object.__getattribute__(self, name)
+                # For non-private attributes, ensure model is loaded
+                async def get_attr():
+                    model = await self._ensure_loaded()
+                    if model:
+                        return getattr(model, name)
+                    return None
+                return get_attr()
+        
+        return LazyModel(self, model_name, config, function)
     
     async def get_model(self, function: str) -> Optional[Any]:
         """Get loaded model for function"""

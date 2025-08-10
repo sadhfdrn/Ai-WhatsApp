@@ -18,14 +18,31 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-# Database setup
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable not set")
-
-engine = create_engine(DATABASE_URL, echo=False)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Database setup with lazy initialization
+_engine = None
+_SessionLocal = None
 Base = declarative_base()
+
+def get_database_engine():
+    """Get or create database engine with lazy initialization"""
+    global _engine
+    if _engine is None:
+        DATABASE_URL = os.getenv("DATABASE_URL")
+        if not DATABASE_URL:
+            logger.error("❌ DATABASE_URL environment variable not set")
+            return None
+        _engine = create_engine(DATABASE_URL, echo=False)
+    return _engine
+
+def get_session_local():
+    """Get or create SessionLocal with lazy initialization"""
+    global _SessionLocal
+    if _SessionLocal is None:
+        engine = get_database_engine()
+        if engine is None:
+            return None
+        _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return _SessionLocal
 
 class UserProfile(Base):
     """Store user personality and communication patterns"""
@@ -220,18 +237,27 @@ class ResponseSuggestion(Base):
         return f"<ResponseSuggestion(other_user='{self.other_user_id}', confidence={self.confidence_score})>"
 
 # Database utility functions
-def get_db() -> Session:
-    """Get database session"""
-    db = SessionLocal()
+def get_db() -> Optional[Session]:
+    """Get database session with lazy initialization"""
+    SessionLocalClass = get_session_local()
+    if SessionLocalClass is None:
+        logger.error("❌ Cannot create database session - database not available")
+        return None
+    
     try:
-        return db
+        return SessionLocalClass()
     except Exception as e:
-        db.close()
-        raise e
+        logger.error(f"❌ Failed to create database session: {e}")
+        return None
 
 def init_database():
-    """Initialize database tables"""
+    """Initialize database tables with lazy engine creation"""
     try:
+        engine = get_database_engine()
+        if engine is None:
+            logger.error("❌ Cannot initialize database - DATABASE_URL not set")
+            return False
+            
         logger.info("🗄️ Creating database tables...")
         Base.metadata.create_all(bind=engine)
         logger.info("✅ Database tables created successfully")
@@ -242,19 +268,37 @@ def init_database():
 
 def get_user_profile(db: Session, user_id: str) -> Optional[UserProfile]:
     """Get or create user profile"""
-    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
-    if not profile:
-        profile = UserProfile(user_id=user_id)
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-    return profile
+    if db is None:
+        logger.error("❌ Database session is None")
+        return None
+        
+    try:
+        profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        if not profile:
+            profile = UserProfile(user_id=user_id)
+            db.add(profile)
+            db.commit()
+            db.refresh(profile)
+        return profile
+    except Exception as e:
+        logger.error(f"❌ Error getting user profile: {e}")
+        return None
 
 def update_user_stats(db: Session, user_id: str, increment_messages: bool = True):
     """Update user statistics"""
-    profile = get_user_profile(db, user_id)
-    if increment_messages:
-        profile.total_messages += 1
-    profile.last_interaction = datetime.now(timezone.utc)
-    profile.updated_at = datetime.now(timezone.utc)
-    db.commit()
+    if db is None:
+        logger.error("❌ Database session is None")
+        return
+        
+    try:
+        profile = get_user_profile(db, user_id)
+        if profile:
+            if increment_messages:
+                profile.total_messages += 1
+            profile.last_interaction = datetime.now(timezone.utc)
+            profile.updated_at = datetime.now(timezone.utc)
+            db.commit()
+    except Exception as e:
+        logger.error(f"❌ Error updating user stats: {e}")
+        if db:
+            db.rollback()

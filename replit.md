@@ -4,7 +4,11 @@
 This AI-powered WhatsApp bot provides conversational AI, voice processing, web search, meme generation, and auto-reply functionality through WhatsApp Web. It offers a personality-driven experience, integrating multiple AI services for rich conversations while ensuring privacy via self-hosted search. The project aims to provide a comprehensive, engaging, and personalized AI interaction experience with persistent personality learning.
 
 ## User Preferences
-Preferred communication style: Simple, everyday language.
+- Preferred communication style: Simple, everyday language
+- Security: wa-auth directory should be in gitignore to protect authentication data
+- AI Models: Prefer streaming over pre-downloading to reduce container size and startup time
+- Health Checks: Expose port for health monitoring in Docker deployments
+- Search: Keep Whoogle instance active for privacy-preserving web searches
 
 ## System Architecture
 ### Core Architecture
@@ -17,7 +21,11 @@ A centralized `Config` class manages settings from environment variables, suppor
 Utilizes a WhatsApp Web client implementation (Baileys) to process incoming messages through a structured handler system. It maintains user sessions and conversation context, integrating personality learning directly into message processing.
 
 ### Enhanced AI Processing Engine
-Features a Smart Model Manager for environment-aware progressive model downloading and caching. It dynamically loads function-specific models (conversation, translation, sentiment, TTS, STT) optimized for GitHub Actions or cloud deployments. Includes specialized Hugging Face models, graceful fallbacks to rule-based responses, context awareness for coherent responses, and response caching.
+Features a Smart Model Manager with advanced streaming capabilities for environment-aware model loading. It dynamically loads function-specific models (conversation, translation, sentiment, TTS, STT) with three strategies:
+- **Progressive Loading**: For GitHub Actions with disk caching
+- **Full Caching**: For frequently used small models
+- **Streaming with On-Demand Loading**: For cloud deployments with minimal memory footprint and lazy loading wrappers
+Includes specialized Hugging Face models, pipeline-based loading for efficiency, graceful fallbacks, context awareness, and optimized memory usage.
 
 ### Enhanced Voice Processing
 An advanced voice cloning engine provides AI-powered TTS/STT with personality-based voice profiles, prioritizing specialized Hugging Face models and falling back to traditional engines. It supports multi-format audio, language configuration, and progressive voice pattern analysis.
@@ -66,7 +74,18 @@ Includes centralized utility functions for text sanitization and formatting, enh
 - **json**: Data serialization.
 - **datetime**: Time and date handling.
 
-### GitHub Repository Personality Persistence System
-- **GitHubProfileManager**: Handles personality data storage and Git operations.
-- **PersonalityLearner**: Analyzes user messages for communication patterns.
-- **StyleMimicker**: Applies learned user style to AI responses.
+### Dual Personality Learning System
+- **Database-Based Learning**: Primary system using PostgreSQL with sophisticated models (UserProfile, Conversation, CommonPhrase, EmojiUsage, ChatStyleLearning, ResponseSuggestion) for real-time pattern analysis and response suggestion
+- **GitHub Repository Persistence**: Backup system for personality data storage
+- **ChatStyleAnalyzer**: Analyzes communication patterns, formality levels, response preferences
+- **PersonalityLearner**: Learns from user messages and updates personality profiles
+- **StyleMimicker**: Applies learned user style to AI responses
+- **DatabaseManager**: Orchestrates all database operations and learning integration
+
+## Recent Changes (August 2025)
+- Added comprehensive .gitignore including wa-auth/ directory for security
+- Enhanced Dockerfile with streaming AI models instead of pre-downloading
+- Added health check endpoints (/health, /status) on port 8080
+- Implemented on-demand model streaming with lazy loading wrappers
+- Improved Whoogle search integration with fallback URLs
+- Enhanced model manager with pipeline-based loading for better efficiency
