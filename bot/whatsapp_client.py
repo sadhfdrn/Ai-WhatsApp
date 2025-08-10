@@ -218,9 +218,31 @@ class WhatsAppClient:
         """Process incoming WhatsApp message"""
         try:
             sender = message_data.get('from', '')
-            message_text = message_data.get('body', '')
+            message_text = message_data.get('body') or ''
             message_type = message_data.get('type', 'text')
-            timestamp = message_data.get('timestamp', datetime.now().isoformat())
+            
+            # Handle timestamp safely (could be integer, dict, or string)
+            timestamp_raw = message_data.get('timestamp')
+            if isinstance(timestamp_raw, dict):
+                # Handle WhatsApp timestamp format like {"low": 1754852436, "high": 0, "unsigned": true}
+                timestamp = datetime.fromtimestamp(timestamp_raw.get('low', 0)).isoformat()
+            elif isinstance(timestamp_raw, (int, float)):
+                timestamp = datetime.fromtimestamp(timestamp_raw).isoformat()
+            elif isinstance(timestamp_raw, str):
+                timestamp = timestamp_raw
+            else:
+                timestamp = datetime.now().isoformat()
+            
+            # Skip messages without meaningful content
+            if not sender or (message_type == 'text' and not message_text.strip()):
+                logger.debug(f"🚫 Skipping empty message from {sender}")
+                return
+            
+            # Skip status broadcasts and newsletters unless they have actual content
+            if '@broadcast' in sender or '@newsletter' in sender:
+                if not message_text or not message_text.strip():
+                    logger.debug(f"🚫 Skipping empty status/newsletter from {sender}")
+                    return
             
             logger.info(f"📨 Received message from {sender}: {message_text[:50]}...")
             
@@ -266,11 +288,22 @@ class WhatsAppClient:
                 self.get_user_context(sender)
             )
             
-            # Apply learned user style to response
-            styled_response = self.style_mimicker.apply_user_style(
-                response, 
-                {'topic': self.extract_topic(message), 'sender': sender}
-            )
+            # Ensure we have a valid response
+            if not response:
+                response = "Sorry, I couldn't generate a response at the moment."
+            
+            # Apply learned user style to response (with safety check)
+            try:
+                styled_response = self.style_mimicker.apply_user_style(
+                    response, 
+                    {'topic': self.extract_topic(message), 'sender': sender}
+                )
+                # Fallback if style application fails
+                if not styled_response:
+                    styled_response = response
+            except Exception as style_error:
+                logger.warning(f"⚠️ Style application failed: {style_error}")
+                styled_response = response
             
             logger.info(f"💬 Generated styled response: {styled_response[:100]}...")
             
@@ -288,7 +321,14 @@ class WhatsAppClient:
                     )
                     if auto_response:
                         # Apply learned style to auto-reply too
-                        styled_auto_response = self.style_mimicker.apply_user_style(auto_response)
+                        try:
+                            styled_auto_response = self.style_mimicker.apply_user_style(auto_response)
+                            if not styled_auto_response:
+                                styled_auto_response = auto_response
+                        except Exception as style_error:
+                            logger.warning(f"⚠️ Auto-reply style application failed: {style_error}")
+                            styled_auto_response = auto_response
+                        
                         delay = await self.auto_reply.get_auto_reply_delay(sender)
                         await asyncio.sleep(delay)
                         await self.send_message(sender, styled_auto_response, add_ai_icon=True)

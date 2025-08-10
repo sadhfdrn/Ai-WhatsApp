@@ -200,6 +200,20 @@ class WhatsAppBridge {
                 messageData.body = message.message.imageMessage.caption || '';
             }
 
+            // Filter out empty messages from status/newsletters
+            if (messageData.from.includes('@broadcast') || messageData.from.includes('@newsletter')) {
+                if (!messageData.body || !messageData.body.trim()) {
+                    console.log(`🚫 Skipping empty status/newsletter from ${messageData.from}`);
+                    return null;
+                }
+            }
+
+            // Filter out completely empty text messages
+            if (messageData.type === 'text' && (!messageData.body || !messageData.body.trim())) {
+                console.log(`🚫 Skipping empty text message from ${messageData.from}`);
+                return null;
+            }
+
             return messageData;
 
         } catch (error) {
