@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T18:59:05.147150Z",
+  "last_updated": "2025-08-10T19:00:00.323232Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -42,11 +42,12 @@
       "📌": 0.2,
       "✅": 0.2,
       "💯": 0.2,
-      "⚜️": 0.2
+      "⚜️": 0.2,
+      "😌": 0.2
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.07540216192819604
+    "caps_usage_frequency": 0.07202861240204311
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -88,8 +89,9 @@
       "fams",
       "there",
       "hello",
-      "food",
       "forget",
+      "rice",
+      "plates",
       "includes",
       "present",
       "message",
@@ -97,6 +99,7 @@
       "secretly",
       "away",
       "arranging",
+      "adekoya",
       "forex",
       "dollar",
       "scratch",
@@ -113,11 +116,9 @@
       "rich",
       "account",
       "attendre",
+      "over",
       "yeah",
-      "requests",
-      "https",
-      "adekoya",
-      "opeyemi"
+      "requests"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -135,8 +136,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 56,
-    "last_learning_session": "2025-08-10T18:59:05.147142Z",
+    "total_messages_analyzed": 57,
+    "last_learning_session": "2025-08-10T19:00:00.323224Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
