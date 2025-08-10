@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:21.744526Z",
+  "last_updated": "2025-08-10T10:05:21.857970Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -17,7 +17,7 @@
       "𝘸𝘢𝘴": 0.2,
       "𝘥𝘦𝘭𝘦𝘵𝘦𝘥": 0.2,
       "🍑": 0.2,
-      "😒": 0.2,
+      "😒": 0.56,
       "⚡️": 0.2,
       "👐": 0.7200000000000001,
       "👨": 0.7200000000000001,
@@ -45,7 +45,7 @@
     },
     "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.10978664534240916
+    "caps_usage_frequency": 0.10080798080816825
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -76,13 +76,14 @@
       "attendre",
       "open",
       "kindly",
+      "away",
       "forex",
       "fast",
       "yeah",
       "below",
       "present",
-      "test",
       "delete",
+      "test",
       "adekoya",
       "palmpay",
       "refer",
@@ -90,13 +91,16 @@
       "guaranteed",
       "forget",
       "friends",
+      "secretly",
       "https",
       "screenshot",
+      "arranging",
       "opeyemi",
       "always",
       "blessing",
       "polls",
       "sunday",
+      "marriage",
       "facebook",
       "scratch",
       "someone",
@@ -112,11 +116,7 @@
       "free",
       "replying",
       "from",
-      "guys",
-      "card",
-      "afmweca",
-      "bien",
-      "past"
+      "guys"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -133,8 +133,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 47,
-    "last_learning_session": "2025-08-10T10:05:21.744518Z",
+    "total_messages_analyzed": 48,
+    "last_learning_session": "2025-08-10T10:05:21.857964Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
