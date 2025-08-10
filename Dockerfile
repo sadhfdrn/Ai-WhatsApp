@@ -18,7 +18,7 @@ ENV SEARXNG_URL=https://searx.be
 # Docker container detection
 ENV DOCKER_CONTAINER=true
 
-# Install system dependencies
+# Install system dependencies and upgrade Node.js to version 20
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
@@ -34,9 +34,11 @@ RUN apt-get update && apt-get install -y \
     alsa-utils \
     libasound2-dev \
     pkg-config \
-    nodejs \
-    npm \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20.x (required for baileys-mod)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Set working directory
 WORKDIR /app
