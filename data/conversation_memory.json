@@ -1,26 +1,24 @@
 {
-  "last_updated": "2025-08-10T19:10:59.653050Z",
+  "last_updated": "2025-08-10T19:12:11.771665Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:10:59.607368Z",
-      "message": "My tour to Olumo Rock 🪨 in Abeokuta💕⬆️\nhttps://vt.tiktok.com/ZSSGGxfon/\nCheck it out!!!!!!!",
+      "timestamp": "2025-08-10T19:12:11.717636Z",
+      "message": "Hello bot! This is a test message.",
       "patterns": {
-        "length": 91,
-        "word_count": 12,
-        "sentence_count": 4,
-        "exclamation_count": 7,
+        "length": 34,
+        "word_count": 7,
+        "sentence_count": 3,
+        "exclamation_count": 1,
         "question_count": 0,
-        "caps_ratio": 0.10989010989010989,
-        "emoji_usage": {
-          "💕⬆️": 1
-        },
+        "caps_ratio": 0.058823529411764705,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
-          "excited": 0.08333333333333333,
+          "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.5833333333333334,
+          "emphatic": 0.14285714285714285,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
@@ -28,29 +26,24 @@
         },
         "punctuation_style": {
           "uses_periods": true,
-          "multiple_exclamations": true,
+          "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "rock",
-          "tiktok",
-          "abeokuta",
-          "olumo",
-          "tour",
-          "zssggxfon",
-          "check",
-          "https"
+          "hello",
+          "message",
+          "test"
         ],
-        "greeting_patterns": null,
+        "greeting_patterns": "casual",
         "agreement_patterns": null,
-        "excitement_level": 2.0
+        "excitement_level": 0.3
       },
       "context": {
-        "sender": "120363369521002044@g.us",
-        "timestamp": "2025-08-10T19:10:58"
+        "sender": "test_user@c.us",
+        "timestamp": "2025-08-10T19:12:11.711905"
       }
     }
   ]
