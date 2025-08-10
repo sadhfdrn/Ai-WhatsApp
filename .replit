@@ -26,12 +26,13 @@ args = "WhatsApp Bridge"
 name = "WhatsApp AI Bot"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python -u main.py"
-
-[workflows.workflow.metadata]
-outputType = "console"
+waitForPort = 8080
 
 [[workflows.workflow]]
 name = "WhatsApp Bridge"

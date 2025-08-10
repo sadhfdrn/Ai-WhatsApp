@@ -15,9 +15,9 @@ services:
       - TEMPERATURE=0.8
       - LOW_MEMORY_MODE=false
       
-      # Search Configuration - Unlimited Access
+      # Search Configuration - SearXNG Access
       - SEARCH_ENABLED=true
-      - WHOOGLE_URL=https://search.benbusby.com
+      - SEARXNG_URL=http://searxng:8080
       - MAX_SEARCH_RESULTS=10
       - AUTO_SEARCH_ON_QUESTIONS=true
       
@@ -79,7 +79,8 @@ services:
     
     # Dependencies
     depends_on:
-      - whoogle-search
+      - redis
+      - searxng
     
     # Logging
     logging:
@@ -88,30 +89,46 @@ services:
         max-size: "100m"
         max-file: "3"
 
-  # Optional: Self-hosted Whoogle search for unlimited usage
-  whoogle-search:
-    image: benbusby/whoogle-search:latest
-    container_name: whoogle-search
+  # Redis for SearXNG caching
+  redis:
+    container_name: redis
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
     restart: unless-stopped
-    
-    environment:
-      - WHOOGLE_ALT_TW=nitter.net
-      - WHOOGLE_ALT_YT=invidious.io
-      - WHOOGLE_ALT_IG=bibliogram.art
-      - WHOOGLE_ALT_RD=libredd.it
-      - WHOOGLE_CONFIG_COUNTRY=NG
-      - WHOOGLE_CONFIG_LANGUAGE=en
-      - WHOOGLE_CONFIG_SEARCH_LANGUAGE=en
-      - WHOOGLE_CONFIG_DISABLE=0
-      - WHOOGLE_CONFIG_GET_ONLY=1
-      - WHOOGLE_CONFIG_URL=https://search.whoogle.local
-      - WHOOGLE_CONFIG_STYLE=:root{--whoogle-background:#0d1117;--whoogle-accent:#1f6feb;--whoogle-text:#c9d1d9;--whoogle-contrast-text:#f0f6fc;--whoogle-secondary-text:#8b949e;--whoogle-result-bg:#161b22;--whoogle-result-title:#58a6ff;--whoogle-result-url:#39d353;--whoogle-result-visited:#bc8cff;}
-    
-    ports:
-      - "5000:5000"
-    
+    networks:
+      - searxng
     volumes:
-      - whoogle_config:/config
+      - valkey-data:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+
+  # SearXNG search engine
+  searxng:
+    container_name: searxng
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - searxng
+    ports:
+      - "8081:8080"  # External access port
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8081/
+      - UWSGI_WORKERS=4
+      - UWSGI_THREADS=4
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    depends_on:
+      - redis
     
     logging:
       driver: "json-file"
@@ -124,9 +141,11 @@ volumes:
     driver: local
   whatsapp_logs:
     driver: local
-  whoogle_config:
+  valkey-data:
     driver: local
 
 networks:
   default:
     name: whatsapp-ai-network
+  searxng:
+    name: searxng

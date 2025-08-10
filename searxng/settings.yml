@@ -1,0 +1,51 @@
+general:
+  instance_name: "WhatsApp AI Bot SearXNG"
+  privacypolicy_url: false
+  donation_url: false
+  contact_url: false
+  enable_metrics: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "auto"
+  formats:
+    - html
+    - json
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "$(openssl rand -hex 32)"
+  base_url: "http://localhost:8080/"
+  image_proxy: true
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    
+  - name: bing
+    engine: bing
+    shortcut: bi
+    
+  - name: yahoo
+    engine: yahoo
+    shortcut: yh
+
+ui:
+  static_use_hash: false
+  default_theme: simple
+  center_alignment: false
+  query_in_title: false
+  infinite_scroll: false
+
+outgoing:
+  request_timeout: 3.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 20

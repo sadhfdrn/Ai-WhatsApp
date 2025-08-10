@@ -45,6 +45,10 @@ class DatabaseManager:
         
         self.connection_attempts = 1
     
+    async def learn_from_message(self, message: str, sender_id: str, bot_response: str = None) -> Dict[str, Any]:
+        """Learn from a message - wrapper for process_message"""
+        return await self.process_message(message, sender_id, bot_response)
+    
     async def process_message(self, message: str, sender_id: str, bot_response: str = None, 
                             sentiment_data: Dict = None) -> Dict[str, Any]:
         """Process and store a message with style learning"""

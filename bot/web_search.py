@@ -14,18 +14,19 @@ import trafilatura
 logger = logging.getLogger(__name__)
 
 class WebSearchHandler:
-    """Web search handler with Whoogle integration"""
+    """Web search handler with SearXNG integration"""
     
     def __init__(self, config):
         self.config = config
-        self.whoogle_url = config.WHOOGLE_URL
+        self.searxng_url = config.SEARXNG_URL
         self.max_results = config.MAX_SEARCH_RESULTS
         self.timeout = 10
         
-        # Fallback search engines
+        # Fallback SearXNG instances
         self.fallback_engines = [
-            "https://search.benbusby.com",  # Alternative Whoogle instance
-            "https://whoogle.sdf.org",     # Another public instance
+            "https://searx.be",           # Public SearXNG instance
+            "https://search.bus-hit.me",  # Another public instance
+            "https://searx.tiekoetter.com", # Backup instance
         ]
         
         # Request headers to avoid blocking
@@ -40,7 +41,7 @@ class WebSearchHandler:
         logger.info("🔍 Web search handler initialized")
     
     async def search(self, query: str, num_results: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Perform web search using Whoogle"""
+        """Perform web search using SearXNG"""
         try:
             if not query.strip():
                 logger.warning("⚠️ Empty search query provided")
@@ -49,14 +50,14 @@ class WebSearchHandler:
             num_results = num_results or self.max_results
             logger.info(f"🔍 Searching for: {query}")
             
-            # Try primary Whoogle instance first
-            results = await self.search_whoogle(query, num_results)
+            # Try primary SearXNG instance first
+            results = await self.search_searxng(query, num_results)
             
             if not results:
                 # Try fallback instances
                 for fallback_url in self.fallback_engines:
-                    logger.info(f"🔄 Trying fallback search engine: {fallback_url}")
-                    results = await self.search_whoogle(query, num_results, fallback_url)
+                    logger.info(f"🔄 Trying fallback SearXNG engine: {fallback_url}")
+                    results = await self.search_searxng(query, num_results, fallback_url)
                     if results:
                         break
             
@@ -73,15 +74,18 @@ class WebSearchHandler:
             logger.error(f"❌ Search error: {e}")
             return []
     
-    async def search_whoogle(self, query: str, num_results: int, base_url: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Search using Whoogle instance"""
+    async def search_searxng(self, query: str, num_results: int, base_url: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Search using SearXNG instance"""
         try:
-            search_url = base_url or self.whoogle_url
+            search_url = base_url or self.searxng_url
             
-            # Construct search URL
+            # Construct search URL with JSON format
             search_params = {
                 'q': query,
-                'num': min(num_results, 20)  # Whoogle limit
+                'format': 'json',
+                'categories': 'general',
+                'lang': 'auto',
+                'pageno': 1
             }
             
             url = f"{search_url}/search?{urlencode(search_params)}"
@@ -90,87 +94,73 @@ class WebSearchHandler:
             response = requests.get(url, headers=self.headers, timeout=self.timeout)
             response.raise_for_status()
             
-            # Parse results
-            results = await self.parse_whoogle_results(response.text, num_results)
+            # Parse JSON results
+            results = await self.parse_searxng_results(response.json(), num_results)
             return results
             
         except requests.RequestException as e:
-            logger.error(f"❌ Whoogle search request failed: {e}")
+            logger.error(f"❌ SearXNG search request failed: {e}")
             return []
         except Exception as e:
-            logger.error(f"❌ Whoogle search error: {e}")
+            logger.error(f"❌ SearXNG search error: {e}")
             return []
     
-    async def parse_whoogle_results(self, html: str, max_results: int) -> List[Dict[str, Any]]:
-        """Parse Whoogle search results HTML"""
+    async def parse_searxng_results(self, json_data: dict, max_results: int) -> List[Dict[str, Any]]:
+        """Parse search results from SearXNG JSON response"""
         try:
             results = []
             
-            # Simple regex-based parsing for Whoogle results
-            # In a production environment, consider using BeautifulSoup for more robust parsing
+            # SearXNG returns results in a 'results' array
+            search_results = json_data.get('results', [])
             
-            # Pattern to match search result divs
-            result_pattern = r'<div class="g">.*?<h3.*?><a href="([^"]+)"[^>]*>([^<]+)</a></h3>.*?<span class="st">([^<]*)</span>'
-            matches = re.finditer(result_pattern, html, re.DOTALL | re.IGNORECASE)
-            
-            for match in matches:
-                if len(results) >= max_results:
-                    break
-                
-                url = match.group(1)
-                title = match.group(2)
-                snippet = match.group(3)
-                
-                # Clean up the extracted data
-                url = url.replace('/url?q=', '').split('&')[0]  # Remove tracking parameters
-                title = re.sub(r'<[^>]+>', '', title).strip()  # Remove HTML tags
-                snippet = re.sub(r'<[^>]+>', '', snippet).strip()  # Remove HTML tags
-                
-                if url and title:
-                    results.append({
-                        'title': title,
-                        'url': url,
-                        'snippet': snippet or 'No description available',
-                        'source': 'whoogle'
-                    })
-            
-            # If regex parsing fails, try alternative patterns
-            if not results:
-                results = await self.fallback_html_parsing(html, max_results)
-            
-            return results
-            
-        except Exception as e:
-            logger.error(f"❌ HTML parsing error: {e}")
-            return []
-    
-    async def fallback_html_parsing(self, html: str, max_results: int) -> List[Dict[str, Any]]:
-        """Fallback HTML parsing method"""
-        try:
-            results = []
-            
-            # Try simpler pattern matching
-            link_pattern = r'<a href="([^"]+)"[^>]*>([^<]+)</a>'
-            snippet_pattern = r'<span[^>]*>([^<]*)</span>'
-            
-            links = re.findall(link_pattern, html)
-            snippets = re.findall(snippet_pattern, html)
-            
-            for i, (url, title) in enumerate(links[:max_results]):
-                if url.startswith('http') and not url.startswith(self.whoogle_url):
-                    snippet = snippets[i] if i < len(snippets) else 'No description available'
+            for result in search_results[:max_results]:
+                try:
+                    title = result.get('title', '').strip()
+                    url = result.get('url', '').strip()
+                    description = result.get('content', '').strip()
+                    engine = result.get('engine', 'searxng')
                     
-                    results.append({
-                        'title': title.strip(),
-                        'url': url,
-                        'snippet': snippet.strip(),
-                        'source': 'whoogle_fallback'
-                    })
+                    if title and url:
+                        results.append({
+                            'title': title,
+                            'url': url,
+                            'description': description,
+                            'source': f'searxng/{engine}',
+                            'category': result.get('category', 'general'),
+                            'engines': result.get('engines', [engine])
+                        })
+                        
+                except Exception as e:
+                    logger.debug(f"❌ Error parsing individual SearXNG result: {e}")
+                    continue
+            
+            logger.info(f"✅ Parsed {len(results)} SearXNG results")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Error parsing SearXNG JSON results: {e}")
+            return []
+    
+    async def fallback_searxng_search(self, query: str, max_results: int) -> List[Dict[str, Any]]:
+        """Fallback search using alternative SearXNG instances"""
+        try:
+            results = []
+            
+            for instance_url in self.fallback_engines:
+                try:
+                    logger.info(f"🔄 Trying fallback SearXNG instance: {instance_url}")
+                    results = await self.search_searxng(query, max_results, instance_url)
+                    if results:
+                        logger.info(f"✅ Found {len(results)} results from fallback instance")
+                        break
+                except Exception as e:
+                    logger.warning(f"⚠️ Fallback instance {instance_url} failed: {e}")
+                    continue
             
             return results
             
         except Exception as e:
-            logger.error(f"❌ Fallback parsing error: {e}")
+            logger.error(f"❌ All fallback instances failed: {e}")
             return []
     
     async def enhance_search_results(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

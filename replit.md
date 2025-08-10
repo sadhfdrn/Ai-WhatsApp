@@ -83,6 +83,20 @@ Includes centralized utility functions for text sanitization and formatting, enh
 - **StyleMimicker**: Applies learned user style to AI responses
 - **DatabaseManager**: Orchestrates all database operations and learning integration
 
+## Recent Changes
+
+### August 10, 2025 - SearXNG Integration & Koyeb Deployment Optimization
+- **Search Engine Migration**: Replaced Whoogle with SearXNG for better search capabilities
+  - SearXNG provides JSON API, multiple search engines, and better privacy
+  - Primary instance: https://searx.be with fallback instances
+  - Enhanced search parsing with JSON responses instead of HTML scraping
+- **Koyeb Deployment Support**: Created optimized Dockerfile.koyeb for cloud deployment
+  - AI models configured for streaming to work in cloud environments
+  - Health checks optimized for Koyeb monitoring
+  - Environment variables configured for cloud scaling
+- **Database Learning Fix**: Added missing learn_from_message method to DatabaseManager
+- **Configuration Updates**: Updated all config files to use SearXNG instead of Whoogle
+
 ## Recent Changes (August 2025)
 - Added comprehensive .gitignore including wa-auth/ directory for security
 - Enhanced Dockerfile with streaming AI models instead of pre-downloading

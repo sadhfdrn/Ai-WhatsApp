@@ -23,9 +23,10 @@ A sophisticated WhatsApp AI bot with advanced capabilities including streaming A
 - **User Permission Management**: Easy enable/disable with personalization
 
 ### 🌐 Web Search & Information
-- **Privacy-Focused Search**: Integrated Whoogle search for current information
-- **Real-time Data**: Access to live information and current events
-- **Smart Summarization**: Concise, relevant information extraction
+- **Advanced Search**: Integrated SearXNG search engine with multiple sources
+- **Privacy-Focused**: Enhanced privacy protection with decentralized search
+- **Real-time Data**: Access to live information from Google, Bing, DuckDuckGo, and more
+- **Smart Summarization**: Concise, relevant information extraction from multiple engines
 
 ### 🎭 Creative Features
 - **Meme Generation**: Custom meme creation with text overlays
