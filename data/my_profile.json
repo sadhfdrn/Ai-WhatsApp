@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:21:09.020039Z",
+  "last_updated": "2025-08-10T19:22:36.564671Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -52,9 +52,9 @@
       "💕⬆️": 0.2,
       "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.11013056902333253
+    "caps_usage_frequency": 0.1281497701855154
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -76,11 +76,13 @@
   },
   "conversation_context": {
     "favorite_topics": [
+      "rice",
       "mode",
       "test",
       "making",
       "work",
       "what",
+      "lose",
       "bought",
       "forget",
       "full",
@@ -98,23 +100,22 @@
       "grass",
       "people",
       "zssggxfon",
+      "whatsapp",
       "palmpay",
       "marriage",
       "someone",
       "doesn",
-      "tiktok",
       "secretly",
       "cant",
       "from",
-      "clips",
       "lord",
+      "hard",
       "intelligence",
       "live",
       "olumo",
       "risk",
       "yourself",
       "https",
-      "present",
       "check",
       "chat",
       "open",
@@ -123,9 +124,8 @@
       "body",
       "hello",
       "sunday",
-      "rice",
-      "whatsapp",
-      "collected"
+      "present",
+      "clips"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -145,8 +145,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 80,
-    "last_learning_session": "2025-08-10T19:21:09.020029Z",
+    "total_messages_analyzed": 81,
+    "last_learning_session": "2025-08-10T19:22:36.564660Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
