@@ -1,26 +1,23 @@
 {
-  "last_updated": "2025-08-10T20:43:05.066352Z",
+  "last_updated": "2025-08-10T20:43:53.535537Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:43:05.034256Z",
-      "message": "*✨Protect your focus, secure your dreams. ✅*",
+      "timestamp": "2025-08-10T20:43:53.502882Z",
+      "message": "So Paul would say in 1 Corinthians that know ye not that you're the Temple of the Holy Spirit?\nYou've been bought with a price which wasn't gold nor silver but the Blood of the Lamb\nSuch that we're meant to Live, move and have our being in God because it's not us who lives in this body but Christ who lives and finds expression in us",
       "patterns": {
-        "length": 44,
-        "word_count": 7,
+        "length": 334,
+        "word_count": 67,
         "sentence_count": 2,
         "exclamation_count": 0,
-        "question_count": 0,
-        "caps_ratio": 0.022727272727272728,
-        "emoji_usage": {
-          "✨": 1,
-          "✅": 1
-        },
+        "question_count": 1,
+        "caps_ratio": 0.038922155688622756,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.0,
+          "questioning": 0.014925373134328358,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -28,18 +25,39 @@
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.022727272727272728,
-          "quotation_usage": false
+          "comma_frequency": 0.0029940119760479044,
+          "quotation_usage": true
         },
         "topic_keywords": [
-          "secure",
-          "protect",
-          "dreams",
-          "focus"
+          "bought",
+          "lives",
+          "temple",
+          "live",
+          "because",
+          "christ",
+          "which",
+          "finds",
+          "meant",
+          "silver",
+          "know",
+          "gold",
+          "spirit",
+          "such",
+          "expression",
+          "wasn",
+          "holy",
+          "lamb",
+          "move",
+          "corinthians",
+          "being",
+          "paul",
+          "blood",
+          "body",
+          "price"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -47,7 +65,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:43:04"
+        "timestamp": "2025-08-10T20:43:52"
       }
     }
   ]
