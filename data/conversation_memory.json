@@ -1,49 +1,50 @@
 {
-  "last_updated": "2025-08-10T19:29:18.567628Z",
+  "last_updated": "2025-08-10T19:29:21.802563Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:29:18.165842Z",
-      "message": "Hello bot! This is a test message.",
+      "timestamp": "2025-08-10T19:29:21.701287Z",
+      "message": "I'm fully active 😭",
       "patterns": {
-        "length": 34,
-        "word_count": 7,
-        "sentence_count": 3,
-        "exclamation_count": 1,
+        "length": 18,
+        "word_count": 4,
+        "sentence_count": 1,
+        "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.058823529411764705,
-        "emoji_usage": {},
+        "caps_ratio": 0.05555555555555555,
+        "emoji_usage": {
+          "😭": 1
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.14285714285714285,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
-          "quotation_usage": false
+          "quotation_usage": true
         },
         "topic_keywords": [
-          "test",
-          "hello",
-          "message"
+          "fully",
+          "active"
         ],
-        "greeting_patterns": "casual",
+        "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.3
+        "excitement_level": 0.0
       },
       "context": {
-        "sender": "test_user@c.us",
-        "timestamp": "2025-08-10T19:29:18.154110"
+        "sender": "status@broadcast",
+        "timestamp": "2025-08-10T19:29:21"
       }
     }
   ]
