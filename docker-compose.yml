@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  whatsapp-ai-bot:
+    build: .
+    container_name: whatsapp-ai-bot
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      # AI Models Configuration
+      - USE_STREAMING=true
+      - AI_MODEL=microsoft/DialoGPT-small
+      - MAX_RESPONSE_LENGTH=500
+      - TEMPERATURE=0.8
+      - LOW_MEMORY_MODE=false
+      
+      # Search Configuration - Unlimited Access
+      - SEARCH_ENABLED=true
+      - WHOOGLE_URL=https://search.benbusby.com
+      - MAX_SEARCH_RESULTS=10
+      - AUTO_SEARCH_ON_QUESTIONS=true
+      
+      # Translation and Timezone
+      - AUTO_TRANSLATE=true
+      - TARGET_LANGUAGE=en
+      - TIMEZONE=Africa/Lagos
+      - LOCALE=en_NG
+      
+      # WhatsApp Configuration
+      - BOT_NAME=AI Assistant 🤖
+      - BOT_PREFIX=!
+      
+      # Voice Configuration
+      - VOICE_ENABLED=true
+      - TTS_LANGUAGE=en
+      - VOICE_SPEED=1.0
+      
+      # Feature Toggles
+      - MEME_GENERATION=true
+      - AUTO_REPLY_ENABLED=false
+      - PERSONALITY_MODE=humorous
+      
+      # Performance Settings
+      - TRANSFORMERS_CACHE=/app/model_cache
+      - HF_HOME=/app/model_cache
+      - TOKENIZERS_PARALLELISM=false
+      - OMP_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+    
+    # Mount WhatsApp credentials and data
+    volumes:
+      - ./wa-auth:/app/wa-auth
+      - ./data:/app/data
+      - whatsapp_models:/app/model_cache
+      - whatsapp_logs:/app/logs
+    
+    # Resource limits for optimal AI model performance
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Networking
+    ports:
+      - "8080:8080"  # Health check port
+    
+    # Dependencies
+    depends_on:
+      - whoogle-search
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Optional: Self-hosted Whoogle search for unlimited usage
+  whoogle-search:
+    image: benbusby/whoogle-search:latest
+    container_name: whoogle-search
+    restart: unless-stopped
+    
+    environment:
+      - WHOOGLE_ALT_TW=nitter.net
+      - WHOOGLE_ALT_YT=invidious.io
+      - WHOOGLE_ALT_IG=bibliogram.art
+      - WHOOGLE_ALT_RD=libredd.it
+      - WHOOGLE_CONFIG_COUNTRY=NG
+      - WHOOGLE_CONFIG_LANGUAGE=en
+      - WHOOGLE_CONFIG_SEARCH_LANGUAGE=en
+      - WHOOGLE_CONFIG_DISABLE=0
+      - WHOOGLE_CONFIG_GET_ONLY=1
+      - WHOOGLE_CONFIG_URL=https://search.whoogle.local
+      - WHOOGLE_CONFIG_STYLE=:root{--whoogle-background:#0d1117;--whoogle-accent:#1f6feb;--whoogle-text:#c9d1d9;--whoogle-contrast-text:#f0f6fc;--whoogle-secondary-text:#8b949e;--whoogle-result-bg:#161b22;--whoogle-result-title:#58a6ff;--whoogle-result-url:#39d353;--whoogle-result-visited:#bc8cff;}
+    
+    ports:
+      - "5000:5000"
+    
+    volumes:
+      - whoogle_config:/config
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
+
+volumes:
+  whatsapp_models:
+    driver: local
+  whatsapp_logs:
+    driver: local
+  whoogle_config:
+    driver: local
+
+networks:
+  default:
+    name: whatsapp-ai-network

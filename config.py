@@ -56,10 +56,14 @@ class Config:
         self.VOICE_ENABLED = os.getenv("VOICE_ENABLED", "true").lower() == "true"
         self.VOICE_SPEED = float(os.getenv("VOICE_SPEED", "1.0"))
         
-        # Web Search Configuration
+        # Web Search Configuration - Unlimited Access
         self.WHOOGLE_URL = os.getenv("WHOOGLE_URL", "https://search.benbusby.com")
         self.SEARCH_ENABLED = os.getenv("SEARCH_ENABLED", "true").lower() == "true"
-        self.MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "5"))
+        self.MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "10"))
+        self.AUTO_SEARCH_ON_QUESTIONS = os.getenv("AUTO_SEARCH_ON_QUESTIONS", "true").lower() == "true"
+        
+        # AI Model Performance Configuration
+        self.LOW_MEMORY_MODE = os.getenv("LOW_MEMORY_MODE", "true").lower() == "true"  # Default true for Replit
         
         # Auto-reply Configuration
         self.AUTO_REPLY_ENABLED = os.getenv("AUTO_REPLY_ENABLED", "false").lower() == "true"

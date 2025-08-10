@@ -87,14 +87,18 @@ class EnhancedAISystem:
             logger.warning("⚠️ Transformers not available, using fallback responses")
             return
             
-        # Only initialize models if we have enough memory
-        if not self.config.LOW_MEMORY_MODE:
+        # Initialize models based on availability and memory settings
+        low_memory = getattr(self.config, 'LOW_MEMORY_MODE', True)  # Default to low memory for Replit
+        
+        if not low_memory and TRANSFORMERS_AVAILABLE:
             self._load_conversation_model()
             self._load_translation_model()
             self._load_sentiment_model()
             
-        if SENTENCE_TRANSFORMERS_AVAILABLE and not self.config.LOW_MEMORY_MODE:
+        if SENTENCE_TRANSFORMERS_AVAILABLE and not low_memory:
             self._load_embeddings_model()
+        
+        logger.info(f"🧠 AI models initialized (low_memory={low_memory})")
     
     def _load_conversation_model(self):
         """Load conversation model"""
@@ -481,40 +485,133 @@ class EnhancedAISystem:
         return random.choice(responses)
     
     async def process_message_with_search(self, message: str, sender: str) -> str:
-        """Process message and handle web search if needed"""
+        """Process message with intelligent web search integration"""
         message_lower = message.lower().strip()
         
-        # Check if this is a search request
-        search_triggers = ["search", "find", "look up", "google", "what is", "who is", "where is", "when is", "how to"]
-        is_search_request = any(trigger in message_lower for trigger in search_triggers)
+        # Enhanced search trigger detection
+        search_triggers = [
+            "search", "find", "look up", "google", "what is", "who is", "where is", 
+            "when is", "how to", "tell me about", "information about", "latest news",
+            "current", "recent", "today", "now", "weather", "temperature", "stock price"
+        ]
         
-        # Check if message contains questions that might need web search
+        # Question patterns that benefit from search
         question_words = ["what", "who", "where", "when", "how", "why", "which"]
         is_question = any(message_lower.startswith(word) for word in question_words)
         
-        if is_search_request or (is_question and len(message.split()) > 3):
-            # Extract search query
-            search_query = message
-            if "search for" in message_lower:
-                search_query = message_lower.split("search for")[-1].strip()
-            elif "search" in message_lower:
-                search_query = message_lower.replace("search", "").strip()
-            
-            # Perform web search
-            search_results = await self.search_web(search_query, max_results=3)
-            
-            if search_results:
-                response = f"Here's what I found about '{search_query}':\n\n"
-                for i, result in enumerate(search_results[:3], 1):
-                    response += f"{i}. **{result.get('title', 'Result')}**\n"
-                    response += f"   {result.get('snippet', 'No description available')}\n"
-                    if result.get('url'):
-                        response += f"   🔗 {result['url']}\n\n"
-                
-                return response.strip()
-            else:
-                # Generate regular response if search fails
-                return self.generate_response(message, sender) + "\n\n(I tried to search for more info but couldn't access it right now)"
+        # Current information indicators
+        current_info_words = ["today", "now", "current", "latest", "recent", "2025", "this year"]
+        needs_current_info = any(word in message_lower for word in current_info_words)
         
-        # Regular message processing
+        # Automatic search conditions
+        is_search_request = any(trigger in message_lower for trigger in search_triggers)
+        auto_search_enabled = getattr(self.config, 'AUTO_SEARCH_ON_QUESTIONS', True)
+        
+        should_search = (
+            is_search_request or 
+            (auto_search_enabled and is_question and len(message.split()) > 2) or
+            (needs_current_info and len(message.split()) > 1)
+        )
+        
+        if should_search:
+            # Extract and clean search query
+            search_query = self._extract_search_query(message, message_lower)
+            
+            # Perform web search with streaming
+            try:
+                search_results = await self.search_web(search_query, max_results=getattr(self.config, 'MAX_SEARCH_RESULTS', 5))
+                
+                if search_results:
+                    # Enhanced response formatting with streaming
+                    if getattr(self.config, 'USE_STREAMING', False):
+                        response = await self._format_search_response_streaming(search_query, search_results)
+                    else:
+                        response = self._format_search_response(search_query, search_results)
+                    
+                    # Add AI-generated summary if models available
+                    if "chat" in self.models:
+                        summary = self._generate_search_summary(search_query, search_results)
+                        if summary:
+                            response = f"{summary}\n\n{response}"
+                    
+                    return response
+                else:
+                    # Fallback to AI response with search attempt note
+                    base_response = self.generate_response(message, sender)
+                    return f"{base_response}\n\n💡 I also tried searching for current information but couldn't find additional details right now."
+                    
+            except Exception as e:
+                logger.error(f"❌ Search processing failed: {e}")
+                return self.generate_response(message, sender)
+        
+        # Regular message processing with context awareness
         return self.generate_response(message, sender)
+    
+    def _extract_search_query(self, original_message: str, message_lower: str) -> str:
+        """Extract clean search query from message"""
+        # Remove common search prefixes
+        prefixes_to_remove = [
+            "search for", "search", "find", "look up", "google", "tell me about",
+            "what is", "who is", "where is", "when is", "how to", "information about"
+        ]
+        
+        query = message_lower
+        for prefix in prefixes_to_remove:
+            if query.startswith(prefix):
+                query = query[len(prefix):].strip()
+                break
+        
+        # Clean up the query
+        query = query.replace("?", "").replace("!", "").strip()
+        
+        # Use original case for better search results
+        if query:
+            # Find the position in original message
+            start_pos = original_message.lower().find(query)
+            if start_pos >= 0:
+                return original_message[start_pos:start_pos + len(query)]
+        
+        return query or original_message
+    
+    def _format_search_response(self, query: str, results: List[Dict[str, Any]]) -> str:
+        """Format search results into response"""
+        response = f"🔍 **Search Results for:** {query}\n\n"
+        
+        for i, result in enumerate(results[:5], 1):
+            title = result.get('title', 'Result')
+            snippet = result.get('snippet', 'No description available')
+            url = result.get('url', '')
+            
+            response += f"**{i}. {title}**\n{snippet}\n"
+            if url:
+                response += f"🔗 {url}\n\n"
+            else:
+                response += "\n"
+        
+        return response.strip()
+    
+    async def _format_search_response_streaming(self, query: str, results: List[Dict[str, Any]]) -> str:
+        """Format search results with streaming effect"""
+        # For now, return formatted response (streaming would be implemented in the UI layer)
+        return self._format_search_response(query, results)
+    
+    def _generate_search_summary(self, query: str, results: List[Dict[str, Any]]) -> str:
+        """Generate AI summary of search results"""
+        if not results or "chat" not in self.models:
+            return ""
+        
+        try:
+            # Combine snippets for summary
+            combined_info = " ".join([result.get('snippet', '') for result in results[:3]])
+            
+            if len(combined_info) > 50:
+                summary_prompt = f"Based on this information about '{query}': {combined_info[:500]}... Provide a brief summary:"
+                
+                # Generate summary using AI model
+                summary = self._generate_ai_response(summary_prompt, "system")
+                if summary and len(summary) < 200:
+                    return f"📝 **Summary:** {summary}\n"
+        except Exception as e:
+            logger.debug(f"Summary generation failed: {e}")
+        
+        return ""
