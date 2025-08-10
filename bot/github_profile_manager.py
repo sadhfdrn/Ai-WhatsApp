@@ -22,7 +22,7 @@ class GitHubProfileManager:
         self.repo_path = Path(repo_path)
         self.branch = branch
         self.data_dir = self.repo_path / "data"
-        self.github_token = os.getenv('GITHUB_TOKEN')
+        self.github_token = os.getenv('GH_TOKEN') or os.getenv('GITHUB_TOKEN')
         
         # Profile file paths
         self.profile_file = self.data_dir / "my_profile.json"

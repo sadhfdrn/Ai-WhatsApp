@@ -1,0 +1,398 @@
+name: WhatsApp AI Bot - Unified Deployment with Personality Learning
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_restart:
+        description: 'Force restart the bot'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  branchName: main
+
+jobs:
+  whatsapp-bot-unified:
+    runs-on: ubuntu-latest
+    timeout-minutes: 290  # Just under 5 hours
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        fetch-depth: 0
+
+    - name: Configure Git for Personality Persistence
+      run: |
+        git config --global user.name "WhatsApp AI Bot"
+        git config --global user.email "bot@github.com"
+        git config --global credential.helper store
+        echo "https://${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
+
+    - name: Free Disk Space
+      run: |
+        echo "Freeing up disk space for AI models..."
+        df -h
+        
+        # Remove large packages that aren't needed
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo rm -rf /usr/local/share/boost
+        sudo rm -rf /usr/local/graalvm/
+        sudo rm -rf /usr/local/.ghcup/
+        sudo rm -rf /usr/local/share/powershell
+        sudo rm -rf /usr/local/share/chromium
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo rm -rf /usr/share/swift
+        sudo rm -rf /usr/local/julia*
+        sudo rm -rf /usr/share/az_*
+        
+        # Remove specific packages
+        sudo apt-get remove -y '^dotnet-.*' '^llvm-.*' 'php.*' 'mysql-*' 'mongodb-*'
+        sudo apt-get remove -y azure-cli google-cloud-sdk firefox
+        sudo apt-get autoremove -y
+        sudo apt-get autoclean -y
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
+        
+        # Clean Docker if present
+        docker system prune -af || true
+        
+        echo "Disk space after cleanup:"
+        df -h
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js for WhatsApp Bridge
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache Dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.cache/huggingface
+          node_modules
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/requirements.txt', '**/package*.json') }}
+        restore-keys: |
+          ${{ runner.os }}-deps-
+
+    - name: Install System Dependencies
+      run: |
+        echo "Installing system dependencies..."
+        sudo apt-get update
+        sudo apt-get install -y \
+          ffmpeg \
+          espeak \
+          espeak-data \
+          libespeak1 \
+          libespeak-dev \
+          festival \
+          sox \
+          libsox-fmt-mp3 \
+          flac \
+          pulseaudio \
+          alsa-utils \
+          git-lfs
+
+    - name: Install Python Dependencies
+      run: |
+        echo "Installing Python dependencies..."
+        pip install --upgrade pip wheel setuptools
+        
+        # Install core dependencies
+        pip install \
+          requests \
+          beautifulsoup4 \
+          trafilatura \
+          python-dotenv \
+          gtts \
+          speechrecognition \
+          pydub \
+          pillow \
+          psutil \
+          asyncio-mqtt
+
+        # Install PyTorch CPU version for streaming
+        pip install torch==2.1.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
+        # Install transformers with streaming support
+        pip install \
+          transformers[torch] \
+          accelerate \
+          tokenizers \
+          datasets \
+          sentencepiece \
+          protobuf
+
+        # Install additional AI/ML tools
+        pip install \
+          scipy \
+          numpy \
+          scikit-learn \
+          nltk \
+          googletrans==4.0.0rc1 \
+          huggingface-hub \
+          sentence-transformers
+
+        echo "Python dependencies installed successfully"
+
+    - name: Install Node.js Dependencies
+      run: |
+        echo "Installing Node.js dependencies..."
+        npm install --production \
+          @whiskeysockets/baileys \
+          @hapi/boom \
+          qrcode-terminal \
+          pino
+        echo "Node.js dependencies installed"
+
+    - name: Load Existing Personality Data
+      run: |
+        echo "Loading personality profile from repository..."
+        mkdir -p data
+        ls -la data/ || echo "No existing data directory found, will create new profiles"
+        if [ -f "data/my_profile.json" ]; then
+          echo "Found existing personality profile"
+          cat data/my_profile.json | head -20
+        else
+          echo "No existing personality profile found"
+        fi
+
+    - name: Setup Model Caching and Environment
+      run: |
+        echo "Setting up smart model caching..."
+        
+        # Create model cache directory
+        mkdir -p ~/.cache/huggingface/transformers
+        mkdir -p ~/.cache/models
+        
+        # Set environment variables
+        export HF_HOME=~/.cache/huggingface
+        export TRANSFORMERS_CACHE=~/.cache/huggingface/transformers
+        export HF_DATASETS_CACHE=~/.cache/huggingface/datasets
+        export GITHUB_ACTIONS_ENV=true
+        
+        echo "Smart model caching setup complete"
+
+    - name: Deploy Whoogle Search Instance
+      run: |
+        echo "Setting up Whoogle search instance..."
+        pip install whoogle-search
+        
+        # Start Whoogle in background
+        nohup python -m whoogle &
+        WHOOGLE_PID=$!
+        echo "WHOOGLE_PID=$WHOOGLE_PID" >> $GITHUB_ENV
+        
+        # Wait for Whoogle to start
+        sleep 10
+        
+        # Test Whoogle connection
+        curl -s http://localhost:5000 > /dev/null && echo "Whoogle search deployed successfully" || echo "Whoogle may not be ready yet"
+
+    - name: Create WhatsApp Credentials
+      run: |
+        echo "Setting up WhatsApp credentials..."
+        
+        # Create credentials directory
+        mkdir -p wa-auth
+        
+        # Use provided credentials if available
+        if [ -n "${{ secrets.WHATSAPP_CREDS }}" ]; then
+          echo '${{ secrets.WHATSAPP_CREDS }}' > wa-auth/creds.json
+          echo "WhatsApp credentials configured from secrets"
+        else
+          echo "No WhatsApp credentials found in secrets"
+          echo "Bot will generate QR code for first-time setup"
+        fi
+
+    - name: Create Enhanced Configuration
+      run: |
+        echo "Creating enhanced bot configuration..."
+        
+        cat > .env << 'EOF'
+        # WhatsApp AI Bot Enhanced Configuration
+        BOT_NAME=Enhanced AI Assistant 🤖
+        BOT_PREFIX=!
+        
+        # AI Model Configuration (Streaming Optimized)
+        AI_MODEL=microsoft/DialoGPT-small
+        MAX_RESPONSE_LENGTH=300
+        TEMPERATURE=0.8
+        USE_STREAMING=true
+        
+        # Enhanced Personality Settings
+        PERSONALITY_MODE=take_charge_humorous
+        HUMOR_LEVEL=high
+        TAKE_CHARGE_ATTITUDE=true
+        INTERACTION_STYLE=engaging
+        JOKE_FREQUENCY=0.4
+        PROACTIVE_MESSAGING=true
+        
+        # Voice Processing
+        VOICE_ENABLED=true
+        TTS_LANGUAGE=en
+        VOICE_SPEED=1.0
+        VOICE_CLONING=false
+        
+        # Web Search Configuration
+        WHOOGLE_URL=http://localhost:5000
+        SEARCH_ENABLED=true
+        MAX_SEARCH_RESULTS=5
+        
+        # Auto-Reply System
+        AUTO_REPLY_ENABLED=false
+        AUTO_REPLY_DELAY_MIN=3
+        AUTO_REPLY_DELAY_MAX=10
+        LEARNING_MODE=true
+        
+        # Feature Toggles
+        MEME_GENERATION=true
+        ASCII_ART=true
+        TRANSLATION=true
+        CHAT_ANALYSIS=true
+        STORY_GENERATION=true
+        VOICE_CLONING=false
+        PROACTIVE_SUGGESTIONS=true
+        
+        # Performance Optimization
+        CACHE_SIZE=200
+        MAX_HISTORY_LENGTH=30
+        MEMORY_CLEANUP_INTERVAL=300
+        
+        # GitHub Actions Specific
+        GITHUB_ACTIONS=true
+        ENVIRONMENT=production
+        LOG_LEVEL=INFO
+        
+        # GitHub Token for Personality Persistence
+        GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
+        WORKFLOW_TIMEOUT=18000
+        LOW_MEMORY_MODE=true
+        EOF
+        
+        echo "Enhanced configuration created"
+
+    - name: Run WhatsApp AI Bot with Personality Learning
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        echo "Starting WhatsApp AI Bot with Personality Persistence..."
+        echo "Bot will automatically learn and save communication patterns to repository"
+        echo "Profile data will persist across workflow restarts"
+        echo "Start time: $(date)"
+        
+        # Set memory optimization flags
+        export PYTHONOPTIMIZE=2
+        export PYTHONDONTWRITEBYTECODE=1
+        export TOKENIZERS_PARALLELISM=false
+        export HF_HOME=/tmp/huggingface
+        export TRANSFORMERS_CACHE=/tmp/transformers
+        
+        # Monitor system resources
+        python -c "
+        import psutil
+        import os
+        print(f'Available memory: {psutil.virtual_memory().available / 1024 / 1024 / 1024:.1f} GB')
+        print(f'Available disk: {psutil.disk_usage(\"/\").free / 1024 / 1024 / 1024:.1f} GB')
+        print(f'CPU count: {psutil.cpu_count()}')
+        print(f'Process ID: {os.getpid()}')
+        "
+        
+        # Run bot with auto-restart and enhanced error handling
+        timeout 17400 bash -c 'while true; do 
+          echo "=== Starting Bot Instance at $(date) ==="
+          python main.py || echo "Bot crashed at $(date), restarting in 10 seconds..."
+          echo "=== Bot instance ended at $(date) ==="
+          sleep 10
+        done' || echo "Bot session completed after ~4.8 hours"
+
+    - name: Final Profile Save and Statistics
+      if: always()
+      run: |
+        echo "Performing final profile save..."
+        ls -la data/ || echo "No data directory found"
+        
+        if [ -f "data/my_profile.json" ]; then
+          echo "Final personality profile stats:"
+          python -c "
+import json
+try:
+    with open('data/my_profile.json', 'r') as f:
+        profile = json.load(f)
+    metadata = profile.get('learning_metadata', {})
+    print(f'Messages analyzed: {metadata.get(\"total_messages_analyzed\", 0)}')
+    print(f'Confidence score: {metadata.get(\"confidence_score\", 0):.2f}')
+    print(f'Pattern reliability: {metadata.get(\"pattern_reliability\", \"unknown\")}')
+    print(f'Last updated: {profile.get(\"last_updated\", \"never\")}')
+    
+    phrases = profile.get('communication_style', {}).get('common_phrases', {})
+    print(f'Common phrases learned: {len(phrases)}')
+    
+    emojis = profile.get('communication_style', {}).get('emoji_usage', {})
+    print(f'Emoji patterns learned: {len(emojis)}')
+except Exception as e:
+    print(f'Error reading profile: {e}')
+          "
+        fi
+        
+        # Commit any final changes
+        git add -A
+        git diff --cached --quiet || (
+          git commit -m "Final personality profile save - $(date)"
+          git push origin $branchName || echo "Push failed, but data is committed locally"
+        )
+
+    - name: Cleanup and Prepare for Next Run
+      if: always()
+      run: |
+        echo "Cleaning up for next run..."
+        
+        # Log final statistics
+        echo "Final system stats:"
+        df -h
+        free -h
+        
+        # Clean temporary files
+        rm -rf /tmp/transformers_cache/* 2>/dev/null || true
+        rm -rf /tmp/huggingface_cache/* 2>/dev/null || true
+        rm -rf __pycache__ 2>/dev/null || true
+        rm -rf .pytest_cache 2>/dev/null || true
+        
+        # Clean Python cache
+        find . -type f -name "*.pyc" -delete 2>/dev/null || true
+        find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+        
+        echo "End time: $(date)"
+        echo "Cleanup completed"
+
+    - name: Schedule Next Run (Self-Trigger)
+      if: always()
+      run: |
+        echo "Re-triggering workflow for continuous operation..."
+        echo "Current time: $(date)"
+        echo "Next run will start immediately after a brief pause..."
+        
+        # Brief pause before restart
+        sleep 30
+        
+        # Self-trigger the workflow using GH_TOKEN
+        curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/workflows/whatsapp-ai-bot-unified.yml/dispatches \
+          -d '{"ref":"${{ env.branchName }}"}'
+        
+        echo "Next workflow run triggered successfully"
+        echo "Bot will restart automatically in ~1-2 minutes"
