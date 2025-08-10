@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:14.273974Z",
+  "last_updated": "2025-08-10T10:05:15.420383Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -16,11 +16,14 @@
       "𝘥𝘦𝘭𝘦𝘵𝘦𝘥": 0.2,
       "🍑": 0.2,
       "😒": 0.2,
-      "⚡️": 0.2
+      "⚡️": 0.2,
+      "👐": 0.4,
+      "👨": 0.4,
+      "💻": 0.4
     },
     "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.09574386781038169
+    "caps_usage_frequency": 0.09505836991823241
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -43,9 +46,11 @@
   "conversation_context": {
     "favorite_topics": [
       "alhamdulillah",
+      "requests",
+      "open",
+      "forex",
       "guys",
       "always",
-      "forex",
       "hack",
       "hello",
       "gloo",
@@ -69,8 +74,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 11,
-    "last_learning_session": "2025-08-10T10:05:14.273950Z",
+    "total_messages_analyzed": 12,
+    "last_learning_session": "2025-08-10T10:05:15.420374Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
