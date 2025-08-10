@@ -1,24 +1,27 @@
 {
-  "last_updated": "2025-08-10T20:41:01.875305Z",
+  "last_updated": "2025-08-10T20:43:05.066352Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:41:01.832916Z",
-      "message": "Hello bot! This is a test message.",
+      "timestamp": "2025-08-10T20:43:05.034256Z",
+      "message": "*✨Protect your focus, secure your dreams. ✅*",
       "patterns": {
-        "length": 34,
+        "length": 44,
         "word_count": 7,
-        "sentence_count": 3,
-        "exclamation_count": 1,
+        "sentence_count": 2,
+        "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.058823529411764705,
-        "emoji_usage": {},
+        "caps_ratio": 0.022727272727272728,
+        "emoji_usage": {
+          "✨": 1,
+          "✅": 1
+        },
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.14285714285714285,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
@@ -29,21 +32,22 @@
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.0,
+          "comma_frequency": 0.022727272727272728,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "hello",
-          "test",
-          "message"
+          "secure",
+          "protect",
+          "dreams",
+          "focus"
         ],
-        "greeting_patterns": "casual",
+        "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.3
+        "excitement_level": 0.0
       },
       "context": {
-        "sender": "test_user@c.us",
-        "timestamp": "2025-08-10T20:41:01.828712"
+        "sender": "status@broadcast",
+        "timestamp": "2025-08-10T20:43:04"
       }
     }
   ]
