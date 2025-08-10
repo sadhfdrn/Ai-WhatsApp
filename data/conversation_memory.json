@@ -1,19 +1,29 @@
 {
-  "last_updated": "2025-08-10T10:05:19.659349Z",
+  "last_updated": "2025-08-10T10:05:19.814474Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T10:05:19.595697Z",
-      "message": "*Happy Sunday to you all* 💓",
+      "timestamp": "2025-08-10T10:05:19.744164Z",
+      "message": "https://whatsapp.com/channel/0029Vb6X1kv0Qeabrr1Dlp03/428\n\n*පරක්කුයි හැබැයි.😌💔*\n\n> *⚖️𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐁𝐲 - : ©𝐌𝐑 𝐌𝐀𝐍𝐔𝐋 𝐎𝐅𝐂 💚*\n\nහදන් යනකොට ආතල් එයි , එතකොට මරු 🥲🙂‍↕\n\n> *𝚁⚉𝙲𝙺𝚈 | 𝑅𝐷 ⚉𝐹𝐶 ᵀᴹ*࿐",
       "patterns": {
-        "length": 27,
-        "word_count": 6,
-        "sentence_count": 1,
+        "length": 179,
+        "word_count": 26,
+        "sentence_count": 3,
         "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.07407407407407407,
+        "caps_ratio": 0.1340782122905028,
         "emoji_usage": {
-          "💓": 1
+          "😌💔": 1,
+          "⚖️𝐏𝐨𝐰𝐞𝐫𝐞𝐝": 1,
+          "𝐁𝐲": 1,
+          "𝐌𝐑": 1,
+          "𝐌𝐀𝐍𝐔𝐋": 1,
+          "𝐎𝐅𝐂": 1,
+          "💚": 1,
+          "🙂": 1,
+          "𝚁⚉𝙲𝙺𝚈": 1,
+          "𝑅𝐷": 1,
+          "⚉𝐹𝐶": 1
         },
         "common_phrases": {},
         "tone_indicators": {
@@ -21,30 +31,31 @@
           "casual": 0.0,
           "questioning": 0.0,
           "emphatic": 0.0,
-          "positive": 0.16666666666666666,
+          "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.0,
+          "comma_frequency": 0.00558659217877095,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "happy",
-          "sunday"
+          "channel",
+          "whatsapp",
+          "https"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": 1754808087
+        "sender": "120363421454600041@newsletter",
+        "timestamp": 1754808158
       }
     }
   ]
