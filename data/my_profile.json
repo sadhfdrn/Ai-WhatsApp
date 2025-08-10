@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:19.744206Z",
+  "last_updated": "2025-08-10T10:05:19.937352Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -33,11 +33,12 @@
       "🙂": 0.36000000000000004,
       "𝚁⚉𝙲𝙺𝚈": 0.36000000000000004,
       "𝑅𝐷": 0.36000000000000004,
-      "⚉𝐹𝐶": 0.36000000000000004
+      "⚉𝐹𝐶": 0.36000000000000004,
+      "💀👀": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.08585261776107614
+    "caps_usage_frequency": 0.08404701700191769
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -65,8 +66,9 @@
       "open",
       "forex",
       "gloo",
-      "delete",
+      "present",
       "test",
+      "delete",
       "channel",
       "azin",
       "holiness",
@@ -90,6 +92,7 @@
       "guys",
       "afmweca",
       "servants",
+      "past",
       "being",
       "using",
       "issue",
@@ -99,16 +102,14 @@
       "share",
       "manage",
       "happy",
+      "only",
+      "important",
       "fruit",
       "deployments",
       "romans",
       "messages",
       "hack",
-      "hello",
-      "unto",
-      "become",
-      "pase",
-      "life"
+      "hello"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -125,8 +126,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 33,
-    "last_learning_session": "2025-08-10T10:05:19.744199Z",
+    "total_messages_analyzed": 34,
+    "last_learning_session": "2025-08-10T10:05:19.937344Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
