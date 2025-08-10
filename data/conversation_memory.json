@@ -1,49 +1,45 @@
 {
-  "last_updated": "2025-08-10T19:02:57.120297Z",
+  "last_updated": "2025-08-10T19:02:57.227454Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:02:57.076816Z",
-      "message": "Hello bot! This is a test message.",
+      "timestamp": "2025-08-10T19:02:57.167392Z",
+      "message": "Am fyn",
       "patterns": {
-        "length": 34,
-        "word_count": 7,
-        "sentence_count": 3,
-        "exclamation_count": 1,
+        "length": 6,
+        "word_count": 2,
+        "sentence_count": 1,
+        "exclamation_count": 0,
         "question_count": 0,
-        "caps_ratio": 0.058823529411764705,
+        "caps_ratio": 0.16666666666666666,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.14285714285714285,
+          "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": true,
+          "uses_periods": false,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [
-          "hello",
-          "message",
-          "test"
-        ],
-        "greeting_patterns": "casual",
+        "topic_keywords": [],
+        "greeting_patterns": null,
         "agreement_patterns": null,
-        "excitement_level": 0.3
+        "excitement_level": 0.0
       },
       "context": {
-        "sender": "test_user@c.us",
-        "timestamp": "2025-08-10T19:02:57.076579"
+        "sender": "2349136038978@s.whatsapp.net",
+        "timestamp": "2025-08-10T19:02:57"
       }
     }
   ]
