@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:50.327303Z",
+  "last_updated": "2025-08-10T20:34:50.571630Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -46,7 +46,7 @@
       "✅": 0.2,
       "💯": 0.2,
       "⚜️": 0.2,
-      "😌": 0.36000000000000004,
+      "😌": 0.48800000000000004,
       "🔞": 0.4,
       "😩🍆": 0.2,
       "👀🍑": 0.2,
@@ -67,11 +67,12 @@
       "😮": 0.2,
       "💨": 0.2,
       "🔥🔥🔥": 0.2,
-      "😭😭": 0.2
+      "😭😭": 0.2,
+      "👀": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.038770525709390984
+    "caps_usage_frequency": 0.04163504617215975
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -103,6 +104,7 @@
       "exams",
       "exactly",
       "lord",
+      "lighter",
       "more",
       "meet",
       "than",
@@ -117,8 +119,10 @@
       "insights",
       "funny",
       "surviving",
+      "come",
       "like",
       "delap",
+      "swipe",
       "general",
       "know",
       "cooking",
@@ -126,23 +130,20 @@
       "what",
       "sale",
       "actually",
+      "shinkini",
       "imagine",
       "pedro",
       "interesting",
       "thoughts",
       "palmer",
       "cult",
+      "money",
       "message",
       "specific",
       "smartcontract",
       "every",
       "matchday",
-      "football",
-      "cole",
-      "hosting",
-      "alive",
-      "minutes",
-      "look"
+      "football"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -162,8 +163,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 125,
-    "last_learning_session": "2025-08-10T20:34:50.327295Z",
+    "total_messages_analyzed": 126,
+    "last_learning_session": "2025-08-10T20:34:50.571622Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
