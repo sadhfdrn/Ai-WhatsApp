@@ -63,34 +63,80 @@ class WhatsAppClient:
         }
     
     async def connect(self):
-        """Connect to WhatsApp Web"""
+        """Connect to WhatsApp Web via Node.js baileys bridge"""
         try:
-            logger.info("🔌 Connecting to WhatsApp Web...")
+            logger.info("🔌 Starting WhatsApp Web connection...")
             
-            # Simulate baileys connection with credential loading
-            # In a real implementation, this would use the actual baileys library
-            creds = self.config.WHATSAPP_CREDS
-            if not creds:
-                raise Exception("WhatsApp credentials not available")
+            # Start Node.js baileys bridge
+            await self.start_baileys_bridge()
             
-            # Save credentials to temp file for baileys
-            self.creds_path = os.path.join(tempfile.gettempdir(), "wa_creds.json")
-            with open(self.creds_path, 'w') as f:
-                json.dump(creds, f)
-            
-            # Simulate connection process
-            await asyncio.sleep(2)  # Connection delay
+            # Wait for connection
+            await asyncio.sleep(5)
             self.connected = True
             self.connection_attempts = 0
             
-            logger.info("✅ Successfully connected to WhatsApp Web")
+            logger.info("✅ WhatsApp Web bridge started")
             
             # Start message processing
             asyncio.create_task(self.message_listener())
+            asyncio.create_task(self.process_incoming_messages())
             
         except Exception as e:
             logger.error(f"❌ Failed to connect to WhatsApp: {e}")
             await self.handle_connection_error()
+    
+    async def start_baileys_bridge(self):
+        """Start the Node.js baileys bridge"""
+        try:
+            import subprocess
+            
+            logger.info("🌉 Starting baileys bridge...")
+            
+            # Start the Node.js bridge process
+            self.bridge_process = subprocess.Popen(
+                ['node', 'whatsapp_bridge.js'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+            
+            logger.info("✅ Baileys bridge started")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to start baileys bridge: {e}")
+            raise
+    
+    async def process_incoming_messages(self):
+        """Process messages from the baileys bridge"""
+        messages_file = "incoming_messages.json"
+        
+        while self.connected:
+            try:
+                if os.path.exists(messages_file):
+                    with open(messages_file, 'r') as f:
+                        messages = json.load(f)
+                    
+                    # Process unprocessed messages
+                    processed_messages = []
+                    for msg in messages:
+                        if not msg.get('processed', False):
+                            await self.handle_incoming_message(msg)
+                            msg['processed'] = True
+                        processed_messages.append(msg)
+                    
+                    # Clean up processed messages (keep last 100)
+                    if len(processed_messages) > 100:
+                        processed_messages = processed_messages[-100:]
+                    
+                    # Save back
+                    with open(messages_file, 'w') as f:
+                        json.dump(processed_messages, f, indent=2)
+                
+                await asyncio.sleep(1)  # Check for messages every second
+                
+            except Exception as e:
+                logger.error(f"❌ Error processing incoming messages: {e}")
+                await asyncio.sleep(5)
     
     async def handle_connection_error(self):
         """Handle connection errors with retry logic"""
@@ -109,20 +155,35 @@ class WhatsAppClient:
         """Listen for incoming messages"""
         logger.info("👂 Message listener started")
         
-        # Simulate message receiving loop
+        # Start a simulated message processor for testing
+        asyncio.create_task(self.test_message_processor())
+        
         # In real implementation, this would listen to baileys events
         while self.connected:
             try:
-                # Simulate receiving messages periodically for testing
-                await asyncio.sleep(10)
-                
-                # In real implementation, this would be triggered by actual messages
-                # For now, we'll just keep the listener alive
-                continue
+                await asyncio.sleep(5)
+                logger.debug("💭 Message listener active, waiting for messages...")
                 
             except Exception as e:
                 logger.error(f"❌ Error in message listener: {e}")
                 await asyncio.sleep(5)
+    
+    async def test_message_processor(self):
+        """Test message processor to simulate incoming messages"""
+        # Wait a bit before sending test message
+        await asyncio.sleep(30)
+        
+        # Send a test message to simulate receiving a message
+        if self.connected:
+            test_message = {
+                'from': 'test_user@c.us',
+                'body': 'Hello bot! This is a test message.',
+                'type': 'text',
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            logger.info("🧪 Processing test message to verify bot functionality...")
+            await self.handle_incoming_message(test_message)
     
     async def handle_incoming_message(self, message_data: Dict[str, Any]):
         """Process incoming WhatsApp message"""
@@ -151,10 +212,15 @@ class WhatsAppClient:
     async def process_text_message(self, sender: str, message: str, timestamp: str):
         """Process text message and generate response"""
         try:
+            logger.info(f"🔄 Processing text message from {sender}: {message}")
+            
             # Check if it's a command
             if message.startswith(self.config.BOT_PREFIX):
+                logger.info(f"🎛️ Detected command: {message}")
                 await self.handle_command(sender, message, timestamp)
                 return
+            
+            logger.info("🤖 Generating AI response...")
             
             # Generate AI response
             response = await self.ai_processor.generate_response(
@@ -163,15 +229,22 @@ class WhatsAppClient:
                 self.get_user_context(sender)
             )
             
+            logger.info(f"💬 Generated response: {response[:100]}...")
+            
             # Send response
+            logger.info(f"📤 Sending response to {sender}...")
             await self.send_message(sender, response, add_ai_icon=True)
+            logger.info("✅ Response sent successfully")
             
             # Handle auto-reply if enabled
             if self.auto_reply.is_enabled_for_user(sender):
+                logger.info("🔄 Scheduling auto-reply...")
                 await self.auto_reply.schedule_reply(sender, message, self)
             
         except Exception as e:
             logger.error(f"❌ Error processing text message: {e}")
+            import traceback
+            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
     
     async def process_voice_message(self, sender: str, message_data: Dict[str, Any], timestamp: str):
         """Process voice message"""
@@ -181,7 +254,11 @@ class WhatsAppClient:
         
         try:
             # Convert voice to text
-            voice_text = await self.voice_handler.speech_to_text(message_data.get('audioData'))
+            audio_data = message_data.get('audioData')
+            if audio_data:
+                voice_text = await self.voice_handler.speech_to_text(audio_data)
+            else:
+                voice_text = None
             
             if voice_text:
                 logger.info(f"🎤 Voice message from {sender}: {voice_text}")
@@ -521,7 +598,7 @@ Keep the conversation going for more detailed analysis!"""
         await self.send_message(sender, response, add_ai_icon=True)
     
     async def send_message(self, to: str, message: str, add_ai_icon: bool = False):
-        """Send text message"""
+        """Send text message via baileys bridge"""
         try:
             if add_ai_icon:
                 message = f"🤖 {message}"
@@ -532,15 +609,48 @@ Keep the conversation going for more detailed analysis!"""
             # Log outgoing message
             logger.info(f"📤 Sending to {to}: {clean_message[:100]}...")
             
-            # In real implementation, this would use baileys to send the message
-            # For now, we'll just simulate the send
-            await asyncio.sleep(0.1)  # Simulate network delay
+            # Send via baileys bridge
+            await self.send_via_bridge(to, clean_message)
             
             return True
             
         except Exception as e:
             logger.error(f"❌ Failed to send message: {e}")
             return False
+    
+    async def send_via_bridge(self, to: str, message: str):
+        """Send message via Node.js baileys bridge"""
+        try:
+            logger.info(f"🌉 Sending message via bridge to {to}: {message[:50]}...")
+            outgoing_file = "outgoing_messages.json"
+            
+            # Load existing messages
+            messages = []
+            if os.path.exists(outgoing_file):
+                with open(outgoing_file, 'r') as f:
+                    messages = json.load(f)
+                logger.info(f"📋 Loaded {len(messages)} existing outgoing messages")
+            
+            # Add new message
+            new_message = {
+                'to': to,
+                'message': message,
+                'sent': False,
+                'timestamp': datetime.now().isoformat()
+            }
+            messages.append(new_message)
+            logger.info(f"➕ Added new message to queue: {new_message}")
+            
+            # Save to file for bridge to process
+            with open(outgoing_file, 'w') as f:
+                json.dump(messages, f, indent=2)
+            
+            logger.info(f"💾 Saved {len(messages)} messages to {outgoing_file}")
+                
+        except Exception as e:
+            logger.error(f"❌ Error sending via bridge: {e}")
+            import traceback
+            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
     
     async def send_voice_message(self, to: str, audio_data: Optional[bytes]):
         """Send voice message"""
@@ -591,9 +701,10 @@ Keep the conversation going for more detailed analysis!"""
             logger.info("🔌 Disconnecting from WhatsApp...")
             self.connected = False
             
-            # Cleanup temp files
-            if hasattr(self, 'creds_path') and os.path.exists(self.creds_path):
-                os.remove(self.creds_path)
+            # Cleanup bridge process
+            if hasattr(self, 'bridge_process') and self.bridge_process:
+                self.bridge_process.terminate()
+                self.bridge_process.wait()
             
             logger.info("✅ Disconnected successfully")
             

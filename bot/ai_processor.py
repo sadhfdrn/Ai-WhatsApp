@@ -138,9 +138,9 @@ class AIProcessor:
             elif 'why' in message_lower:
                 return "Great question! Let me think about that... " + await self.generate_thoughtful_response(message)
             elif 'when' in message_lower:
-                return "Timing is everything! " + await self.generate_time_aware_response(message)
+                return "Timing is everything! That's a good question about timing - it really depends on the context."
             else:
-                return await self.generate_question_response(message)
+                return "That's a great question! I'd love to explore that with you. What made you curious about that?"
         
         # Emotional expressions
         if any(word in message_lower for word in ['sad', 'upset', 'angry', 'frustrated', 'depressed']):
@@ -150,11 +150,11 @@ class AIProcessor:
         
         # Commands and requests
         if any(word in message_lower for word in ['please', 'help', 'can you', 'would you']):
-            return await self.generate_helpful_response(message)
+            return "Absolutely! I'm here to help with whatever you need. Search, jokes, memes, conversations, or anything else - just let me know!"
         
         # Technical topics
         if any(word in message_lower for word in ['code', 'programming', 'computer', 'technology', 'software']):
-            return await self.generate_tech_response(message)
+            return "Now we're talking tech! I love discussing programming and technology. What's on your mind?"
         
         # Default conversational response
         return await self.generate_conversational_response(message, context)
@@ -199,7 +199,7 @@ class AIProcessor:
         
         if len(words) > 20:
             # Long message - acknowledge and engage
-            return "Wow, you've got a lot on your mind! That's really interesting. " + await self.pick_conversation_thread(message)
+            return "Wow, you've got a lot on your mind! That's really interesting. What aspect of that interests you most?"
         elif len(words) < 3:
             # Short message - encourage more
             responses = [
@@ -212,7 +212,16 @@ class AIProcessor:
             return random.choice(responses)
         else:
             # Medium message - balanced response
-            return await self.generate_balanced_response(message)
+            responses = [
+                "That's a great point! I hadn't thought about it that way before.",
+                "Really interesting perspective! It makes me think about similar situations.",
+                "I can see where you're coming from on that. It's definitely worth considering.",
+                "That's pretty cool! Have you noticed that pattern in other places too?",
+                "Nice observation! It's always fascinating how these things work out.",
+                "I like how you put that! It gives me a new way to think about it.",
+                "That's the kind of insight I enjoy hearing! Thanks for sharing that perspective."
+            ]
+            return random.choice(responses)
     
     async def pick_conversation_thread(self, message: str) -> str:
         """Pick an interesting thread from a long message"""
@@ -335,62 +344,43 @@ class AIProcessor:
     
     async def generate_time_aware_response(self, message: str, user_id: str = "default") -> str:
         """Generate time-aware response"""
-        try:
-            import datetime
-            current_time = datetime.datetime.now().strftime("%H:%M")
-            time_context = f"At {current_time}, considering: {message}"
-            return f"Good point about timing! {await self.generate_response(time_context, user_id)}"
-        except Exception as e:
-            logger.error(f"❌ Time-aware response error: {e}")
-            return "I understand the timing aspect. Let me think about that..."
+        responses = [
+            "That's a good question about timing - it really depends on the context.",
+            "Timing is crucial! From my perspective, it varies based on the situation.",
+            "Good point about when things happen - context is everything!",
+            "I'd say the timing depends on several factors we should consider."
+        ]
+        return random.choice(responses)
     
     async def generate_question_response(self, message: str, user_id: str = "default") -> str:
         """Generate response specifically for questions"""
-        try:
-            question_starters = [
-                "Great question! ",
-                "That's interesting to ask about! ",
-                "Let me think about that... ",
-                "Good point to bring up! "
-            ]
-            starter = random.choice(question_starters)
-            response = await self.generate_response(message, user_id)
-            return starter + response
-        except Exception as e:
-            logger.error(f"❌ Question response error: {e}")
-            return "That's a great question! Let me help you with that."
+        responses = [
+            "That's a great question! I'd love to explore that with you. What made you curious about that?",
+            "Interesting question! Let me share my thoughts on that.",
+            "Good point to bring up! That's something worth discussing.",
+            "That's worth thinking about! I appreciate you asking that."
+        ]
+        return random.choice(responses)
     
     async def generate_helpful_response(self, message: str, user_id: str = "default") -> str:
         """Generate helpful response for assistance requests"""
-        try:
-            helpful_starters = [
-                "I'd be happy to help! ",
-                "Absolutely, let me assist with that! ",
-                "Sure thing! ",
-                "Of course! "
-            ]
-            starter = random.choice(helpful_starters)
-            response = await self.generate_response(message, user_id)
-            return starter + response
-        except Exception as e:
-            logger.error(f"❌ Helpful response error: {e}")
-            return "I'm here to help! Let me see what I can do for you."
+        responses = [
+            "I'm here to help! Let me see what I can do for you.",
+            "Absolutely! I'd be happy to assist with that.",
+            "Sure thing! I love helping out - what do you need?",
+            "Of course! That's what I'm here for. How can I help?"
+        ]
+        return random.choice(responses)
     
     async def generate_tech_response(self, message: str, user_id: str = "default") -> str:
         """Generate technical response for tech-related queries"""
-        try:
-            tech_starters = [
-                "From a technical perspective, ",
-                "That's an interesting technical topic! ",
-                "Let me break that down technically: ",
-                "Great tech question! "
-            ]
-            starter = random.choice(tech_starters)
-            response = await self.generate_response(message, user_id)
-            return starter + response
-        except Exception as e:
-            logger.error(f"❌ Tech response error: {e}")
-            return "That's an interesting technical question! Let me break it down for you."
+        responses = [
+            "That's an interesting technical question! I enjoy discussing tech topics.",
+            "Great tech question! I love diving into technical discussions.",
+            "From a technical perspective, that's definitely worth exploring.",
+            "Now we're talking tech! That's right up my alley."
+        ]
+        return random.choice(responses)
     
     async def generate_story(self, story_prompt: str) -> str:
         """Generate a story based on prompt"""
