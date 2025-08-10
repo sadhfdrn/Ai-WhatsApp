@@ -1,23 +1,23 @@
 {
-  "last_updated": "2025-08-10T19:42:59.599655Z",
+  "last_updated": "2025-08-10T19:45:29.098963Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T19:42:59.522876Z",
-      "message": "How smart are you ?",
+      "timestamp": "2025-08-10T19:45:29.062045Z",
+      "message": "So ?",
       "patterns": {
-        "length": 19,
-        "word_count": 5,
+        "length": 4,
+        "word_count": 2,
         "sentence_count": 2,
         "exclamation_count": 0,
         "question_count": 1,
-        "caps_ratio": 0.05263157894736842,
+        "caps_ratio": 0.25,
         "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.2,
+          "questioning": 0.5,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -32,16 +32,14 @@
           "comma_frequency": 0.0,
           "quotation_usage": false
         },
-        "topic_keywords": [
-          "smart"
-        ],
+        "topic_keywords": [],
         "greeting_patterns": null,
         "agreement_patterns": null,
         "excitement_level": 0.0
       },
       "context": {
         "sender": "2349113085799@s.whatsapp.net",
-        "timestamp": "2025-08-10T19:42:58"
+        "timestamp": "2025-08-10T19:45:28"
       }
     }
   ]
