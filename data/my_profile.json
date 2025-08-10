@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:50.700778Z",
+  "last_updated": "2025-08-10T20:34:50.835230Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -68,11 +68,12 @@
       "💨": 0.2,
       "🔥🔥🔥": 0.2,
       "😭😭": 0.2,
-      "👀": 0.2
+      "👀": 0.2,
+      "📍": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.04062469470809693
+    "caps_usage_frequency": 0.03934000301506502
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -103,6 +104,7 @@
       "bible",
       "chelsea",
       "exams",
+      "awaken",
       "exactly",
       "lord",
       "lighter",
@@ -122,8 +124,10 @@
       "started",
       "towards",
       "answer",
+      "little",
       "bringing",
       "funny",
+      "primarily",
       "surviving",
       "come",
       "like",
@@ -140,10 +144,7 @@
       "imagine",
       "give",
       "pedro",
-      "interesting",
-      "christ",
-      "thoughts",
-      "something"
+      "interesting"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -163,8 +164,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 127,
-    "last_learning_session": "2025-08-10T20:34:50.700771Z",
+    "total_messages_analyzed": 128,
+    "last_learning_session": "2025-08-10T20:34:50.835224Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
