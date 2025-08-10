@@ -1,16 +1,1 @@
-[
-  {
-    "to": "test_user@c.us",
-    "message": "yo there! What's on your mind?",
-    "ai": true,
-    "sent": false,
-    "timestamp": "2025-08-10T20:48:18.230617"
-  },
-  {
-    "to": "test_user@c.us",
-    "message": "hey! How can I help you today?",
-    "ai": true,
-    "sent": false,
-    "timestamp": "2025-08-10T20:48:54.149275"
-  }
-]
+[]
