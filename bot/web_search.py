@@ -22,12 +22,11 @@ class WebSearchHandler:
         self.max_results = config.MAX_SEARCH_RESULTS
         self.timeout = 10
         
-        # Working SearXNG instances (tested and verified)
+        # DuckDuckGo is now primary, SearXNG as fallback
+        self.use_duckduckgo_primary = True
         self.fallback_engines = [
             "https://searx.tiekoetter.com", # German instance (reliable)
             "https://search.sapti.me",     # Fast public instance
-            "https://searx.catfishes.are.amazing", # Community instance
-            "https://search.ononoki.org",  # Japanese instance
         ]
         
         # Request headers to avoid blocking (updated for better compatibility)
@@ -45,7 +44,7 @@ class WebSearchHandler:
         logger.info("🔍 Web search handler initialized")
     
     async def search(self, query: str, num_results: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Perform web search using SearXNG"""
+        """Perform web search using DuckDuckGo as primary with SearXNG fallback"""
         try:
             if not query.strip():
                 logger.warning("⚠️ Empty search query provided")
@@ -54,21 +53,21 @@ class WebSearchHandler:
             num_results = num_results or self.max_results
             logger.info(f"🔍 Searching for: {query}")
             
-            # Try primary SearXNG instance first
-            results = await self.search_searxng(query, num_results)
+            # Try DuckDuckGo first (now primary)
+            results = await self.duckduckgo_search(query, num_results)
             
             if not results:
-                # Try fallback instances
-                for fallback_url in self.fallback_engines:
-                    logger.info(f"🔄 Trying fallback SearXNG engine: {fallback_url}")
-                    results = await self.search_searxng(query, num_results, fallback_url)
-                    if results:
-                        break
+                # Fallback to SearXNG instances if DuckDuckGo fails
+                logger.info("🔄 DuckDuckGo failed, trying SearXNG fallback")
+                results = await self.search_searxng(query, num_results)
                 
-                # Final fallback to DuckDuckGo if all SearXNG instances fail
                 if not results:
-                    logger.info("🔄 All SearXNG instances failed, trying DuckDuckGo fallback")
-                    results = await self.duckduckgo_fallback(query, num_results)
+                    # Try other SearXNG instances
+                    for fallback_url in self.fallback_engines:
+                        logger.info(f"🔄 Trying fallback SearXNG engine: {fallback_url}")
+                        results = await self.search_searxng(query, num_results, fallback_url)
+                        if results:
+                            break
             
             if results:
                 logger.info(f"✅ Found {len(results)} search results")
@@ -218,10 +217,10 @@ class WebSearchHandler:
             logger.error(f"❌ Content extraction error for {url}: {e}")
             return None
     
-    async def duckduckgo_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
-        """Fallback search using DuckDuckGo Instant Answer API"""
+    async def duckduckgo_search(self, query: str, num_results: int) -> List[Dict[str, Any]]:
+        """Primary search using DuckDuckGo Instant Answer API with enhanced parsing"""
         try:
-            logger.info("🦆 Using DuckDuckGo fallback search")
+            logger.info("🦆 Using DuckDuckGo primary search")
             
             # DuckDuckGo Instant Answer API
             ddg_url = "https://api.duckduckgo.com/"
@@ -233,9 +232,23 @@ class WebSearchHandler:
             }
             
             response = requests.get(ddg_url, params=params, headers=self.headers, timeout=self.timeout)
-            response.raise_for_status()
             
-            data = response.json()
+            if response.status_code != 200:
+                logger.warning(f"⚠️ DuckDuckGo returned status {response.status_code}")
+                return []
+            
+            # Handle empty responses
+            response_text = response.text.strip()
+            if not response_text:
+                logger.warning("⚠️ DuckDuckGo returned empty response")
+                return []
+            
+            try:
+                data = response.json()
+            except ValueError as e:
+                logger.warning(f"⚠️ DuckDuckGo JSON parsing failed: {e}")
+                return []
+            
             results = []
             
             # Parse instant answer
@@ -248,23 +261,47 @@ class WebSearchHandler:
                     'category': 'instant_answer'
                 })
             
+            # Parse answer (direct answers like time, calculations)
+            if data.get('Answer') and not results:
+                results.append({
+                    'title': f"Answer: {query}",
+                    'url': '',
+                    'description': data.get('Answer', ''),
+                    'source': 'duckduckgo/answer',
+                    'category': 'direct_answer'
+                })
+            
+            # Parse definition if available
+            if data.get('Definition') and len(results) < num_results:
+                results.append({
+                    'title': f"Definition: {data.get('DefinitionURL', '').split('/')[-1] or query}",
+                    'url': data.get('DefinitionURL', ''),
+                    'description': data.get('Definition', ''),
+                    'source': 'duckduckgo/definition',
+                    'category': 'definition'
+                })
+            
             # Parse related topics
-            for topic in data.get('RelatedTopics', [])[:num_results-len(results)]:
+            for topic in data.get('RelatedTopics', [])[:max(1, num_results-len(results))]:
                 if isinstance(topic, dict) and topic.get('Text'):
                     results.append({
-                        'title': topic.get('Text', '')[:100] + '...',
+                        'title': topic.get('Text', '')[:100] + ('...' if len(topic.get('Text', '')) > 100 else ''),
                         'url': topic.get('FirstURL', ''),
                         'description': topic.get('Text', ''),
                         'source': 'duckduckgo/related',
                         'category': 'related_topic'
                     })
             
-            logger.info(f"✅ DuckDuckGo fallback found {len(results)} results")
+            logger.info(f"✅ DuckDuckGo found {len(results)} results")
             return results
             
         except Exception as e:
-            logger.error(f"❌ DuckDuckGo fallback error: {e}")
+            logger.error(f"❌ DuckDuckGo search error: {e}")
             return []
+    
+    async def duckduckgo_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
+        """Legacy fallback method - redirects to primary DuckDuckGo search"""
+        return await self.duckduckgo_search(query, num_results)
     
     async def search_news(self, query: str, num_results: Optional[int] = None) -> List[Dict[str, Any]]:
         """Search for news articles"""

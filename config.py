@@ -87,6 +87,11 @@ class Config:
         self.TRANSLATION = os.getenv("TRANSLATION", "true").lower() == "true"
         self.CHAT_ANALYSIS = os.getenv("CHAT_ANALYSIS", "true").lower() == "true"
         
+        # Bot Response Filtering - Control when bot responds
+        self.IGNORE_STATUS_BROADCASTS = os.getenv("IGNORE_STATUS_BROADCASTS", "true").lower() == "true"
+        self.TESTING_MODE = os.getenv("TESTING_MODE", "false").lower() == "true"
+        self.ALLOWED_TEST_USERS = os.getenv("ALLOWED_TEST_USERS", "").split(",") if os.getenv("ALLOWED_TEST_USERS") else []
+        
         # GitHub Actions Configuration
         self.GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
         self.WORKFLOW_TIMEOUT = int(os.getenv("WORKFLOW_TIMEOUT", "18000"))  # 5 hours in seconds

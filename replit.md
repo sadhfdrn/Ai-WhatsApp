@@ -103,12 +103,16 @@ Includes centralized utility functions for text sanitization and formatting, enh
   - Eliminated ffmpeg, espeak, festival, and audio development libraries
   - Reduced container size and eliminated potential dependency conflicts
 
-### August 10, 2025 - SearXNG Integration & Koyeb Deployment Optimization
-- **Search Engine Migration**: Replaced Whoogle with SearXNG for better search capabilities
-  - SearXNG provides JSON API, multiple search engines, and better privacy
-  - Updated to working instances: searx.work, searx.fmac.xyz, searx.prvcy.eu, searx.dresden.network
-  - Enhanced search parsing with JSON responses instead of HTML scraping
-  - Fixed 403 errors by updating to reliable public SearXNG instances
+### August 10, 2025 - DuckDuckGo Primary Search & Response Filtering
+- **Search Engine Migration**: Switched to DuckDuckGo as primary search engine with SearXNG fallback
+  - DuckDuckGo Instant Answer API provides more reliable search results than public SearXNG instances
+  - Enhanced DuckDuckGo parsing for instant answers, definitions, direct answers, and related topics
+  - SearXNG instances kept as fallback only (searx.tiekoetter.com, search.sapti.me)
+  - Fixed JSON parsing issues and empty response handling for better stability
+- **Bot Response Filtering**: Added intelligent filtering to prevent unwanted responses
+  - IGNORE_STATUS_BROADCASTS configuration to filter out WhatsApp status updates
+  - TESTING_MODE with ALLOWED_TEST_USERS for deployment testing without spam
+  - Enhanced message filtering in both JavaScript bridge and Python client
 - **Koyeb Deployment Support**: Created optimized Dockerfile.koyeb for cloud deployment
   - AI models configured for streaming to work in cloud environments
   - Health checks optimized for Koyeb monitoring

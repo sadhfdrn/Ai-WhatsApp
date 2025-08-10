@@ -237,10 +237,19 @@ class WhatsAppClient:
                 logger.debug(f"🚫 Skipping empty message from {sender}")
                 return
             
-            # Skip status broadcasts and newsletters unless they have actual content
+            # Skip status broadcasts based on configuration
             if '@broadcast' in sender or '@newsletter' in sender:
-                if not message_text or not message_text.strip():
+                if self.config.IGNORE_STATUS_BROADCASTS:
+                    logger.info(f"🚫 Ignoring status broadcast from {sender} (IGNORE_STATUS_BROADCASTS=true)")
+                    return
+                elif not message_text or not message_text.strip():
                     logger.debug(f"🚫 Skipping empty status/newsletter from {sender}")
+                    return
+            
+            # Testing mode - only respond to allowed test users
+            if self.config.TESTING_MODE:
+                if sender not in self.config.ALLOWED_TEST_USERS and not any(allowed in sender for allowed in self.config.ALLOWED_TEST_USERS):
+                    logger.info(f"🧪 Testing mode: Ignoring message from non-test user {sender}")
                     return
             
             logger.info(f"📨 Received message from {sender}: {message_text[:50]}...")
