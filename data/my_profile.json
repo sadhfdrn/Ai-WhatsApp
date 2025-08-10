@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:35:08.428019Z",
+  "last_updated": "2025-08-10T19:36:21.011877Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -51,11 +51,12 @@
       "❞": 0.2,
       "💕⬆️": 0.2,
       "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ": 0.2,
-      "😭": 0.2
+      "😭": 0.2,
+      "🛐": 0.2
     },
-    "response_length_preference": "short",
+    "response_length_preference": "long",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.10522251260539578
+    "caps_usage_frequency": 0.09674107767138682
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -85,21 +86,30 @@
       "lord",
       "abeokuta",
       "menu",
+      "strengthens",
+      "above",
       "great",
       "palmpay",
       "test",
-      "clips",
       "what",
+      "clips",
       "hello",
+      "overwhelming",
       "shey",
       "making",
       "time",
       "live",
+      "strength",
+      "rise",
+      "alone",
       "grass",
+      "remember",
+      "things",
       "whatsapp",
       "secretly",
       "lose",
       "work",
+      "through",
       "full",
       "includes",
       "people",
@@ -117,16 +127,7 @@
       "fully",
       "message",
       "permanent",
-      "craves",
-      "scratch",
-      "body",
-      "google",
-      "back",
-      "rice",
-      "yourself",
-      "sunday",
-      "open",
-      "vfyu"
+      "craves"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -146,8 +147,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 87,
-    "last_learning_session": "2025-08-10T19:35:08.428007Z",
+    "total_messages_analyzed": 88,
+    "last_learning_session": "2025-08-10T19:36:21.011869Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
