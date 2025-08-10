@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T10:05:20.616967Z",
+  "last_updated": "2025-08-10T10:05:20.724700Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {},
@@ -9,7 +9,7 @@
       "😴🙂": 0.2,
       "🙏🏽": 0.2,
       "🏽😇": 0.2,
-      "🙏": 0.48800000000000004,
+      "🙏": 0.5904,
       "𝘛𝘩𝘪𝘴": 0.2,
       "𝘤𝘩𝘢𝘯𝘯𝘦𝘭": 0.2,
       "𝘸𝘢𝘴": 0.2,
@@ -37,9 +37,9 @@
       "💀👀": 0.2,
       "🙏🙏🙏": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.15447610583790441
+    "caps_usage_frequency": 0.144028495254114
   },
   "learned_patterns": {
     "greeting_style": "formal",
@@ -62,14 +62,15 @@
   "conversation_context": {
     "favorite_topics": [
       "fixed",
+      "there",
       "shey",
       "live",
       "open",
       "forex",
       "gloo",
       "present",
-      "delete",
       "test",
+      "delete",
       "channel",
       "azin",
       "holiness",
@@ -87,6 +88,7 @@
       "facebook",
       "trading",
       "alhamdulillah",
+      "everyone",
       "requests",
       "whatsapp",
       "free",
@@ -108,9 +110,7 @@
       "message",
       "made",
       "share",
-      "manage",
-      "happy",
-      "only"
+      "manage"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -127,8 +127,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 38,
-    "last_learning_session": "2025-08-10T10:05:20.616959Z",
+    "total_messages_analyzed": 39,
+    "last_learning_session": "2025-08-10T10:05:20.724693Z",
     "confidence_score": 0.5,
     "pattern_reliability": "medium"
   }
