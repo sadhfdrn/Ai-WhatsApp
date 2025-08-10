@@ -6,6 +6,18 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Deployment and monitoring configuration
+ENV LOG_LEVEL=INFO
+ENV USE_STREAMING=true
+ENV STREAM_MODELS=true
+ENV MODEL_DOWNLOAD_ON_DEMAND=true
+ENV LOW_MEMORY_MODE=true
+ENV WHOOGLE_INSTANCE_ACTIVE=true
+ENV WHOOGLE_URL=https://search.whoogle.io
+
+# Docker container detection
+ENV DOCKER_CONTAINER=true
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -129,7 +141,7 @@ ENV TIMEZONE=Africa/Lagos
 # Expose ports for health checks and web interface
 EXPOSE 8080 3000
 
-# Enhanced health check with multiple endpoints
+# Enhanced health check with comprehensive monitoring
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD python3 -c "
 import requests

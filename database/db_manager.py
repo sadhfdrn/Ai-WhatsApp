@@ -20,16 +20,30 @@ class DatabaseManager:
         self.your_user_id = your_user_id
         self.style_analyzer = ChatStyleAnalyzer(your_user_id)
         self.database_available = False
+        self.connection_attempts = 0
+        self.last_connection_test = None
         
-        # Try to initialize database
+        # Try to initialize database with timing
+        import time
+        start_time = time.time()
+        
         try:
+            logger.info("🔗 Attempting database connection...")
             if init_database():
+                connection_time = time.time() - start_time
                 self.database_available = True
-                logger.info(f"🗄️ Database manager initialized for user: {your_user_id}")
+                logger.info(f"✅ Database manager initialized for user: {your_user_id} (took {connection_time:.2f}s)")
+                
+                # Test basic operations
+                self._test_database_operations()
             else:
-                logger.warning("⚠️ Database initialization failed, running without database features")
+                connection_time = time.time() - start_time
+                logger.warning(f"⚠️ Database initialization failed after {connection_time:.2f}s, running without database features")
         except Exception as e:
-            logger.warning(f"⚠️ Database not available: {e}. Running without database features.")
+            connection_time = time.time() - start_time
+            logger.warning(f"⚠️ Database not available after {connection_time:.2f}s: {e}. Running without database features.")
+        
+        self.connection_attempts = 1
     
     async def process_message(self, message: str, sender_id: str, bot_response: str = None, 
                             sentiment_data: Dict = None) -> Dict[str, Any]:
@@ -259,3 +273,65 @@ class DatabaseManager:
             return {"error": str(e)}
         finally:
             db.close()
+    
+    def _test_database_operations(self):
+        """Test basic database operations and log timing"""
+        import time
+        try:
+            start_time = time.time()
+            db = get_db()
+            if db is None:
+                logger.error("❌ Database session creation failed in test")
+                return
+            
+            # Test basic query
+            from database.models import UserProfile
+            query_start = time.time()
+            count = db.query(UserProfile).count()
+            query_time = time.time() - query_start
+            
+            db.close()
+            total_time = time.time() - start_time
+            
+            logger.info(f"✅ Database test passed: {count} user profiles found")
+            logger.info(f"⏱️ Query time: {query_time:.3f}s, Total test time: {total_time:.3f}s")
+            
+        except Exception as e:
+            logger.error(f"❌ Database operations test failed: {e}")
+    
+    def get_deployment_database_stats(self) -> Dict[str, Any]:
+        """Get database connection and performance statistics for deployment"""
+        stats = {
+            "database_available": self.database_available,
+            "connection_attempts": self.connection_attempts,
+            "last_connection_test": self.last_connection_test
+        }
+        
+        if self.database_available:
+            try:
+                import time
+                start_time = time.time()
+                db = get_db()
+                
+                if db:
+                    from database.models import UserProfile, Conversation, CommonPhrase
+                    
+                    user_count = db.query(UserProfile).count()
+                    conversation_count = db.query(Conversation).count()
+                    phrase_count = db.query(CommonPhrase).count()
+                    
+                    query_time = time.time() - start_time
+                    
+                    stats.update({
+                        "users": user_count,
+                        "conversations": conversation_count,
+                        "phrases": phrase_count,
+                        "last_query_time_ms": round(query_time * 1000, 2)
+                    })
+                    
+                    db.close()
+                    
+            except Exception as e:
+                stats["error"] = str(e)
+        
+        return stats
