@@ -1,59 +1,49 @@
 {
-  "last_updated": "2025-08-10T20:34:53.835104Z",
+  "last_updated": "2025-08-10T20:35:23.929571Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:53.790236Z",
-      "message": "=====================\n*Your Image or Identity Claim, will always be in doubt and in question, as long as your Duties and Responsibilities remains uncatered for📍*",
+      "timestamp": "2025-08-10T20:35:23.896103Z",
+      "message": "Hello bot! This is a test message.",
       "patterns": {
-        "length": 161,
-        "word_count": 24,
-        "sentence_count": 1,
-        "exclamation_count": 0,
+        "length": 34,
+        "word_count": 7,
+        "sentence_count": 3,
+        "exclamation_count": 1,
         "question_count": 0,
-        "caps_ratio": 0.037267080745341616,
-        "emoji_usage": {
-          "📍": 1
-        },
+        "caps_ratio": 0.058823529411764705,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
           "questioning": 0.0,
-          "emphatic": 0.0,
+          "emphatic": 0.14285714285714285,
           "positive": 0.0,
           "negative": 0.0,
           "technical": 0.0,
           "humorous": 0.0
         },
         "punctuation_style": {
-          "uses_periods": false,
+          "uses_periods": true,
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.012422360248447204,
+          "comma_frequency": 0.0,
           "quotation_usage": false
         },
         "topic_keywords": [
-          "responsibilities",
-          "always",
-          "identity",
-          "image",
-          "question",
-          "claim",
-          "remains",
-          "uncatered",
-          "doubt",
-          "duties",
-          "long"
+          "hello",
+          "message",
+          "test"
         ],
-        "greeting_patterns": null,
+        "greeting_patterns": "casual",
         "agreement_patterns": null,
-        "excitement_level": 0.0
+        "excitement_level": 0.3
       },
       "context": {
-        "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:34:05"
+        "sender": "test_user@c.us",
+        "timestamp": "2025-08-10T20:35:23.895916"
       }
     }
   ]
