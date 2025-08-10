@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:51.411977Z",
+  "last_updated": "2025-08-10T20:34:51.710763Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -73,9 +73,9 @@
       "🙇": 0.2,
       "♂️": 0.2
     },
-    "response_length_preference": "medium",
+    "response_length_preference": "short",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.06669674315864782
+    "caps_usage_frequency": 0.06315206884278304
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -110,6 +110,7 @@
       "unkind",
       "hypocrisy",
       "lord",
+      "soon",
       "want",
       "than",
       "meet",
@@ -138,15 +139,14 @@
       "what",
       "actually",
       "imagine",
+      "going",
       "evil",
       "interesting",
       "nourishment",
       "pedro",
       "simply",
       "carriage",
-      "spiritual",
-      "degree",
-      "pure"
+      "spiritual"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -166,8 +166,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 131,
-    "last_learning_session": "2025-08-10T20:34:51.411968Z",
+    "total_messages_analyzed": 132,
+    "last_learning_session": "2025-08-10T20:34:51.710756Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
