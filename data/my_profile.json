@@ -1,7 +1,7 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T19:36:21.011877Z",
+  "last_updated": "2025-08-10T19:36:49.257895Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
@@ -52,11 +52,12 @@
       "💕⬆️": 0.2,
       "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ": 0.2,
       "😭": 0.2,
-      "🛐": 0.2
+      "🛐": 0.2,
+      "👈": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.09674107767138682
+    "caps_usage_frequency": 0.16224945165607296
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -87,14 +88,17 @@
       "abeokuta",
       "menu",
       "strengthens",
+      "dollars",
+      "smartcontract",
+      "thousands",
       "above",
       "great",
       "palmpay",
       "test",
-      "what",
       "clips",
-      "hello",
+      "what",
       "overwhelming",
+      "hello",
       "shey",
       "making",
       "time",
@@ -103,12 +107,15 @@
       "rise",
       "alone",
       "grass",
+      "learn",
       "remember",
       "things",
       "whatsapp",
       "secretly",
       "lose",
+      "link",
       "work",
+      "metawhale",
       "through",
       "full",
       "includes",
@@ -121,13 +128,7 @@
       "refer",
       "olumo",
       "risk",
-      "wassup",
-      "bought",
-      "present",
-      "fully",
-      "message",
-      "permanent",
-      "craves"
+      "wassup"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -147,8 +148,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 88,
-    "last_learning_session": "2025-08-10T19:36:21.011869Z",
+    "total_messages_analyzed": 89,
+    "last_learning_session": "2025-08-10T19:36:49.257882Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
