@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "to": "test_user@c.us",
+    "message": "hey! I was just thinking about something fascinating - want to hear about it?",
+    "ai": true,
+    "sent": false,
+    "timestamp": "2025-08-10T19:29:18.673039"
+  },
+  {
+    "to": "status@broadcast",
+    "message": "Absolutely. exactly.",
+    "ai": true,
+    "sent": false,
+    "timestamp": "2025-08-10T19:29:21.884478"
+  }
+]
