@@ -1,25 +1,23 @@
 {
-  "last_updated": "2025-08-10T20:34:52.927552Z",
+  "last_updated": "2025-08-10T20:34:53.097613Z",
   "conversation_count": 1,
   "conversations": [
     {
-      "timestamp": "2025-08-10T20:34:52.828104Z",
-      "message": "===================\nBut you'd realize that we're majorly concerned and carried away by the reason of the image that we so lose sight of the Responsibilities📍",
+      "timestamp": "2025-08-10T20:34:53.021084Z",
+      "message": "*Do you Realize that it's your Responsibility to Reduce the blindness rate of persons in your street?*\n\nThis is even big, let's come smaller",
       "patterns": {
-        "length": 157,
-        "word_count": 25,
-        "sentence_count": 1,
+        "length": 140,
+        "word_count": 24,
+        "sentence_count": 2,
         "exclamation_count": 0,
-        "question_count": 0,
-        "caps_ratio": 0.012738853503184714,
-        "emoji_usage": {
-          "📍": 1
-        },
+        "question_count": 1,
+        "caps_ratio": 0.03571428571428571,
+        "emoji_usage": {},
         "common_phrases": {},
         "tone_indicators": {
           "excited": 0.0,
           "casual": 0.0,
-          "questioning": 0.0,
+          "questioning": 0.041666666666666664,
           "emphatic": 0.0,
           "positive": 0.0,
           "negative": 0.0,
@@ -31,20 +29,20 @@
           "multiple_exclamations": false,
           "multiple_questions": false,
           "ellipsis_usage": false,
-          "comma_frequency": 0.0,
+          "comma_frequency": 0.007142857142857143,
           "quotation_usage": true
         },
         "topic_keywords": [
-          "lose",
-          "sight",
-          "responsibilities",
-          "majorly",
+          "smaller",
+          "reduce",
+          "come",
+          "responsibility",
           "realize",
-          "carried",
-          "away",
-          "image",
-          "concerned",
-          "reason"
+          "even",
+          "rate",
+          "street",
+          "persons",
+          "blindness"
         ],
         "greeting_patterns": null,
         "agreement_patterns": null,
@@ -52,7 +50,7 @@
       },
       "context": {
         "sender": "status@broadcast",
-        "timestamp": "2025-08-10T20:23:36"
+        "timestamp": "2025-08-10T20:25:19"
       }
     }
   ]
