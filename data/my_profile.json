@@ -1,13 +1,14 @@
 {
   "user_id": "owner",
   "created": "2025-08-10T09:39:26.032878Z",
-  "last_updated": "2025-08-10T20:34:49.410998Z",
+  "last_updated": "2025-08-10T20:34:49.581107Z",
   "communication_style": {
     "tone": "casual, tech-savvy, direct",
     "common_phrases": {
       "yeah": 0.2,
       "cool": 0.2,
-      "wow": 0.4
+      "wow": 0.4,
+      "definitely": 0.2
     },
     "emoji_usage": {
       "😴🙂": 0.2,
@@ -68,9 +69,9 @@
       "🔥🔥🔥": 0.2,
       "😭😭": 0.2
     },
-    "response_length_preference": "long",
+    "response_length_preference": "medium",
     "punctuation_style": "standard",
-    "caps_usage_frequency": 0.043011924475606846
+    "caps_usage_frequency": 0.04151447034580317
   },
   "learned_patterns": {
     "greeting_style": "casual",
@@ -94,8 +95,8 @@
     "favorite_topics": [
       "hello",
       "tomorrow",
-      "movie",
       "share",
+      "movie",
       "without",
       "less",
       "exams",
@@ -107,8 +108,9 @@
       "than",
       "cant",
       "question",
-      "doubt",
+      "exploring",
       "some",
+      "doubt",
       "people",
       "forget",
       "someone",
@@ -131,6 +133,7 @@
       "interesting",
       "something",
       "thoughts",
+      "definitely",
       "access",
       "search",
       "just",
@@ -139,9 +142,7 @@
       "message",
       "specific",
       "smartcontract",
-      "gree",
-      "simons",
-      "suggestions"
+      "gree"
     ],
     "preferred_times": [],
     "mood_patterns": {
@@ -161,8 +162,8 @@
     "pause_patterns": "natural_pauses"
   },
   "learning_metadata": {
-    "total_messages_analyzed": 119,
-    "last_learning_session": "2025-08-10T20:34:49.410988Z",
+    "total_messages_analyzed": 120,
+    "last_learning_session": "2025-08-10T20:34:49.581097Z",
     "confidence_score": 0.8,
     "pattern_reliability": "high"
   }
