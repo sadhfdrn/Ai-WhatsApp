@@ -20,7 +20,7 @@ args = "WhatsApp AI Bot"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "WhatsApp Sender"
+args = "WhatsApp Bridge"
 
 [[workflows.workflow]]
 name = "WhatsApp AI Bot"
@@ -35,12 +35,12 @@ args = "python -u main.py"
 waitForPort = 8080
 
 [[workflows.workflow]]
-name = "WhatsApp Sender"
+name = "WhatsApp Bridge"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node simple_whatsapp_sender.js"
+args = "node whatsapp_bridge.js"
 
 [workflows.workflow.metadata]
 outputType = "console"

@@ -66,15 +66,13 @@ class WhatsAppBridge {
                 auth: state,
                 logger: P({ level: 'silent' }),
                 printQRInTerminal: false,  // Disable QR since we're using creds
-                defaultQueryTimeoutMs: 60000,
-                connectTimeoutMs: 30000,
+                defaultQueryTimeoutMs: 90000,
+                connectTimeoutMs: 60000,
                 generateHighQualityLinkPreview: true,
                 getMessage: async (key) => {
                     return { conversation: 'Hello from Bot' };
                 },
                 syncFullHistory: false,
-                shouldIgnoreJid: jid => false,
-                maxQueryTime: 30000,
                 markOnlineOnConnect: true,
                 browser: ['WhatsApp AI Bot', 'Chrome', '10.0'],
                 mobile: false,
@@ -123,13 +121,9 @@ class WhatsAppBridge {
             console.log('🔌 Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
             console.log(`📊 Status code: ${statusCode}, Reason: ${this.getDisconnectReason(statusCode)}`);
             
-            if (shouldReconnect && statusCode !== 440) { // Don't reconnect on conflict (440)
+            if (shouldReconnect) {
                 this.connected = false;
-                console.log('⏳ Waiting 15 seconds before reconnecting...');
-                setTimeout(() => this.initialize(), 15000);
-            } else if (statusCode === 440) {
-                console.log('⚠️ Connection conflict detected - stopping reconnection to prevent loops');
-                this.connected = false;
+                setTimeout(() => this.initialize(), 5000);
             } else {
                 console.log('🚫 Logged out - will not reconnect automatically');
                 this.connected = false;
