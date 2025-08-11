@@ -65,9 +65,13 @@ class WebSearchHandler:
                     # Try other SearXNG instances
                     for fallback_url in self.fallback_engines:
                         logger.info(f"🔄 Trying fallback SearXNG engine: {fallback_url}")
-                        results = await self.search_searxng(query, num_results, fallback_url)
-                        if results:
-                            break
+                        try:
+                            results = await self.search_searxng(query, num_results, fallback_url)
+                            if results:
+                                break
+                        except Exception as e:
+                            logger.warning(f"⚠️ Fallback engine {fallback_url} failed: {e}")
+                            continue
             
             if results:
                 logger.info(f"✅ Found {len(results)} search results")
@@ -235,19 +239,19 @@ class WebSearchHandler:
             
             if response.status_code != 200:
                 logger.warning(f"⚠️ DuckDuckGo returned status {response.status_code}")
-                return []
+                return await self.simple_web_search(query, num_results)
             
             # Handle empty responses
             response_text = response.text.strip()
             if not response_text:
                 logger.warning("⚠️ DuckDuckGo returned empty response")
-                return []
+                return await self.simple_web_search(query, num_results)
             
             try:
                 data = response.json()
             except ValueError as e:
                 logger.warning(f"⚠️ DuckDuckGo JSON parsing failed: {e}")
-                return []
+                return await self.simple_web_search(query, num_results)
             
             results = []
             
@@ -292,12 +296,16 @@ class WebSearchHandler:
                         'category': 'related_topic'
                     })
             
-            logger.info(f"✅ DuckDuckGo found {len(results)} results")
-            return results
+            if results:
+                logger.info(f"✅ DuckDuckGo found {len(results)} results")
+                return results
+            else:
+                logger.info("⚠️ DuckDuckGo returned no results, trying simple web search")
+                return await self.simple_web_search(query, num_results)
             
         except Exception as e:
             logger.error(f"❌ DuckDuckGo search error: {e}")
-            return []
+            return await self.simple_web_search(query, num_results)
     
     async def duckduckgo_fallback(self, query: str, num_results: int) -> List[Dict[str, Any]]:
         """Legacy fallback method - redirects to primary DuckDuckGo search"""
@@ -346,6 +354,27 @@ class WebSearchHandler:
             logger.error(f"❌ Date filtered search error: {e}")
             return []
     
+    async def simple_web_search(self, query: str, num_results: int) -> List[Dict[str, Any]]:
+        """Simple fallback search method when other engines fail"""
+        try:
+            logger.info("🔍 Using simple fallback search")
+            
+            # Create a simple result based on the query
+            results = [{
+                'title': f"Search: {query}",
+                'url': f"https://www.google.com/search?q={quote_plus(query)}",
+                'description': f"I searched for '{query}' but couldn't retrieve detailed results. You might want to search manually or try asking me about something else.",
+                'source': 'fallback',
+                'category': 'fallback_search'
+            }]
+            
+            logger.info(f"✅ Generated {len(results)} fallback results")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Simple search error: {e}")
+            return []
+
     async def quick_fact_search(self, query: str) -> Optional[str]:
         """Quick search for factual information"""
         try:

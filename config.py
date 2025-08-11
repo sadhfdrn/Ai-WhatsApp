@@ -16,7 +16,7 @@ class Config:
     def __init__(self):
         # WhatsApp Configuration
         self.WHATSAPP_CREDS = self._get_whatsapp_creds()
-        self.BOT_NAME = os.getenv("BOT_NAME", "AI Assistant 🤖")
+        self.BOT_NAME = os.getenv("BOT_NAME", "Tim 🤖")
         self.BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
         
         # AI Model Configuration
