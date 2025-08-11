@@ -322,3 +322,71 @@ temp/
 # Application specific
 conversation_memory.json
 my_profile.json
+
+# JSON message files and backups
+incoming_messages*.json
+outgoing_messages*.json
+whatsapp_events.json
+temp_*.json
+*_backup.json
+*.corrupt.*
+
+# Authentication and session data
+wa-auth/
+.replit
+.upm
+
+# Build and cache directories  
+.pythonlibs/
+.cache/
+.npm/
+target/
+dist/
+build/
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Runtime files
+*.pid
+*.seed
+*.log
+logs/
+
+# Dependencies lock files (optional, comment if you want to commit them)
+# package-lock.json
+# uv.lock
+
+# Deployment specific files
+.env.production
+.env.staging
+docker-compose.override.yml
+
+# Large model files and caches (already covered but emphasizing)
+model_cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Test and debug files
+*test*.py
+*demo*.py
+debug_*.py
+test_*.json
