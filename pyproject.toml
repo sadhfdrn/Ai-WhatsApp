@@ -16,6 +16,7 @@ dependencies = [
     # "speechrecognition>=3.14.3",  # Removed for cloud deployment
     "sqlalchemy>=2.0.42",
     "trafilatura>=2.0.0",
+
 ]
 
 [[tool.uv.index]]
