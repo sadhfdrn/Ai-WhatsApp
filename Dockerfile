@@ -93,18 +93,16 @@ RUN mkdir -p model_cache \
 # Set permissions
 RUN chmod +x main.py whatsapp_bridge.js
 
-# Configure AI models for streaming (optimized for Koyeb)
-RUN python3 -c "
-import os
-os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'
-os.environ['HF_HOME'] = '/app/model_cache'
-os.environ['TRANSFORMERS_OFFLINE'] = '0'
-os.environ['HF_DATASETS_OFFLINE'] = '0'
-
-print('🚀 AI models configured for Koyeb streaming deployment')
-print('Models will download on-demand with efficient streaming')
-print('Audio processing disabled for cloud optimization')
-"
+# Configure AI models for streaming (optimized for Koyeb) - FIXED SYNTAX
+RUN python3 -c "\
+import os; \
+os.environ['TRANSFORMERS_CACHE'] = '/app/model_cache'; \
+os.environ['HF_HOME'] = '/app/model_cache'; \
+os.environ['TRANSFORMERS_OFFLINE'] = '0'; \
+os.environ['HF_DATASETS_OFFLINE'] = '0'; \
+print('🚀 AI models configured for Koyeb streaming deployment'); \
+print('Models will download on-demand with efficient streaming'); \
+print('Audio processing disabled for cloud optimization')"
 
 # Environment configuration for Koyeb deployment
 ENV TRANSFORMERS_CACHE=/app/model_cache
@@ -148,26 +146,25 @@ ENV PORT=8080
 
 # Enhanced health check for Koyeb monitoring
 HEALTHCHECK --interval=45s --timeout=15s --start-period=120s --retries=3 \
-    CMD python3 -c "
-import requests
-import sys
-import os
-try:
-    port = os.getenv('PORT', '8080')
-    resp = requests.get(f'http://localhost:{port}/health', timeout=10)
-    if resp.status_code == 200:
-        health_data = resp.json()
-        print(f'✅ Health check passed: {health_data.get(\"status\", \"unknown\")}')
-        print(f'🔍 SearXNG: {health_data.get(\"searxng_enabled\", \"unknown\")}')
-        print(f'🤖 AI Streaming: {health_data.get(\"streaming_enabled\", \"unknown\")}')
-        sys.exit(0)
-    else:
-        print(f'❌ Health check failed: HTTP {resp.status_code}')
-        sys.exit(1)
-except Exception as e:
-    print(f'❌ Health check error: {e}')
-    sys.exit(1)
-" || exit 1
+    CMD python3 -c "\
+import requests; \
+import sys; \
+import os; \
+try: \
+    port = os.getenv('PORT', '8080'); \
+    resp = requests.get(f'http://localhost:{port}/health', timeout=10); \
+    if resp.status_code == 200: \
+        health_data = resp.json(); \
+        print(f'✅ Health check passed: {health_data.get(\"status\", \"unknown\")}'); \
+        print(f'🔍 SearXNG: {health_data.get(\"searxng_enabled\", \"unknown\")}'); \
+        print(f'🤖 AI Streaming: {health_data.get(\"streaming_enabled\", \"unknown\")}'); \
+        sys.exit(0); \
+    else: \
+        print(f'❌ Health check failed: HTTP {resp.status_code}'); \
+        sys.exit(1); \
+except Exception as e: \
+    print(f'❌ Health check error: {e}'); \
+    sys.exit(1)" || exit 1
 
 # Create optimized startup script for Koyeb
 RUN cat > start_koyeb.sh << 'EOF'
