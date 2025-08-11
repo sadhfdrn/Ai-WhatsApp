@@ -407,13 +407,23 @@ class EnhancedAISystem:
         """Generate fallback response when AI models aren't available"""
         message_lower = message.lower()
         
+        # Name introduction responses
+        if any(phrase in message_lower for phrase in ["what is your name", "what's your name", "who are you", "your name", "introduce yourself"]):
+            name_responses = [
+                f"Hi! I'm {self.config.BOT_NAME}. I'm an AI assistant here to help you with questions, search the web, and chat!",
+                f"I'm {self.config.BOT_NAME}! Nice to meet you. I can help with conversations, web searches, and more.",
+                f"My name is {self.config.BOT_NAME}. I'm your friendly AI assistant, ready to help with whatever you need!",
+                f"Hello! I'm {self.config.BOT_NAME}, an AI bot that can chat, search, and assist you with various tasks."
+            ]
+            return random.choice(name_responses)
+        
         # Greeting responses
         if any(word in message_lower for word in ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening"]):
             greetings = [
-                f"Hello! How can I help you today?",
-                f"Hi there! What's on your mind?",
-                f"Hey! Great to hear from you!",
-                f"Greetings! How are you doing?"
+                f"Hello! I'm {self.config.BOT_NAME}. How can I help you today?",
+                f"Hi there! I'm {self.config.BOT_NAME}. What's on your mind?",
+                f"Hey! I'm {self.config.BOT_NAME}. Great to hear from you!",
+                f"Greetings! I'm {self.config.BOT_NAME}. How are you doing?"
             ]
             return random.choice(greetings)
         
