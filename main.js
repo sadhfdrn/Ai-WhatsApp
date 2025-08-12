@@ -12,6 +12,9 @@ class WhatsAppBot {
         this.sentMessageIds = new Set();
         this.startTime = Date.now();
         this.healthServer = null;
+        // Load prefix from environment, default to ".", null means no prefix
+        this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
+        console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
     }
 
     async initialize() {
@@ -229,7 +232,15 @@ class WhatsAppBot {
             const message = messageData.body.trim();
             const command = message.toLowerCase();
             
-            if (command === '.ping') {
+            // Check if message starts with the configured prefix (or process all messages if no prefix)
+            if (this.prefix && !command.startsWith(this.prefix)) {
+                return; // Not a command for us
+            }
+            
+            // Remove prefix from command for processing (if prefix exists)
+            const cleanCommand = this.prefix ? command.slice(this.prefix.length) : command;
+            
+            if (cleanCommand === 'ping') {
                 // Add initial processing reaction
                 await this.reactToMessage(messageData, '⚡');
                 
@@ -250,9 +261,10 @@ class WhatsAppBot {
                     setTimeout(() => this.removeReaction(messageData), 2000);
                 }
             }
-            else if (command.startsWith('.tag ')) {
-                // Extract the message after .tag
-                const tagMessage = message.substring(5).trim();
+            else if (cleanCommand.startsWith('tag ')) {
+                // Extract the message after the tag command
+                const tagCommandLength = (this.prefix ? this.prefix.length : 0) + 4; // prefix + "tag "
+                const tagMessage = message.substring(tagCommandLength).trim();
                 
                 if (tagMessage) {
                     // Add initial processing reaction
@@ -275,11 +287,12 @@ class WhatsAppBot {
                     }
                 } else {
                     await this.reactToMessage(messageData, '❌');
-                    await this.sendMessage(messageData.from, '❌ Please provide a message after .tag\nExample: .tag Hello everyone!');
+                    const prefixDisplay = this.prefix || '';
+                    await this.sendMessage(messageData.from, `❌ Please provide a message after ${prefixDisplay}tag\nExample: ${prefixDisplay}tag Hello everyone!`);
                     setTimeout(() => this.removeReaction(messageData), 2000);
                 }
             }
-            else if (command === '.tagall') {
+            else if (cleanCommand === 'tagall') {
                 // Add initial processing reaction
                 await this.reactToMessage(messageData, '🔔');
                 

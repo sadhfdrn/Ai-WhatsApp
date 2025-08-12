@@ -15,16 +15,17 @@ A simple, pure Node.js WhatsApp bot that connects via WhatsApp Web using Baileys
 Simple Node.js WhatsApp bot with minimal dependencies. The main application (`main.js`) handles WhatsApp Web connection, message processing, and basic command responses.
 
 ### Configuration
-Environment variables manage WhatsApp credentials (WHATSAPP_CREDS) and server port (PORT).
+Environment variables manage WhatsApp credentials (WHATSAPP_CREDS), server port (PORT), and customizable command prefix (PREFIX).
 
 ### WhatsApp Integration
 Uses Baileys library for WhatsApp Web connectivity with authentication state management and message handling.
 
 ### Command System
-Enhanced command processor with smart reaction system:
-- **.ping**: Returns bot status, uptime, and network speed with ⚡ reaction
-- **.tag [message]**: Tags all group members silently with custom message and 👥 reaction
-- **.tagall**: Tags all group members loudly without requiring a message and 🔔 reaction
+Enhanced command processor with smart reaction system and customizable prefix:
+- **ping**: Returns bot status, uptime, and network speed with ⚡ reaction
+- **tag [message]**: Tags all group members silently with custom message and 👥 reaction
+- **tagall**: Tags all group members loudly without requiring a message and 🔔 reaction
+- Customizable prefix via PREFIX env var (., /, !, etc.) or null for no prefix
 - Smart reactions: Initial command emoji → Success (✅) or Failure (❌) → Auto-removal after 2 seconds
 - Network speed measurement for performance monitoring
 - Group member tagging with mention functionality
@@ -79,4 +80,10 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Success/failure indicators with green check (✅) or red X (❌)
   - Auto-removal of reactions after 2 seconds to keep chats clean
   - Comprehensive error handling with proper reaction feedback
-- **Documentation Update**: Updated replit.md to reflect pure Node.js architecture
+- **Customizable Command Prefix**: Flexible prefix configuration via environment variables
+  - PREFIX=. (default dot prefix for .ping, .tag, .tagall)
+  - PREFIX=/ (slash prefix for /ping, /tag, /tagall)
+  - PREFIX=! (exclamation prefix for !ping, !tag, !tagall)
+  - PREFIX=null (no prefix required - just ping, tag, tagall)
+  - Dynamic prefix handling in command processing and error messages
+- **Documentation Update**: Updated replit.md to reflect pure Node.js architecture and new features
