@@ -255,6 +255,14 @@ class WhatsAppBot {
                     continue;
                 }
 
+                // Check for view-once messages first (for auto VV)
+                if (this.pluginManager) {
+                    const viewOncePlugin = this.pluginManager.getPlugin('vv');
+                    if (viewOncePlugin && viewOncePlugin.autoVVEnabled) {
+                        await viewOncePlugin.handleAutoVV(message);
+                    }
+                }
+
                 // Extract message data
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {

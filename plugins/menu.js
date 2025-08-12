@@ -37,6 +37,21 @@ class MenuPlugin {
 ├ ${prefix}gstatus - Group member info
 └ (Reply + gstatus for user info)
 
+┌─ 👁️ *VIEW-ONCE COMMANDS*
+├ ${prefix}vv - Remove view-once (reply)
+├ ${prefix}autovv - Toggle auto view-once
+├ ${prefix}save - Save message to DM (reply)
+└ (Reply to any message to save it)
+
+┌─ 🎮 *INTERACTIVE COMMANDS*
+├ ${prefix}buttons - Interactive buttons
+├ ${prefix}list - Interactive lists
+├ ${prefix}poll - Create polls
+├ ${prefix}carousel - Card layouts
+├ ${prefix}quick - Quick replies
+├ ${prefix}location - Share location
+└ ${prefix}contact - Share contact
+
 ┌─ ℹ️ *BOT INFO*
 ├ Prefix: "${prefix || 'none'}"
 ├ Status: Online ✅
