@@ -10,6 +10,7 @@ This project is a pure Node.js WhatsApp bot built with the GitHub version of Bai
 - Health Checks: Expose port for health monitoring
 - Single Workflow: Only one WhatsApp Bot workflow running to avoid session conflicts
 - Message Processing: vv and save commands should process actual message content (images, videos, voice, text) not just message IDs
+- Stealth Mode: vv and save command confirmation messages should auto-delete after 3-5 seconds for discretion
 
 ## System Architecture
 ### Core Architecture

@@ -99,7 +99,20 @@ class ViewOncePlugin {
                         await this.bot.sendMessage(this.ownerJid, dmNotification);
                     }
                     
-                    await this.bot.sendMessage(messageData.from, '✅ View-once media revealed and saved!');
+                    const confirmMsg = await this.bot.sendMessage(messageData.from, '✅ View-once media revealed and saved!');
+                    
+                    // Auto-delete confirmation message after 3 seconds for stealth
+                    setTimeout(async () => {
+                        try {
+                            if (confirmMsg && confirmMsg.key) {
+                                await this.bot.sock.sendMessage(messageData.from, {
+                                    delete: confirmMsg.key
+                                });
+                            }
+                        } catch (error) {
+                            // Ignore deletion errors
+                        }
+                    }, 3000);
                 } else {
                     console.log('❌ Failed to extract media');
                     await this.bot.sendMessage(messageData.from, '❌ Could not extract media from view-once message');
@@ -133,7 +146,21 @@ class ViewOncePlugin {
                            `• Forwarded to current chat\n\n` +
                            `Current status: ${status.toUpperCase()}`;
 
-            await this.bot.sendMessage(messageData.from, response);
+            const confirmMsg = await this.bot.sendMessage(messageData.from, response);
+            
+            // Auto-delete confirmation message after 5 seconds for stealth
+            setTimeout(async () => {
+                try {
+                    if (confirmMsg && confirmMsg.key) {
+                        await this.bot.sock.sendMessage(messageData.from, {
+                            delete: confirmMsg.key
+                        });
+                    }
+                } catch (error) {
+                    // Ignore deletion errors
+                }
+            }, 5000);
+            
             return true;
         } catch (error) {
             console.error('❌ Error toggling auto VV:', error);
@@ -194,7 +221,20 @@ class ViewOncePlugin {
             });
             
             if (success) {
-                await this.bot.sendMessage(messageData.from, '✅ Message saved to your DM successfully!');
+                const confirmMsg = await this.bot.sendMessage(messageData.from, '✅ Message saved to your DM successfully!');
+                
+                // Auto-delete confirmation message after 3 seconds for stealth
+                setTimeout(async () => {
+                    try {
+                        if (confirmMsg && confirmMsg.key) {
+                            await this.bot.sock.sendMessage(messageData.from, {
+                                delete: confirmMsg.key
+                            });
+                        }
+                    } catch (error) {
+                        // Ignore deletion errors
+                    }
+                }, 3000);
             } else {
                 await this.bot.sendMessage(messageData.from, '❌ Failed to save message to DM');
             }
