@@ -19,6 +19,12 @@ class WhatsAppBot {
         // Owner number will be extracted from credentials
         this.ownerNumber = null;
         
+        // Enhanced features inspired by @neoxr/wb
+        this.commandCooldown = new Map(); // Anti-spam cooldown
+        this.messageCache = new Map(); // Message caching
+        this.botDetection = new Set(); // Bot message detection
+        this.sessionActive = false;
+        
         // Initialize plugin system
         this.pluginManager = new PluginManager(this);
         this.plugins = new Map(); // For backward compatibility
@@ -299,6 +305,12 @@ class WhatsAppBot {
             const commandName = commandParts[0];
             const args = commandParts.slice(1);
             
+            // Enhanced spam protection inspired by @neoxr/wb
+            if (this.isSpamDetected(messageData.from, commandName)) {
+                console.log(`🚫 Spam detected from ${messageData.from} for command: ${commandName}`);
+                return
+            }
+            
             // Handle special case for tag command with arguments
             if (commandName === 'tag' && args.length > 0) {
                 // Use plugin system for tag command
@@ -313,9 +325,50 @@ class WhatsAppBot {
                 }
             }
             
+            // Update cooldown after successful command execution
+            this.updateCooldown(messageData.from, commandName)
+            
         } catch (error) {
             console.error('❌ Error processing command:', error);
         }
+    }
+
+    isSpamDetected(sender, command) {
+        const now = Date.now()
+        const cooldownKey = `${sender}-${command}`
+        const lastUsed = this.commandCooldown.get(cooldownKey)
+        
+        // 3 second cooldown per command per user (inspired by @neoxr/wb)
+        if (lastUsed && (now - lastUsed) < 3000) {
+            return true
+        }
+        
+        return false
+    }
+
+    updateCooldown(sender, command) {
+        const cooldownKey = `${sender}-${command}`
+        this.commandCooldown.set(cooldownKey, Date.now())
+        
+        // Clean old cooldowns (older than 1 minute)
+        const oneMinuteAgo = Date.now() - 60000
+        for (const [key, timestamp] of this.commandCooldown.entries()) {
+            if (timestamp < oneMinuteAgo) {
+                this.commandCooldown.delete(key)
+            }
+        }
+    }
+
+    isBotMessage(messageId) {
+        // Enhanced bot detection inspired by @neoxr/wb
+        if (!messageId) return false
+        
+        return (
+            (messageId.startsWith('3EB0') && messageId.length === 40) ||
+            messageId.startsWith('BAE') ||
+            /[-]/.test(messageId) ||
+            this.botDetection.has(messageId)
+        )
     }
 
 

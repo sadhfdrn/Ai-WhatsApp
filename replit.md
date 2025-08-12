@@ -21,13 +21,17 @@ Environment variables manage WhatsApp credentials (WHATSAPP_CREDS), server port 
 Uses Baileys library for WhatsApp Web connectivity with authentication state management and message handling.
 
 ### Plugin System
-Modular plugin architecture with smart reaction system and customizable prefix:
+Enhanced modular plugin architecture with @neoxr/wb-inspired features and smart reaction system:
 - **Plugin Manager**: Automatic loading and management of command plugins
 - **ping**: Returns bot status, uptime, and network speed with ⚡ reaction
 - **menu/help/commands**: Shows formatted bot menu with all available commands with 📋 reaction
 - **tag [message]**: Tags all group members silently with custom message and 👥 reaction
 - **tagall**: Tags all group members loudly without requiring a message and 🔔 reaction
 - **gstatus**: Shows detailed group member information (admin status, role, join date) with 👤 reaction
+- **Enhanced Anti-Spam**: 3-second cooldown per command per user (inspired by @neoxr/wb)
+- **Bot Detection**: Advanced bot message filtering using multiple detection patterns
+- **Message Caching**: Temporary message storage for improved performance
+- **Session Management**: Enhanced connection state tracking and management
 - Customizable prefix via PREFIX env var (., /, !, etc.) or null for no prefix
 - Smart reactions: Initial command emoji → Success (✅) or Failure (❌) → Auto-removal after 2 seconds
 - Extensible plugin system for easy addition of new commands
@@ -126,3 +130,24 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Bot information display including loaded plugin count
   - Usage tips and examples for better user experience
   - Multiple command aliases (menu, help, commands) for accessibility
+
+### August 12, 2025 - @neoxr/wb Integration & Enhancement
+- **Enhanced Architecture**: Integrated features inspired by @neoxr/wb library while maintaining Baileys compatibility
+  - Added advanced spam protection with 3-second command cooldowns per user
+  - Implemented enhanced bot message detection using multiple pattern matching
+  - Created message caching system for improved performance and message tracking
+  - Enhanced session management with better connection state tracking
+  - Integrated command cooldown management with automatic cleanup
+- **Improved Security**: Advanced spam detection and rate limiting
+  - Per-user, per-command cooldown system prevents command flooding
+  - Enhanced bot detection prevents processing of automated messages
+  - Message ID tracking prevents duplicate message processing
+  - Automatic cleanup of old cached data to prevent memory leaks
+- **Performance Optimization**: Message caching and efficient data management
+  - Temporary message storage for quick access and processing
+  - Automatic cleanup of expired cooldowns and cached messages
+  - Enhanced memory management for long-running operations
+- **Maintained Compatibility**: All existing plugin functionality preserved
+  - Full backward compatibility with existing plugin system
+  - All commands continue to work with enhanced performance
+  - No breaking changes to existing plugin architecture
