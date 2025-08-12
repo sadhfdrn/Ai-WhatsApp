@@ -1,4 +1,4 @@
-// Enhanced WhatsApp Bot inspired by @neoxr/wb but using Baileys directly
+// Clean WhatsApp Bot using pure Baileys
 const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
@@ -8,20 +8,15 @@ const http = require('http');
 const PluginManager = require('./plugins/pluginManager');
 const MessageUtils = require('./utils/messageUtils');
 
-// @neoxr/wb inspired spam detection class
+// Simple spam detection class
 class SpamDetection {
     constructor(options = {}) {
         this.RESET_TIMER = options.RESET_TIMER || 3000; // 3 seconds
-        this.HOLD_TIMER = options.HOLD_TIMER || 180000; // 3 minutes
-        this.PERMANENT_THRESHOLD = options.PERMANENT_THRESHOLD || 3;
-        this.NOTIFY_THRESHOLD = options.NOTIFY_THRESHOLD || 4;
-        this.BANNED_THRESHOLD = options.BANNED_THRESHOLD || 5;
-        this.userWarnings = new Map();
         this.userCooldowns = new Map();
     }
 
     detection(client, message, options = {}) {
-        const { prefix, command, users, cooldown, show = 'all' } = options;
+        const { command, cooldown } = options;
         const userId = message.key.participant || message.key.remoteJid;
         const cooldownKey = `${userId}-${command}`;
         const now = Date.now();
@@ -29,9 +24,7 @@ class SpamDetection {
         // Check cooldown
         const lastUsed = cooldown.get(cooldownKey);
         if (lastUsed && (now - lastUsed) < this.RESET_TIMER) {
-            if (show === 'all' || show === 'spam-only') {
-                console.log(`🚫 Spam detected: ${userId} command: ${command}`);
-            }
+            console.log(`🚫 Spam detected: ${userId} command: ${command}`);
             return true;
         }
 
@@ -60,13 +53,9 @@ class WhatsAppBot {
         this.botDetection = new Set(); // Bot message detection
         this.sessionActive = false;
         
-        // Initialize spam detection inspired by @neoxr/wb
+        // Initialize spam detection
         this.spam = new SpamDetection({
-            RESET_TIMER: 3000, // 3 seconds cooldown
-            HOLD_TIMER: 180000, // 3 minutes timeout
-            PERMANENT_THRESHOLD: 3,
-            NOTIFY_THRESHOLD: 4,
-            BANNED_THRESHOLD: 5
+            RESET_TIMER: 3000 // 3 seconds cooldown
         });
         
         // Initialize plugin system
@@ -75,7 +64,7 @@ class WhatsAppBot {
         this.messageUtils = null; // Will be initialized after socket creation
         
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
-        console.log(`🔌 Starting WhatsApp Bot with @neoxr/wb integration...`);
+        console.log(`🔌 Starting WhatsApp Bot...`);
     }
 
     async initialize() {
@@ -114,7 +103,7 @@ class WhatsAppBot {
                 version = [2, 3000, 1023223821];
             }
 
-            // Create WhatsApp socket with @neoxr/wb inspired settings
+            // Create WhatsApp socket with clean settings
             this.sock = makeWASocket({
                 version,
                 auth: state,
@@ -130,7 +119,6 @@ class WhatsAppBot {
                 markOnlineOnConnect: true,
                 browser: ['WhatsApp Bot', 'Chrome', '10.0'],
                 mobile: false,
-                // @neoxr/wb inspired bot detection
                 shouldIgnoreJid: jid => {
                     return /(newsletter|bot)/.test(jid);
                 }
@@ -194,7 +182,7 @@ class WhatsAppBot {
             this.handleConnectionUpdate(update);
         });
 
-        // Handle incoming messages with @neoxr/wb inspired processing
+        // Handle incoming messages
         this.sock.ev.on('messages.upsert', async (m) => {
             await this.handleMessages(m);
         });
@@ -257,13 +245,12 @@ class WhatsAppBot {
                     continue;
                 }
                 
-                // Handle decryption errors gracefully - @neoxr/wb inspired
+                // Handle decryption errors gracefully
                 if (message.messageStubType || !message.message) {
-                    console.log('⚠️ Skipping stub/encrypted message');
                     continue;
                 }
 
-                // Bot detection inspired by @neoxr/wb
+                // Bot detection
                 if (this.isBotMessage(message.key.id)) {
                     continue;
                 }
@@ -277,14 +264,10 @@ class WhatsAppBot {
                     if (this.isCommand(messageData.body)) {
                         const command = this.extractCommand(messageData.body);
                         
-                        // Apply spam detection inspired by @neoxr/wb
+                        // Apply spam detection
                         const isSpam = this.spam.detection(this.sock, message, {
-                            prefix: this.prefix,
                             command,
-                            commands: this.pluginManager ? this.pluginManager.getCommandList() : [],
-                            users: {},
-                            cooldown: this.commandCooldown,
-                            show: 'all'
+                            cooldown: this.commandCooldown
                         });
 
                         if (!isSpam) {
@@ -343,14 +326,13 @@ class WhatsAppBot {
         }
     }
 
-    // @neoxr/wb inspired bot detection
+    // Simple bot detection
     isBotMessage(messageId) {
         if (!messageId) return false;
         
         return (
             (messageId.startsWith('3EB0') && messageId.length === 40) ||
             messageId.startsWith('BAE') ||
-            /[-]/.test(messageId) ||
             this.botDetection.has(messageId)
         );
     }
@@ -435,7 +417,7 @@ class WhatsAppBot {
             const commandName = commandParts[0];
             const args = commandParts.slice(1);
             
-            // Add reaction to show command received (inspired by @neoxr/wb feedback)
+            // Add reaction to show command received
             await this.reactToMessage(messageData, '📋');
             
             // Execute command through plugin manager
@@ -482,10 +464,15 @@ class WhatsAppBot {
                 return false;
             }
 
-            // Fix JID format if needed
+            // Ensure we have a valid JID format
             let targetJid = to;
-            if (!to.includes('@')) {
-                targetJid = to.includes('-') ? `${to}@g.us` : `${to}@s.whatsapp.net`;
+            if (to && typeof to === 'string') {
+                if (!to.includes('@')) {
+                    targetJid = to.includes('-') ? `${to}@g.us` : `${to}@s.whatsapp.net`;
+                }
+            } else {
+                console.error('❌ Invalid JID provided:', to);
+                return false;
             }
 
             await this.sock.sendMessage(targetJid, { text: message });
@@ -494,20 +481,6 @@ class WhatsAppBot {
 
         } catch (error) {
             console.error('❌ Error sending message:', error);
-            
-            // Try alternative JID format on error
-            try {
-                const altJid = to.includes('@g.us') ? to.replace('@g.us', '@s.whatsapp.net') : 
-                             to.includes('@s.whatsapp.net') ? to.replace('@s.whatsapp.net', '@g.us') : to;
-                
-                if (altJid !== to) {
-                    await this.sock.sendMessage(altJid, { text: message });
-                    console.log(`📤 Message sent to ${altJid} (fallback)`);
-                    return true;
-                }
-            } catch (fallbackError) {
-                console.error('❌ Fallback send also failed:', fallbackError);
-            }
             
             return false;
         }
@@ -595,8 +568,8 @@ class WhatsAppBot {
 📱 Bot Status: Online and Ready  
 🔧 Command Prefix: ${this.prefix === 'null' || this.prefix === '' ? 'No prefix required' : this.prefix}
 🔌 Plugins: ${this.pluginManager ? this.pluginManager.loadedCount : 0} loaded
-📚 Library: @neoxr/wb with Baileys
-🛡️ Features: Enhanced spam detection, interactive messages
+📚 Library: Pure Baileys
+🛡️ Features: Spam detection, interactive messages
 
 📋 Available Commands:
 ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}menu - Show all commands

@@ -11,7 +11,6 @@
   "description": "",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@neoxr/wb": "^5.10.14",
     "baileys": "github:WhiskeySockets/Baileys",
     "cheerio": "^1.1.2",
     "pino": "^9.8.0",
