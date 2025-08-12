@@ -40,23 +40,44 @@ class ViewOncePlugin {
                 return true;
             }
 
-            // For demonstration, show the functionality is working
-            const response = `🔓 *View-Once Handler Activated*
-
-✅ Command received and processed
-📱 Replied message detected: ${messageData.quotedMessage.id}
-👁️ View-once restriction would be removed
-
-*Note:* Full view-once processing requires media download capabilities.
-The framework is ready - actual media extraction would happen here.
-
-💡 *How it works:*
-1. Detects quoted view-once messages
-2. Downloads the media content
-3. Resends without view-once restriction
-4. Saves to your DM if needed`;
-
-            await this.bot.sendMessage(messageData.from, response);
+            console.log('🔍 Processing view-once message...');
+            
+            // Get the quoted message content
+            const quotedMsg = messageData.quotedMessage;
+            
+            // Check if it's a view-once message
+            if (this.isViewOnceMessage(quotedMsg.message)) {
+                console.log('👁️ View-once message detected, extracting media...');
+                
+                // Extract and send the media without view-once restriction
+                const mediaData = await this.extractViewOnceMedia(quotedMsg.message);
+                if (mediaData) {
+                    // Send the media back to the chat
+                    await this.sendMediaWithoutViewOnce(messageData.from, mediaData);
+                    
+                    // Also save to owner DM if configured
+                    if (this.ownerJid && messageData.from !== this.ownerJid) {
+                        await this.sendMediaWithoutViewOnce(this.ownerJid, mediaData);
+                        
+                        const dmNotification = `🔓 *View-Once Revealed*
+⏰ Time: ${new Date().toLocaleString()}
+📍 From: ${messageData.from.includes('@g.us') ? 'Group' : 'Private'} chat
+👤 Requested by: ${messageData.sender}
+💾 Media saved above`;
+                        
+                        await this.bot.sendMessage(this.ownerJid, dmNotification);
+                    }
+                    
+                    await this.bot.sendMessage(messageData.from, '✅ View-once media revealed and saved!');
+                } else {
+                    await this.bot.sendMessage(messageData.from, '❌ Could not extract media from view-once message');
+                }
+            } else {
+                // Not a view-once message, show what type it is
+                const messageType = this.getMessageType(quotedMsg.content || quotedMsg.message);
+                await this.bot.sendMessage(messageData.from, `❌ This is not a view-once message. Message type: ${messageType}`);
+            }
+            
             return true;
         } catch (error) {
             console.error('❌ Error handling view-once:', error);
@@ -100,37 +121,20 @@ The framework is ready - actual media extraction would happen here.
                 return true;
             }
 
-            // Send confirmation and simulated save info
+            console.log('💾 Saving message to owner DM...');
+            
             const timestamp = new Date().toLocaleString();
             const chatType = messageData.from.includes('@g.us') ? 'Group' : 'Private';
             
-            const saveInfo = `💾 *MESSAGE SAVE REQUEST*
-
-✅ Save command processed successfully
-📱 Quoted message ID: ${messageData.quotedMessage.id}
-⏰ Timestamp: ${timestamp}
-📍 Source: ${chatType} chat
-👤 Requested by: ${messageData.sender}
-
-📨 *Forwarding to your DM...*`;
-
-            await this.bot.sendMessage(messageData.from, saveInfo);
-
-            // Send to owner DM
-            if (this.ownerJid) {
-                const dmMessage = `📥 *SAVED MESSAGE*
-
-⏰ Time: ${timestamp}
-📍 From: ${chatType}
-🔗 Chat: ${messageData.from}
-👤 Sender: ${messageData.sender}
-📱 Message ID: ${messageData.quotedMessage.id}
-
-💡 Message content would be forwarded here in full implementation.`;
-
-                await this.bot.sendMessage(this.ownerJid, dmMessage);
-            }
-
+            // Process the actual message content
+            await this.saveMessageToDM(messageData.quotedMessage.message, {
+                from: messageData.from,
+                sender: messageData.sender,
+                timestamp: timestamp,
+                chatType: chatType
+            });
+            
+            await this.bot.sendMessage(messageData.from, '✅ Message saved to your DM successfully!');
             return true;
         } catch (error) {
             console.error('❌ Error saving message:', error);
@@ -168,39 +172,71 @@ The framework is ready - actual media extraction would happen here.
     }
 
     isViewOnceMessage(message) {
-        if (!message || !message.message) return false;
+        if (!message) return false;
+        
+        // Handle different message structure formats
+        const msg = message.message || message;
         
         // Check for view-once indicators
         return !!(
-            message.message.imageMessage?.viewOnce ||
-            message.message.videoMessage?.viewOnce ||
-            message.message.audioMessage?.viewOnce
+            msg.imageMessage?.viewOnce ||
+            msg.videoMessage?.viewOnce ||
+            msg.audioMessage?.viewOnce
         );
+    }
+    
+    getMessageType(message) {
+        if (!message) return 'unknown';
+        
+        const msg = message.message || message;
+        
+        if (msg.conversation) return 'text';
+        if (msg.extendedTextMessage) return 'text';
+        if (msg.imageMessage) return msg.imageMessage.viewOnce ? 'view-once image' : 'image';
+        if (msg.videoMessage) return msg.videoMessage.viewOnce ? 'view-once video' : 'video';
+        if (msg.audioMessage) return msg.audioMessage.viewOnce ? 'view-once audio' : 'audio';
+        if (msg.documentMessage) return 'document';
+        if (msg.contactMessage) return 'contact';
+        if (msg.locationMessage) return 'location';
+        if (msg.stickerMessage) return 'sticker';
+        
+        return 'other';
     }
 
     async extractViewOnceMedia(message) {
         try {
-            if (!message.message) return null;
+            // Handle different message structure formats
+            const msg = message.message || message;
+            if (!msg) return null;
 
             let mediaMessage = null;
             let mediaType = null;
 
-            if (message.message.imageMessage?.viewOnce) {
-                mediaMessage = message.message.imageMessage;
+            if (msg.imageMessage?.viewOnce) {
+                mediaMessage = msg.imageMessage;
                 mediaType = 'image';
-            } else if (message.message.videoMessage?.viewOnce) {
-                mediaMessage = message.message.videoMessage;
+            } else if (msg.videoMessage?.viewOnce) {
+                mediaMessage = msg.videoMessage;
                 mediaType = 'video';
-            } else if (message.message.audioMessage?.viewOnce) {
-                mediaMessage = message.message.audioMessage;
+            } else if (msg.audioMessage?.viewOnce) {
+                mediaMessage = msg.audioMessage;
                 mediaType = 'audio';
             }
 
             if (!mediaMessage) return null;
 
+            // Create message structure for downloading
+            const messageForDownload = {
+                key: message.key || { id: 'temp', remoteJid: 'temp' },
+                message: { [mediaType + 'Message']: mediaMessage }
+            };
+
             // Download the media using Baileys
             if (this.bot.sock && this.bot.sock.downloadMediaMessage) {
-                const buffer = await this.bot.sock.downloadMediaMessage(message);
+                console.log(`📥 Downloading ${mediaType} media...`);
+                const buffer = await this.bot.sock.downloadMediaMessage(messageForDownload);
+                console.log(`✅ Downloaded ${buffer.length} bytes of ${mediaType} data`);
+                
                 return {
                     buffer,
                     mediaType,
@@ -249,8 +285,8 @@ The framework is ready - actual media extraction would happen here.
         try {
             if (!this.ownerJid || !originalMessage) return false;
 
-            const timestamp = new Date().toLocaleString();
-            const fromChat = contextData.from.includes('@g.us') ? 'Group' : 'Private';
+            const timestamp = contextData.timestamp || new Date().toLocaleString();
+            const fromChat = contextData.chatType || (contextData.from.includes('@g.us') ? 'Group' : 'Private');
             const chatName = contextData.from;
 
             let savedContent = `📥 *SAVED MESSAGE*\n` +
@@ -258,8 +294,14 @@ The framework is ready - actual media extraction would happen here.
                              `📍 From: ${fromChat} (${chatName})\n` +
                              `👤 Sender: ${contextData.sender}\n\n`;
 
+            // Handle different message structure formats
+            const msg = originalMessage.message || originalMessage;
+            
+            console.log('💾 Processing message type for save...');
+
             // Handle different message types
             if (this.isViewOnceMessage(originalMessage)) {
+                console.log('🔓 Saving view-once message...');
                 const mediaData = await this.extractViewOnceMedia(originalMessage);
                 if (mediaData) {
                     await this.sendMediaWithoutViewOnce(this.ownerJid, mediaData);
@@ -267,34 +309,86 @@ The framework is ready - actual media extraction would happen here.
                 } else {
                     savedContent += `❌ Could not extract view-once media`;
                 }
-            } else if (originalMessage.message?.conversation) {
-                savedContent += `💬 Text: ${originalMessage.message.conversation}`;
-            } else if (originalMessage.message?.extendedTextMessage?.text) {
-                savedContent += `💬 Text: ${originalMessage.message.extendedTextMessage.text}`;
-            } else if (originalMessage.message?.imageMessage) {
-                savedContent += `🖼️ Image message`;
-                // Handle regular image
-                const buffer = await this.bot.sock.downloadMediaMessage(originalMessage);
-                if (buffer) {
-                    await this.bot.sock.sendMessage(this.ownerJid, {
-                        image: buffer,
-                        caption: originalMessage.message.imageMessage.caption || 'Saved image'
-                    });
+            } else if (msg.conversation) {
+                console.log('💬 Saving text message...');
+                savedContent += `💬 Text: ${msg.conversation}`;
+            } else if (msg.extendedTextMessage?.text) {
+                console.log('💬 Saving extended text message...');
+                savedContent += `💬 Text: ${msg.extendedTextMessage.text}`;
+            } else if (msg.imageMessage) {
+                console.log('🖼️ Saving image message...');
+                try {
+                    // Create proper message structure for download
+                    const messageForDownload = {
+                        key: originalMessage.key || { id: 'temp', remoteJid: 'temp' },
+                        message: { imageMessage: msg.imageMessage }
+                    };
+                    
+                    const buffer = await this.bot.sock.downloadMediaMessage(messageForDownload);
+                    if (buffer) {
+                        await this.bot.sock.sendMessage(this.ownerJid, {
+                            image: buffer,
+                            caption: msg.imageMessage.caption || 'Saved image'
+                        });
+                        savedContent += `🖼️ Image saved above`;
+                    } else {
+                        savedContent += `🖼️ Image message (download failed)`;
+                    }
+                } catch (error) {
+                    console.error('Error downloading image:', error);
+                    savedContent += `🖼️ Image message (with caption: ${msg.imageMessage.caption || 'none'})`;
                 }
-            } else if (originalMessage.message?.videoMessage) {
-                savedContent += `🎥 Video message`;
-                // Handle regular video
-                const buffer = await this.bot.sock.downloadMediaMessage(originalMessage);
-                if (buffer) {
-                    await this.bot.sock.sendMessage(this.ownerJid, {
-                        video: buffer,
-                        caption: originalMessage.message.videoMessage.caption || 'Saved video'
-                    });
+            } else if (msg.videoMessage) {
+                console.log('🎥 Saving video message...');
+                try {
+                    const messageForDownload = {
+                        key: originalMessage.key || { id: 'temp', remoteJid: 'temp' },
+                        message: { videoMessage: msg.videoMessage }
+                    };
+                    
+                    const buffer = await this.bot.sock.downloadMediaMessage(messageForDownload);
+                    if (buffer) {
+                        await this.bot.sock.sendMessage(this.ownerJid, {
+                            video: buffer,
+                            caption: msg.videoMessage.caption || 'Saved video'
+                        });
+                        savedContent += `🎥 Video saved above`;
+                    } else {
+                        savedContent += `🎥 Video message (download failed)`;
+                    }
+                } catch (error) {
+                    console.error('Error downloading video:', error);
+                    savedContent += `🎥 Video message (with caption: ${msg.videoMessage.caption || 'none'})`;
+                }
+            } else if (msg.audioMessage) {
+                console.log('🎵 Saving audio message...');
+                try {
+                    const messageForDownload = {
+                        key: originalMessage.key || { id: 'temp', remoteJid: 'temp' },
+                        message: { audioMessage: msg.audioMessage }
+                    };
+                    
+                    const buffer = await this.bot.sock.downloadMediaMessage(messageForDownload);
+                    if (buffer) {
+                        await this.bot.sock.sendMessage(this.ownerJid, {
+                            audio: buffer,
+                            mimetype: msg.audioMessage.mimetype || 'audio/ogg; codecs=opus'
+                        });
+                        savedContent += `🎵 Audio saved above`;
+                    } else {
+                        savedContent += `🎵 Audio message (download failed)`;
+                    }
+                } catch (error) {
+                    console.error('Error downloading audio:', error);
+                    savedContent += `🎵 Voice/Audio message`;
                 }
             } else {
-                savedContent += `📄 Other message type`;
+                const messageType = this.getMessageType(msg);
+                savedContent += `📄 ${messageType} message`;
+                console.log(`📄 Unsupported message type for full save: ${messageType}`);
             }
 
+            // Send the summary message
             await this.bot.sendMessage(this.ownerJid, savedContent);
             return true;
         } catch (error) {

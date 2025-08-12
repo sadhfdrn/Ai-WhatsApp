@@ -9,6 +9,7 @@ This project is a pure Node.js WhatsApp bot built with the GitHub version of Bai
 - Architecture: Pure Node.js implementation with GitHub Baileys (no @neoxr/wb or baileys-mod dependencies)
 - Health Checks: Expose port for health monitoring
 - Single Workflow: Only one WhatsApp Bot workflow running to avoid session conflicts
+- Message Processing: vv and save commands should process actual message content (images, videos, voice, text) not just message IDs
 
 ## System Architecture
 ### Core Architecture
@@ -22,11 +23,12 @@ Utilizes the official GitHub Baileys library for WhatsApp Web integration, inclu
 
 ### Plugin System
 An enhanced modular plugin architecture, inspired by `@neoxr/wb`, enables automatic loading and management of command plugins. Key features include:
-- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction), `autovv` (toggle auto view-once processing), and `save` (save messages to DM).
+- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction and download actual media), `autovv` (toggle auto view-once processing), and `save` (save actual message content including media to DM).
+- **Enhanced Message Processing**: Full implementation of message content extraction and media downloading for vv and save commands. Now processes actual images, videos, voice messages, and text content instead of just message IDs.
+- **Message Caching**: Temporary message storage (1000 messages) for reliable quoted message retrieval and processing.
 - **Smart Reactions**: Initial command emojis, followed by success (✅) or failure (❌) indicators, which auto-remove after 2 seconds.
 - **Enhanced Anti-Spam**: A 3-second cooldown per command per user.
 - **Bot Detection**: Advanced filtering of bot messages using multiple detection patterns.
-- **Message Caching**: Temporary message storage for improved performance.
 - **Session Management**: Enhanced connection state tracking.
 - **Customizable Prefix**: Configurable via the `PREFIX` environment variable.
 - **Professional Menu**: Boxed layout with comprehensive command listings.

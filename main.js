@@ -113,7 +113,15 @@ class WhatsAppBot {
                 connectTimeoutMs: 60000,
                 generateHighQualityLinkPreview: true,
                 getMessage: async (key) => {
-                    return { conversation: 'Bot Message' };
+                    // Try to get message from cache first
+                    if (this.messageCache && this.messageCache.has(key.id)) {
+                        return this.messageCache.get(key.id);
+                    }
+                    
+                    // Return empty for missing messages to avoid errors
+                    return {
+                        conversation: "Message not found in cache"
+                    };
                 },
                 syncFullHistory: false,
                 markOnlineOnConnect: true,
@@ -263,6 +271,16 @@ class WhatsAppBot {
                     }
                 }
 
+                // Cache the message for later retrieval
+                if (message.message && message.key.id) {
+                    this.messageCache.set(message.key.id, message.message);
+                    // Clean old cache entries (keep only last 1000 messages)
+                    if (this.messageCache.size > 1000) {
+                        const firstKey = this.messageCache.keys().next().value;
+                        this.messageCache.delete(firstKey);
+                    }
+                }
+
                 // Extract message data
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {
@@ -279,6 +297,8 @@ class WhatsAppBot {
                         });
 
                         if (!isSpam) {
+                            // Add original message to messageData for plugin access
+                            messageData.originalMessage = message;
                             await this.processCommand(messageData);
                         } else {
                             console.log(`🚫 Spam detected from ${messageData.from}`);
@@ -310,10 +330,20 @@ class WhatsAppBot {
                 
                 // Check for quoted message (reply)
                 if (message.message.extendedTextMessage.contextInfo?.quotedMessage) {
+                    const contextInfo = message.message.extendedTextMessage.contextInfo;
                     messageData.quotedMessage = {
-                        participant: message.message.extendedTextMessage.contextInfo.participant,
-                        id: message.message.extendedTextMessage.contextInfo.stanzaId,
-                        content: message.message.extendedTextMessage.contextInfo.quotedMessage
+                        participant: contextInfo.participant,
+                        id: contextInfo.stanzaId,
+                        content: contextInfo.quotedMessage,
+                        // Add the full message for proper processing
+                        message: {
+                            message: contextInfo.quotedMessage,
+                            key: {
+                                id: contextInfo.stanzaId,
+                                remoteJid: message.key.remoteJid,
+                                participant: contextInfo.participant
+                            }
+                        }
                     };
                 }
             }
