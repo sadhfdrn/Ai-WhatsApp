@@ -65,7 +65,7 @@ class PluginManager {
 
         try {
             // Execute the plugin command (don't add extra reactions here since main.js handles them)
-            const success = await plugin.execute(command, messageData, args);
+            const success = await plugin.execute(messageData, command, args);
             return success;
 
         } catch (error) {
