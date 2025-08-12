@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const PluginManager = require('./plugins/pluginManager');
+const MessageUtils = require('./utils/messageUtils');
 
 class WhatsAppBot {
     constructor() {
@@ -28,6 +29,7 @@ class WhatsAppBot {
         // Initialize plugin system
         this.pluginManager = new PluginManager(this);
         this.plugins = new Map(); // For backward compatibility
+        this.messageUtils = null; // Will be initialized after socket creation
         
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
         if (this.ownerNumber) {
@@ -232,6 +234,14 @@ class WhatsAppBot {
                     continue;
                 }
                 
+                // Check for interactive message responses first
+                const interactiveResponse = this.parseInteractiveResponse(message);
+                if (interactiveResponse) {
+                    console.log(`🎮 Interactive response: ${interactiveResponse.type} - ${interactiveResponse.id}`);
+                    await this.handleInteractiveResponse(message, interactiveResponse);
+                    continue;
+                }
+
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {
                     console.log(`📨 Message from ${messageData.from}: ${messageData.body}`);
@@ -369,6 +379,59 @@ class WhatsAppBot {
             /[-]/.test(messageId) ||
             this.botDetection.has(messageId)
         )
+    }
+
+    parseInteractiveResponse(message) {
+        try {
+            // Handle button responses
+            if (message.message?.buttonsResponseMessage) {
+                return {
+                    type: 'button',
+                    id: message.message.buttonsResponseMessage.selectedButtonId,
+                    text: message.message.buttonsResponseMessage.selectedDisplayText
+                };
+            }
+
+            // Handle list responses
+            if (message.message?.listResponseMessage) {
+                const response = message.message.listResponseMessage.singleSelectReply;
+                return {
+                    type: 'list',
+                    id: response.selectedRowId,
+                    text: response.selectedDisplayText
+                };
+            }
+
+            // Handle poll responses
+            if (message.message?.pollUpdateMessage) {
+                return {
+                    type: 'poll',
+                    pollCreationMessageKey: message.message.pollUpdateMessage.pollCreationMessageKey,
+                    vote: message.message.pollUpdateMessage.vote
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('❌ Error parsing interactive response:', error);
+            return null;
+        }
+    }
+
+    async handleInteractiveResponse(message, responseData) {
+        try {
+            // Check if interactive plugin is loaded and can handle this response
+            const interactivePlugin = this.pluginManager.plugins.get('interactive');
+            if (interactivePlugin && interactivePlugin.handleInteractiveResponse) {
+                await interactivePlugin.handleInteractiveResponse(message, responseData);
+            } else {
+                // Default handling
+                const from = message.key.remoteJid;
+                await this.sendMessage(from, `You selected: ${responseData.text} (${responseData.type})`);
+            }
+        } catch (error) {
+            console.error('❌ Error handling interactive response:', error);
+        }
     }
 
 
