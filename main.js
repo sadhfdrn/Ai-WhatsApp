@@ -222,8 +222,14 @@ class WhatsAppBot {
             const command = messageData.body.trim().toLowerCase();
             
             if (command === '.ping') {
+                // Add reaction to the message
+                await this.reactToMessage(messageData, '⚡');
+                
+                // Measure network speed by timing a simple request
+                const networkSpeed = await this.measureNetworkSpeed();
                 const uptime = Math.floor((Date.now() - this.startTime) / 1000);
-                const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n✅ Status: Online`;
+                
+                const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n🌐 Network: ${networkSpeed}ms\n✅ Status: Online`;
                 await this.sendMessage(messageData.from, response);
             }
             
@@ -276,6 +282,61 @@ class WhatsAppBot {
         } catch (error) {
             console.error('❌ Error sending message:', error);
             return false;
+        }
+    }
+
+    async reactToMessage(messageData, emoji) {
+        try {
+            if (!this.connected) {
+                console.log('⚠️ Not connected to WhatsApp - cannot react');
+                return false;
+            }
+
+            const reactionMessage = {
+                react: {
+                    text: emoji,
+                    key: {
+                        remoteJid: messageData.from,
+                        fromMe: false,
+                        id: messageData.id
+                    }
+                }
+            };
+
+            await this.sock.sendMessage(messageData.from, reactionMessage);
+            console.log(`⚡ Reacted with ${emoji} to message from ${messageData.from}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error reacting to message:', error);
+            return false;
+        }
+    }
+
+    async measureNetworkSpeed() {
+        try {
+            const startTime = Date.now();
+            
+            // Use a lightweight request to measure network latency
+            await new Promise((resolve, reject) => {
+                const http = require('http');
+                const req = http.get('http://httpbin.org/get', (res) => {
+                    res.on('data', () => {});
+                    res.on('end', resolve);
+                });
+                req.on('error', reject);
+                req.setTimeout(5000, () => {
+                    req.destroy();
+                    reject(new Error('Timeout'));
+                });
+            });
+            
+            const endTime = Date.now();
+            return endTime - startTime;
+            
+        } catch (error) {
+            console.error('❌ Error measuring network speed:', error);
+            return 'N/A';
         }
     }
 

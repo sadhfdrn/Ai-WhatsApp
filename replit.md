@@ -21,8 +21,10 @@ Environment variables manage WhatsApp credentials (WHATSAPP_CREDS) and server po
 Uses Baileys library for WhatsApp Web connectivity with authentication state management and message handling.
 
 ### Command System
-Basic command processor that responds to:
-- **.ping**: Returns bot status and uptime information
+Enhanced command processor with reaction support:
+- **.ping**: Returns bot status, uptime, and network speed with ⚡ reaction
+- Command reactions provide instant feedback to users
+- Network speed measurement for performance monitoring
 
 ### Health Monitoring
 HTTP server on port 8080 provides health check endpoint for deployment monitoring.
@@ -48,10 +50,11 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Eliminated Python dependencies: pyproject.toml, uv.lock, requirements files
   - Cleaned up model cache and AI-related files
 - **Pure Node.js Architecture**: Created new main.js with minimal WhatsApp functionality
-  - Simple command processor supporting .ping command
+  - Enhanced command processor supporting .ping command with reactions
   - Health monitoring on port 8080 for deployment status
   - Connection management with automatic reconnection logic
-  - Message parsing and basic response system
+  - Message parsing and response system with emoji reactions
+  - Network speed measurement for performance monitoring
 - **Dependency Cleanup**: Removed unnecessary Node.js packages
   - Uninstalled: cheerio, fluent-ffmpeg, jimp, sharp (AI/image processing)
   - Switched from baileys-mod to official Baileys GitHub repository
