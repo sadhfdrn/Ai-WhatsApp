@@ -25,6 +25,7 @@ Enhanced command processor with smart reaction system and customizable prefix:
 - **ping**: Returns bot status, uptime, and network speed with ⚡ reaction
 - **tag [message]**: Tags all group members silently with custom message and 👥 reaction
 - **tagall**: Tags all group members loudly without requiring a message and 🔔 reaction
+- **gstatus**: Shows detailed group member information (admin status, role, join date) with 👤 reaction
 - Customizable prefix via PREFIX env var (., /, !, etc.) or null for no prefix
 - Smart reactions: Initial command emoji → Success (✅) or Failure (❌) → Auto-removal after 2 seconds
 - Network speed measurement for performance monitoring
@@ -96,3 +97,14 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Prevents duplicate welcome messages with hasWelcomeBeenSent flag
   - Graceful handling when no owner number is configured
   - Enhanced connection handler to be async for welcome message support
+
+### August 12, 2025 - Group Status Command
+- **gstatus Command**: Added comprehensive group member information command
+  - Shows detailed information about yourself or replied-to user in groups
+  - Displays admin status (Member, Admin, Super Admin/Creator)
+  - Shows phone number, name, user ID, and role information
+  - Includes group metadata (name, member count, creation date)
+  - Works with reply feature - reply to someone's message and use .gstatus to see their info
+  - Enhanced message parsing to handle quoted messages (replies)
+  - Added sender identification and quoted message context
+  - Group-only command with proper validation and error handling

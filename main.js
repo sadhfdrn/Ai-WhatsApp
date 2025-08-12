@@ -233,8 +233,10 @@ class WhatsAppBot {
             const messageData = {
                 id: message.key.id,
                 from: message.key.remoteJid,
+                sender: message.key.participant || message.key.remoteJid,
                 timestamp: message.messageTimestamp,
-                body: null
+                body: null,
+                quotedMessage: null
             };
 
             // Handle different message types
@@ -242,6 +244,14 @@ class WhatsAppBot {
                 messageData.body = message.message.conversation;
             } else if (message.message?.extendedTextMessage?.text) {
                 messageData.body = message.message.extendedTextMessage.text;
+                
+                // Check for quoted message (reply)
+                if (message.message.extendedTextMessage.contextInfo?.quotedMessage) {
+                    messageData.quotedMessage = {
+                        participant: message.message.extendedTextMessage.contextInfo.participant,
+                        id: message.message.extendedTextMessage.contextInfo.stanzaId
+                    };
+                }
             }
 
             // Filter out empty messages and broadcasts
@@ -346,6 +356,26 @@ class WhatsAppBot {
                     setTimeout(() => this.removeReaction(messageData), 2000);
                 }
             }
+            else if (cleanCommand === 'gstatus') {
+                // Add initial processing reaction
+                await this.reactToMessage(messageData, '👤');
+                
+                try {
+                    // Get group status for user or replied person
+                    const success = await this.getGroupStatus(messageData);
+                    
+                    if (success) {
+                        await this.reactToMessage(messageData, '✅');
+                    } else {
+                        await this.reactToMessage(messageData, '❌');
+                    }
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                } catch (error) {
+                    console.error('❌ Error in gstatus command:', error);
+                    await this.reactToMessage(messageData, '❌');
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                }
+            }
             
         } catch (error) {
             console.error('❌ Error processing command:', error);
@@ -431,6 +461,95 @@ Type a message to interact with me!`;
             return true;
         } catch (error) {
             console.error('❌ Error sending welcome message:', error);
+            return false;
+        }
+    }
+
+    async getGroupStatus(messageData) {
+        try {
+            const groupId = messageData.from;
+            
+            // Check if it's a group (group IDs end with @g.us)
+            if (!groupId.includes('@g.us')) {
+                await this.sendMessage(groupId, '❌ This command only works in groups!');
+                return false;
+            }
+
+            // Get group metadata
+            const groupMetadata = await this.sock.groupMetadata(groupId);
+            
+            // Determine target user - either replied user or command sender
+            let targetUser = messageData.sender;
+            let isReply = false;
+            
+            // Check if this is a reply to someone's message
+            if (messageData.quotedMessage && messageData.quotedMessage.participant) {
+                targetUser = messageData.quotedMessage.participant;
+                isReply = true;
+            }
+            
+            // Find target participant in group
+            const participant = groupMetadata.participants.find(p => p.id === targetUser);
+            
+            if (!participant) {
+                await this.sendMessage(groupId, '❌ User not found in this group');
+                return false;
+            }
+            
+            // Extract user phone number for display
+            const phoneNumber = participant.id.split('@')[0];
+            
+            // Determine admin status
+            let adminStatus = 'Member';
+            if (participant.admin === 'superadmin') {
+                adminStatus = 'Super Admin (Creator)';
+            } else if (participant.admin === 'admin') {
+                adminStatus = 'Admin';
+            }
+            
+            // Format join date if available (not always provided by WhatsApp)
+            let joinInfo = 'Join date not available';
+            if (groupMetadata.creation) {
+                joinInfo = `Group created: ${new Date(groupMetadata.creation * 1000).toLocaleDateString()}`;
+            }
+            
+            // Get contact name if available
+            let displayName = phoneNumber;
+            try {
+                // Try to get contact info
+                const contact = await this.sock.onWhatsApp(participant.id);
+                if (contact && contact[0] && contact[0].name) {
+                    displayName = contact[0].name;
+                }
+            } catch (error) {
+                console.log('Could not fetch contact name');
+            }
+            
+            // Build status message
+            const statusMessage = `👤 *Group Member Status*
+            
+${isReply ? '📝 Replied User Info:' : '🔍 Your Group Info:'}
+
+📱 *Phone:* +${phoneNumber}
+👤 *Name:* ${displayName}
+🛡️ *Role:* ${adminStatus}
+📋 *User ID:* ${participant.id}
+
+📊 *Group Info:*
+🏷️ *Group:* ${groupMetadata.subject || 'Unknown'}
+👥 *Total Members:* ${groupMetadata.participants.length}
+🔢 *Group ID:* ${groupId}
+📅 ${joinInfo}
+
+${adminStatus.includes('Admin') ? '⚡ *Admin Privileges:* Yes' : '👤 *Admin Privileges:* No'}`;
+
+            await this.sendMessage(groupId, statusMessage);
+            console.log(`👤 Group status shown for ${phoneNumber} in ${groupId}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error getting group status:', error);
+            await this.sendMessage(messageData.from, '❌ Failed to get group status. Please try again.');
             return false;
         }
     }
