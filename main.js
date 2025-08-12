@@ -173,6 +173,12 @@ class WhatsAppBot {
                     continue;
                 }
                 
+                // Handle decryption errors gracefully
+                if (message.messageStubType || !message.message) {
+                    console.log('⚠️ Skipping stub/encrypted message');
+                    continue;
+                }
+                
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {
                     console.log(`📨 Message from ${messageData.from}: ${messageData.body}`);
@@ -181,6 +187,7 @@ class WhatsAppBot {
             }
         } catch (error) {
             console.error('❌ Error handling messages:', error);
+            // Don't crash the bot, just log and continue
         }
     }
 
@@ -317,22 +324,35 @@ class WhatsAppBot {
         try {
             const startTime = Date.now();
             
-            // Use a lightweight request to measure network latency
+            // Use a more reliable endpoint for latency measurement
             await new Promise((resolve, reject) => {
-                const http = require('http');
-                const req = http.get('http://httpbin.org/get', (res) => {
+                const https = require('https');
+                const req = https.get('https://www.google.com/generate_204', (res) => {
                     res.on('data', () => {});
                     res.on('end', resolve);
                 });
-                req.on('error', reject);
-                req.setTimeout(5000, () => {
+                req.on('error', () => {
+                    // Fallback to localhost health check
+                    const http = require('http');
+                    const fallbackReq = http.get('http://localhost:8080/health', (res) => {
+                        res.on('data', () => {});
+                        res.on('end', resolve);
+                    });
+                    fallbackReq.on('error', reject);
+                    fallbackReq.setTimeout(2000, () => {
+                        fallbackReq.destroy();
+                        reject(new Error('Timeout'));
+                    });
+                });
+                req.setTimeout(3000, () => {
                     req.destroy();
-                    reject(new Error('Timeout'));
+                    // Don't reject immediately, let the fallback handle it
                 });
             });
             
             const endTime = Date.now();
-            return endTime - startTime;
+            const latency = endTime - startTime;
+            return `${latency}ms`;
             
         } catch (error) {
             console.error('❌ Error measuring network speed:', error);
