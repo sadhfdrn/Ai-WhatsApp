@@ -29,7 +29,7 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
 
 ## External Dependencies
 ### WhatsApp Integration
-- **baileys-mod**: WhatsApp Web client library for Node.js
+- **baileys**: Official WhatsApp Web client library from GitHub (WhiskeySockets/Baileys)
 - **@hapi/boom**: Error handling for Baileys
 - **pino**: Logging library
 - **qrcode-terminal**: QR code generation for initial setup
@@ -54,7 +54,8 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Message parsing and basic response system
 - **Dependency Cleanup**: Removed unnecessary Node.js packages
   - Uninstalled: cheerio, fluent-ffmpeg, jimp, sharp (AI/image processing)
-  - Kept essential packages: baileys-mod, @hapi/boom, pino, qrcode-terminal
+  - Switched from baileys-mod to official Baileys GitHub repository
+  - Kept essential packages: baileys (from GitHub), @hapi/boom, pino, qrcode-terminal, cheerio
 - **Fixed Connection Issues**: Resolved stream error conflicts causing disconnections
   - Improved error handling and reconnection strategy
   - Added exponential backoff for reconnection attempts

@@ -11,7 +11,7 @@
   "description": "",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "baileys-mod": "^6.8.5",
+    "baileys": "github:WhiskeySockets/Baileys",
     "cheerio": "^1.1.2",
     "pino": "^9.8.0",
     "qrcode-terminal": "^0.12.0"
