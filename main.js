@@ -12,9 +12,15 @@ class WhatsAppBot {
         this.sentMessageIds = new Set();
         this.startTime = Date.now();
         this.healthServer = null;
+        this.hasWelcomeBeenSent = false;
         // Load prefix from environment, default to ".", null means no prefix
         this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
+        // Load owner/admin number for welcome message
+        this.ownerNumber = process.env.OWNER_NUMBER;
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
+        if (this.ownerNumber) {
+            console.log(`👤 Owner number set for welcome messages`);
+        }
     }
 
     async initialize() {
@@ -109,7 +115,7 @@ class WhatsAppBot {
         }
     }
 
-    handleConnectionUpdate(update) {
+    async handleConnectionUpdate(update) {
         const { connection, lastDisconnect, qr, isNewLogin } = update;
         
         if (qr) {
@@ -140,6 +146,12 @@ class WhatsAppBot {
         } else if (connection === 'open') {
             console.log('✅ WhatsApp Web connected successfully!');
             this.connected = true;
+            
+            // Send welcome message after successful connection
+            if (!this.hasWelcomeBeenSent) {
+                await this.sendWelcomeMessage();
+                this.hasWelcomeBeenSent = true;
+            }
         } else if (connection === 'connecting') {
             console.log('🔄 Connecting to WhatsApp...');
         }
@@ -361,6 +373,42 @@ class WhatsAppBot {
 
         } catch (error) {
             console.error('❌ Error sending message:', error);
+            return false;
+        }
+    }
+
+    async sendWelcomeMessage() {
+        try {
+            if (!this.connected) {
+                console.log('⚠️ Not connected to WhatsApp - cannot send welcome message');
+                return false;
+            }
+
+            const welcomeText = `🤖 WhatsApp Bot is now online and ready!
+
+✅ Connected successfully at ${new Date().toLocaleString()}
+🚀 All systems operational
+📱 Ready to respond to messages
+
+Bot Information:
+• Prefix: "${this.prefix || 'none'}"
+• Uptime: Online
+• Status: Active
+
+Type a message to interact with me!`;
+
+            // If owner number is configured, send welcome message to owner
+            if (this.ownerNumber) {
+                const formattedNumber = this.ownerNumber.includes('@') ? this.ownerNumber : `${this.ownerNumber}@s.whatsapp.net`;
+                await this.sendMessage(formattedNumber, welcomeText);
+                console.log('🎉 Welcome message sent to owner');
+            } else {
+                console.log('🎉 Bot connected successfully! (No owner number configured for welcome message)');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('❌ Error sending welcome message:', error);
             return false;
         }
     }

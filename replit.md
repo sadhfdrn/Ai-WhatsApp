@@ -15,7 +15,7 @@ A simple, pure Node.js WhatsApp bot that connects via WhatsApp Web using Baileys
 Simple Node.js WhatsApp bot with minimal dependencies. The main application (`main.js`) handles WhatsApp Web connection, message processing, and basic command responses.
 
 ### Configuration
-Environment variables manage WhatsApp credentials (WHATSAPP_CREDS), server port (PORT), and customizable command prefix (PREFIX).
+Environment variables manage WhatsApp credentials (WHATSAPP_CREDS), server port (PORT), customizable command prefix (PREFIX), and optional owner number for welcome messages (OWNER_NUMBER).
 
 ### WhatsApp Integration
 Uses Baileys library for WhatsApp Web connectivity with authentication state management and message handling.
@@ -87,3 +87,12 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - PREFIX=null (no prefix required - just ping, tag, tagall)
   - Dynamic prefix handling in command processing and error messages
 - **Documentation Update**: Updated replit.md to reflect pure Node.js architecture and new features
+
+### August 12, 2025 - Welcome Message Feature
+- **Welcome Message System**: Added automatic welcome message functionality after successful connection
+  - Sends welcome message to configured owner number when bot connects
+  - Welcome message includes connection time, bot status, prefix information, and usage instructions
+  - OWNER_NUMBER environment variable configuration for targeting welcome messages
+  - Prevents duplicate welcome messages with hasWelcomeBeenSent flag
+  - Graceful handling when no owner number is configured
+  - Enhanced connection handler to be async for welcome message support
