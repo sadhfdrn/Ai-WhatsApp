@@ -230,37 +230,74 @@ class WhatsAppBot {
             const command = message.toLowerCase();
             
             if (command === '.ping') {
-                // Add reaction to the message
+                // Add initial processing reaction
                 await this.reactToMessage(messageData, '⚡');
                 
-                // Measure network speed by timing a simple request
-                const networkSpeed = await this.measureNetworkSpeed();
-                const uptime = Math.floor((Date.now() - this.startTime) / 1000);
-                
-                const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n🌐 Network: ${networkSpeed}ms\n✅ Status: Online`;
-                await this.sendMessage(messageData.from, response);
+                try {
+                    // Measure network speed by timing a simple request
+                    const networkSpeed = await this.measureNetworkSpeed();
+                    const uptime = Math.floor((Date.now() - this.startTime) / 1000);
+                    
+                    const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n🌐 Network: ${networkSpeed}ms\n✅ Status: Online`;
+                    await this.sendMessage(messageData.from, response);
+                    
+                    // Show success reaction briefly then remove
+                    await this.reactToMessage(messageData, '✅');
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                } catch (error) {
+                    console.error('❌ Error in ping command:', error);
+                    await this.reactToMessage(messageData, '❌');
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                }
             }
             else if (command.startsWith('.tag ')) {
                 // Extract the message after .tag
                 const tagMessage = message.substring(5).trim();
                 
                 if (tagMessage) {
-                    // Add reaction to the command
+                    // Add initial processing reaction
                     await this.reactToMessage(messageData, '👥');
                     
-                    // Tag everyone in the group
-                    await this.tagAllMembers(messageData.from, tagMessage);
+                    try {
+                        // Tag everyone in the group
+                        const success = await this.tagAllMembers(messageData.from, tagMessage);
+                        
+                        if (success) {
+                            await this.reactToMessage(messageData, '✅');
+                        } else {
+                            await this.reactToMessage(messageData, '❌');
+                        }
+                        setTimeout(() => this.removeReaction(messageData), 2000);
+                    } catch (error) {
+                        console.error('❌ Error in tag command:', error);
+                        await this.reactToMessage(messageData, '❌');
+                        setTimeout(() => this.removeReaction(messageData), 2000);
+                    }
                 } else {
                     await this.reactToMessage(messageData, '❌');
                     await this.sendMessage(messageData.from, '❌ Please provide a message after .tag\nExample: .tag Hello everyone!');
+                    setTimeout(() => this.removeReaction(messageData), 2000);
                 }
             }
             else if (command === '.tagall') {
-                // Add reaction to the command
+                // Add initial processing reaction
                 await this.reactToMessage(messageData, '🔔');
                 
-                // Tag everyone in the group without a custom message
-                await this.tagAllMembersLoud(messageData.from);
+                try {
+                    // Tag everyone in the group without a custom message
+                    const success = await this.tagAllMembersLoud(messageData.from);
+                    
+                    if (success) {
+                        await this.reactToMessage(messageData, '✅');
+                    } else {
+                        await this.reactToMessage(messageData, '❌');
+                    }
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                } catch (error) {
+                    console.error('❌ Error in tagall command:', error);
+                    await this.reactToMessage(messageData, '❌');
+                    setTimeout(() => this.removeReaction(messageData), 2000);
+                }
             }
             
         } catch (error) {
@@ -339,6 +376,34 @@ class WhatsAppBot {
 
         } catch (error) {
             console.error('❌ Error reacting to message:', error);
+            return false;
+        }
+    }
+
+    async removeReaction(messageData) {
+        try {
+            if (!this.connected) {
+                console.log('⚠️ Not connected to WhatsApp - cannot remove reaction');
+                return false;
+            }
+
+            const removeReactionMessage = {
+                react: {
+                    text: '', // Empty text removes the reaction
+                    key: {
+                        remoteJid: messageData.from,
+                        fromMe: false,
+                        id: messageData.id
+                    }
+                }
+            };
+
+            await this.sock.sendMessage(messageData.from, removeReactionMessage);
+            console.log(`🗑️ Removed reaction from message from ${messageData.from}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error removing reaction:', error);
             return false;
         }
     }
