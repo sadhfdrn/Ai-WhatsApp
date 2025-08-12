@@ -1,32 +1,44 @@
-// Enhanced WhatsApp Bot inspired by @neoxr/wb but using Baileys directly
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys');
-const { Boom } = require('@hapi/boom');
-const P = require('pino');
+// Hybrid WhatsApp Bot using baileys-mod features with GitHub Baileys as fallback
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const PluginManager = require('./plugins/pluginManager');
 const MessageUtils = require('./utils/messageUtils');
 
-// @neoxr/wb inspired spam detection class
+// Try to use baileys-mod first, fallback to github baileys
+let BaileysLib;
+let useModVersion = false;
+
+try {
+    // Try baileys-mod first
+    BaileysLib = require('baileys-mod');
+    useModVersion = true;
+    console.log('📱 Using baileys-mod library');
+} catch (error) {
+    // Fallback to github baileys
+    BaileysLib = require('baileys');
+    useModVersion = false;
+    console.log('📱 Using GitHub Baileys library');
+}
+
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = BaileysLib;
+const { Boom } = require('@hapi/boom');
+const P = require('pino');
+
+// Enhanced spam detection inspired by @neoxr/wb
 class SpamDetection {
     constructor(options = {}) {
-        this.RESET_TIMER = options.RESET_TIMER || 3000; // 3 seconds
-        this.HOLD_TIMER = options.HOLD_TIMER || 180000; // 3 minutes
-        this.PERMANENT_THRESHOLD = options.PERMANENT_THRESHOLD || 3;
-        this.NOTIFY_THRESHOLD = options.NOTIFY_THRESHOLD || 4;
-        this.BANNED_THRESHOLD = options.BANNED_THRESHOLD || 5;
-        this.userWarnings = new Map();
+        this.RESET_TIMER = options.RESET_TIMER || 3000;
+        this.HOLD_TIMER = options.HOLD_TIMER || 180000;
         this.userCooldowns = new Map();
     }
 
     detection(client, message, options = {}) {
-        const { prefix, command, users, cooldown, show = 'all' } = options;
+        const { prefix, command, cooldown, show = 'all' } = options;
         const userId = message.key.participant || message.key.remoteJid;
         const cooldownKey = `${userId}-${command}`;
         const now = Date.now();
 
-        // Check cooldown
         const lastUsed = cooldown.get(cooldownKey);
         if (lastUsed && (now - lastUsed) < this.RESET_TIMER) {
             if (show === 'all' || show === 'spam-only') {
@@ -39,83 +51,73 @@ class SpamDetection {
     }
 }
 
-class WhatsAppBot {
+class HybridWhatsAppBot {
     constructor() {
-        this.client = null; // @neoxr/wb client
-        this.sock = null; // Direct Baileys socket access
+        this.client = null;
+        this.sock = null;
         this.connected = false;
         this.sentMessageIds = new Set();
         this.startTime = Date.now();
-        this.healthServer = null;
         this.hasWelcomeBeenSent = false;
+        this.useModVersion = useModVersion;
         
-        // Load prefix from environment, default to ".", null means no prefix
+        // Load prefix from environment
         this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
-        // Owner number will be extracted from credentials
         this.ownerNumber = null;
         
-        // Enhanced features with @neoxr/wb
-        this.commandCooldown = new Map(); // Anti-spam cooldown
-        this.messageCache = new Map(); // Message caching
-        this.botDetection = new Set(); // Bot message detection
-        this.sessionActive = false;
+        // Enhanced features
+        this.commandCooldown = new Map();
+        this.messageCache = new Map();
+        this.botDetection = new Set();
         
-        // Initialize spam detection inspired by @neoxr/wb
         this.spam = new SpamDetection({
-            RESET_TIMER: 3000, // 3 seconds cooldown
-            HOLD_TIMER: 180000, // 3 minutes timeout
+            RESET_TIMER: 3000,
+            HOLD_TIMER: 180000,
             PERMANENT_THRESHOLD: 3,
             NOTIFY_THRESHOLD: 4,
             BANNED_THRESHOLD: 5
         });
         
-        // Initialize plugin system
         this.pluginManager = new PluginManager(this);
-        this.plugins = new Map(); // For backward compatibility
-        this.messageUtils = null; // Will be initialized after socket creation
+        this.messageUtils = null;
         
-        console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
-        console.log(`🔌 Starting WhatsApp Bot with @neoxr/wb integration...`);
+        console.log(`🔧 Command prefix: "${this.prefix || 'none'}"`);
+        console.log(`🔧 Library: ${useModVersion ? 'baileys-mod' : 'GitHub Baileys'}`);
     }
 
     async initialize() {
         try {
-            console.log('🔌 Starting WhatsApp Bot...');
+            console.log('🔌 Starting Hybrid WhatsApp Bot...');
             
-            // Start health server for monitoring
             this.startHealthServer();
             
-            // Load credentials from environment variable
             if (!await this.loadCredentials()) {
                 console.error('❌ WHATSAPP_CREDS environment variable not found');
-                console.log('ℹ️  Please provide WhatsApp session credentials in JSON format');
                 return;
             }
 
             console.log('🚀 WhatsApp Bot starting...');
 
-            // Create auth state directory
+            // Create auth state
             const authDir = './wa-auth';
             if (!fs.existsSync(authDir)) {
                 fs.mkdirSync(authDir);
             }
 
-            // Load auth state
             const { state, saveCreds } = await useMultiFileAuthState(authDir);
             
-            // Get latest Baileys version
+            // Get latest version
             let version;
             try {
                 const baileyVersion = await fetchLatestBaileysVersion();
                 version = baileyVersion.version;
-                console.log(`📱 Using Baileys version: ${version.join('.')}`);
+                console.log(`📱 Using version: ${version.join('.')}`);
             } catch (error) {
-                console.log('⚠️ Could not fetch latest version, using default');
                 version = [2, 3000, 1023223821];
             }
 
-            // Create WhatsApp socket with @neoxr/wb inspired settings
-            this.sock = makeWASocket({
+            // Enhanced socket configuration for hybrid approach
+            const socketConfig = {
                 version,
                 auth: state,
                 logger: P({ level: 'silent' }),
@@ -128,28 +130,29 @@ class WhatsAppBot {
                 },
                 syncFullHistory: false,
                 markOnlineOnConnect: true,
-                browser: ['WhatsApp Bot', 'Chrome', '10.0'],
+                browser: ['WhatsApp Bot Hybrid', 'Chrome', '10.0'],
                 mobile: false,
-                // @neoxr/wb inspired bot detection
-                shouldIgnoreJid: jid => {
-                    return /(newsletter|bot)/.test(jid);
-                }
-            });
+                shouldIgnoreJid: jid => /(newsletter|bot)/.test(jid)
+            };
 
-            // Handle credentials update
+            // Use baileys-mod specific features if available
+            if (this.useModVersion) {
+                socketConfig.options = {
+                    phoneNumber: undefined,
+                    timeoutMs: 30000
+                };
+            }
+
+            this.sock = makeWASocket(socketConfig);
             this.sock.ev.on('creds.update', saveCreds);
 
-            // Setup event handlers
             this.setupEventHandlers();
-
-            // Load plugins after client initialization
             await this.pluginManager.loadPlugins();
-            this.plugins = this.pluginManager.plugins; // For backward compatibility
             
-            console.log('✅ WhatsApp bot initialized successfully');
+            console.log('✅ Hybrid WhatsApp bot initialized successfully');
 
         } catch (error) {
-            console.error('❌ Failed to initialize WhatsApp bot:', error);
+            console.error('❌ Failed to initialize bot:', error);
             process.exit(1);
         }
     }
@@ -160,7 +163,6 @@ class WhatsAppBot {
             if (waCredsEnv) {
                 console.log('✅ Found WhatsApp credentials in environment');
                 
-                // Create auth state directory
                 const authDir = './wa-auth';
                 if (!fs.existsSync(authDir)) {
                     fs.mkdirSync(authDir, { recursive: true });
@@ -169,19 +171,15 @@ class WhatsAppBot {
                 const credsData = JSON.parse(waCredsEnv);
                 const credsPath = path.join(authDir, 'creds.json');
                 fs.writeFileSync(credsPath, JSON.stringify(credsData, null, 2));
-                console.log('✅ WhatsApp credentials loaded from environment');
                 
-                // Extract owner number from credentials
                 if (credsData.me && credsData.me.id) {
                     this.ownerNumber = credsData.me.id.split(':')[0];
                     console.log('👤 Owner number extracted from credentials');
                 }
                 
                 return true;
-            } else {
-                console.log('❌ WHATSAPP_CREDS environment variable not found');
-                return false;
             }
+            return false;
         } catch (error) {
             console.error('❌ Error loading credentials:', error);
             return false;
@@ -189,58 +187,44 @@ class WhatsAppBot {
     }
 
     setupEventHandlers() {
-        // Handle connection updates  
         this.sock.ev.on('connection.update', (update) => {
             this.handleConnectionUpdate(update);
         });
 
-        // Handle incoming messages with @neoxr/wb inspired processing
         this.sock.ev.on('messages.upsert', async (m) => {
             await this.handleMessages(m);
         });
     }
 
     async handleConnectionUpdate(update) {
-        const { connection, lastDisconnect, qr, isNewLogin } = update;
+        const { connection, lastDisconnect, qr } = update;
         
-        if (qr) {
-            console.log('📱 QR Code generated');
-            if (!process.env.WHATSAPP_CREDS) {
-                const QR = require('qrcode-terminal');
-                QR.generate(qr, { small: true });
-                console.log('⬆️ Scan the QR code above with your WhatsApp mobile app');
-            }
+        if (qr && !process.env.WHATSAPP_CREDS) {
+            const QR = require('qrcode-terminal');
+            QR.generate(qr, { small: true });
+            console.log('⬆️ Scan the QR code above');
         }
         
         if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            
-            console.log('🔌 Connection closed:', lastDisconnect?.error, 'reconnecting:', shouldReconnect);
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('🔌 Connection closed, reconnecting:', shouldReconnect);
             
             if (shouldReconnect) {
                 this.connected = false;
-                // Add exponential backoff for reconnection
                 const delay = Math.min(5000 + Math.random() * 5000, 30000);
                 setTimeout(() => this.initialize(), delay);
-            } else {
-                console.log('🚫 Logged out - will not reconnect automatically');
-                this.connected = false;
             }
         } else if (connection === 'open') {
             console.log('✅ WhatsApp Web connected successfully!');
             this.connected = true;
             
-            // Initialize message utils with socket
             this.messageUtils = new MessageUtils(this.sock);
             
-            // Extract owner number from connected socket
             if (this.sock.user && this.sock.user.id && !this.ownerNumber) {
                 this.ownerNumber = this.sock.user.id.split(':')[0];
-                console.log('👤 Owner number extracted from socket connection');
+                console.log('👤 Owner number extracted from socket');
             }
             
-            // Send welcome message after successful connection
             await this.sendWelcomeMessage();
         } else if (connection === 'connecting') {
             console.log('🔄 Connecting to WhatsApp...');
@@ -252,32 +236,25 @@ class WhatsAppBot {
             const messages = m.messages || [];
             
             for (const message of messages) {
-                // Skip messages sent by the bot itself
                 if (message.key.fromMe && this.sentMessageIds.has(message.key.id)) {
                     continue;
                 }
                 
-                // Handle decryption errors gracefully - @neoxr/wb inspired
                 if (message.messageStubType || !message.message) {
-                    console.log('⚠️ Skipping stub/encrypted message');
                     continue;
                 }
 
-                // Bot detection inspired by @neoxr/wb
                 if (this.isBotMessage(message.key.id)) {
                     continue;
                 }
 
-                // Extract message data
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {
                     console.log(`📨 Message from ${messageData.from}: ${messageData.body}`);
 
-                    // Check if it's a command
                     if (this.isCommand(messageData.body)) {
                         const command = this.extractCommand(messageData.body);
                         
-                        // Apply spam detection inspired by @neoxr/wb
                         const isSpam = this.spam.detection(this.sock, message, {
                             prefix: this.prefix,
                             command,
@@ -289,8 +266,6 @@ class WhatsAppBot {
 
                         if (!isSpam) {
                             await this.processCommand(messageData);
-                        } else {
-                            console.log(`🚫 Spam detected from ${messageData.from}`);
                         }
                     }
                 }
@@ -311,13 +286,11 @@ class WhatsAppBot {
                 quotedMessage: null
             };
 
-            // Handle different message types
             if (message.message?.conversation) {
                 messageData.body = message.message.conversation;
             } else if (message.message?.extendedTextMessage?.text) {
                 messageData.body = message.message.extendedTextMessage.text;
                 
-                // Check for quoted message (reply)
                 if (message.message.extendedTextMessage.contextInfo?.quotedMessage) {
                     messageData.quotedMessage = {
                         participant: message.message.extendedTextMessage.contextInfo.participant,
@@ -326,7 +299,6 @@ class WhatsAppBot {
                 }
             }
 
-            // Filter out empty messages and broadcasts
             if (messageData.from.includes('@broadcast') || messageData.from.includes('@newsletter')) {
                 return null;
             }
@@ -336,17 +308,14 @@ class WhatsAppBot {
             }
 
             return messageData;
-
         } catch (error) {
             console.error('❌ Error parsing message:', error);
             return null;
         }
     }
 
-    // @neoxr/wb inspired bot detection
     isBotMessage(messageId) {
         if (!messageId) return false;
-        
         return (
             (messageId.startsWith('3EB0') && messageId.length === 40) ||
             messageId.startsWith('BAE') ||
@@ -355,51 +324,10 @@ class WhatsAppBot {
         );
     }
 
-    extractMessageData(m) {
-        try {
-            const messageType = Object.keys(m.message)[0];
-            let text = '';
-
-            switch (messageType) {
-                case 'conversation':
-                    text = m.message.conversation;
-                    break;
-                case 'extendedTextMessage':
-                    text = m.message.extendedTextMessage.text;
-                    break;
-                case 'imageMessage':
-                case 'videoMessage':
-                case 'audioMessage':
-                case 'documentMessage':
-                    text = m.message[messageType].caption || '';
-                    break;
-                default:
-                    return null;
-            }
-
-            return {
-                id: m.key.id,
-                from: m.key.remoteJid,
-                sender: m.key.participant || m.key.remoteJid,
-                text: text.trim(),
-                isGroup: m.key.remoteJid.endsWith('@g.us'),
-                timestamp: m.messageTimestamp,
-                quoted: m.message.extendedTextMessage?.contextInfo?.quotedMessage || null,
-                quotedSender: m.message.extendedTextMessage?.contextInfo?.participant || null,
-                messageType,
-                originalMessage: m
-            };
-        } catch (error) {
-            console.error('❌ Error extracting message data:', error);
-            return null;
-        }
-    }
-
     isCommand(text) {
         if (!text) return false;
         
         if (this.prefix === 'null' || this.prefix === null || this.prefix === '') {
-            // No prefix mode - check if message starts with known command
             const commands = this.pluginManager ? this.pluginManager.getCommandList() : [];
             return commands.some(cmd => text.toLowerCase().startsWith(cmd.toLowerCase()));
         }
@@ -409,10 +337,8 @@ class WhatsAppBot {
 
     extractCommand(text) {
         if (this.prefix === 'null' || this.prefix === null || this.prefix === '') {
-            // No prefix mode
             return text.split(' ')[0].toLowerCase();
         } else {
-            // With prefix
             return text.slice(this.prefix.length).split(' ')[0].toLowerCase();
         }
     }
@@ -422,38 +348,29 @@ class WhatsAppBot {
             const message = messageData.body.trim();
             const command = message.toLowerCase();
             
-            // Check if message starts with the configured prefix (or process all messages if no prefix)
             if (this.prefix && !command.startsWith(this.prefix)) {
-                return; // Not a command for us
+                return;
             }
             
-            // Remove prefix from command for processing (if prefix exists)
             const cleanCommand = this.prefix ? command.slice(this.prefix.length) : command;
-            
-            // Split command and arguments
             const commandParts = cleanCommand.split(' ');
             const commandName = commandParts[0];
             const args = commandParts.slice(1);
             
-            // Add reaction to show command received (inspired by @neoxr/wb feedback)
             await this.reactToMessage(messageData, '📋');
             
-            // Execute command through plugin manager
             if (this.pluginManager) {
                 const success = await this.pluginManager.executeCommand(messageData, commandName, args);
                 
                 if (success) {
-                    // Success reaction
                     await this.reactToMessage(messageData, '✅');
                     setTimeout(() => this.removeReaction(messageData), 3000);
                 } else {
-                    // Command not found
                     await this.reactToMessage(messageData, '❓');
                     setTimeout(() => this.removeReaction(messageData), 3000);
                 }
             }
             
-            // Update cooldown after successful command execution
             this.updateCooldown(messageData.from, commandName);
             
         } catch (error) {
@@ -466,7 +383,6 @@ class WhatsAppBot {
         const cooldownKey = `${sender}-${command}`;
         this.commandCooldown.set(cooldownKey, Date.now());
         
-        // Clean old cooldowns (older than 1 minute)
         const oneMinuteAgo = Date.now() - 60000;
         for (const [key, timestamp] of this.commandCooldown.entries()) {
             if (timestamp < oneMinuteAgo) {
@@ -478,46 +394,48 @@ class WhatsAppBot {
     async sendMessage(to, message) {
         try {
             if (!this.connected || !this.sock) {
-                console.log('⚠️ Not connected to WhatsApp - cannot send message');
                 return false;
             }
 
-            // Fix JID format if needed
+            // Enhanced JID handling for hybrid compatibility
             let targetJid = to;
+            
+            // Normalize JID format
             if (!to.includes('@')) {
                 targetJid = to.includes('-') ? `${to}@g.us` : `${to}@s.whatsapp.net`;
             }
 
-            await this.sock.sendMessage(targetJid, { text: message });
+            // Use different message sending approaches based on library
+            if (this.useModVersion) {
+                // baileys-mod approach
+                await this.sock.sendMessage(targetJid, { text: message });
+            } else {
+                // GitHub Baileys approach with enhanced error handling
+                try {
+                    await this.sock.sendMessage(targetJid, { text: message });
+                } catch (jidError) {
+                    // Try with different JID format
+                    const altJid = targetJid.includes('@g.us') ? 
+                        targetJid.replace('@g.us', '@s.whatsapp.net') : 
+                        targetJid.replace('@s.whatsapp.net', '@g.us');
+                    
+                    await this.sock.sendMessage(altJid, { text: message });
+                    targetJid = altJid;
+                }
+            }
+
             console.log(`📤 Message sent to ${targetJid}`);
             return true;
 
         } catch (error) {
             console.error('❌ Error sending message:', error);
-            
-            // Try alternative JID format on error
-            try {
-                const altJid = to.includes('@g.us') ? to.replace('@g.us', '@s.whatsapp.net') : 
-                             to.includes('@s.whatsapp.net') ? to.replace('@s.whatsapp.net', '@g.us') : to;
-                
-                if (altJid !== to) {
-                    await this.sock.sendMessage(altJid, { text: message });
-                    console.log(`📤 Message sent to ${altJid} (fallback)`);
-                    return true;
-                }
-            } catch (fallbackError) {
-                console.error('❌ Fallback send also failed:', fallbackError);
-            }
-            
             return false;
         }
     }
 
     async reactToMessage(messageData, emoji) {
         try {
-            if (!this.connected || !this.sock) {
-                return false;
-            }
+            if (!this.connected || !this.sock) return false;
 
             const reactionMessage = {
                 react: {
@@ -531,20 +449,17 @@ class WhatsAppBot {
             };
 
             await this.sock.sendMessage(messageData.from, reactionMessage);
-            console.log(`⚡ Reacted with ${emoji} to message from ${messageData.from}`);
+            console.log(`⚡ Reacted with ${emoji}`);
             return true;
-
         } catch (error) {
-            console.error('❌ Error reacting to message:', error);
+            console.error('❌ Error reacting:', error);
             return false;
         }
     }
 
     async removeReaction(messageData) {
         try {
-            if (!this.connected || !this.sock) {
-                return false;
-            }
+            if (!this.connected || !this.sock) return false;
 
             const removeReactionMessage = {
                 react: {
@@ -558,28 +473,9 @@ class WhatsAppBot {
             };
 
             await this.sock.sendMessage(messageData.from, removeReactionMessage);
-            console.log(`🗑️ Removed reaction from message from ${messageData.from}`);
             return true;
-
         } catch (error) {
-            console.error('❌ Error removing reaction:', error);
             return false;
-        }
-    }
-
-    async getGroupMetadata(groupJid) {
-        try {
-            if (!this.connected || !this.sock) {
-                console.log('⚠️ Not connected to WhatsApp - cannot get group metadata');
-                return null;
-            }
-
-            const metadata = await this.sock.groupMetadata(groupJid);
-            return metadata;
-
-        } catch (error) {
-            console.error('❌ Error getting group metadata:', error);
-            return null;
         }
     }
 
@@ -589,23 +485,22 @@ class WhatsAppBot {
                 return false;
             }
 
-            const welcomeText = `🎉 WhatsApp Bot Connected Successfully!
+            const welcomeText = `🎉 Hybrid WhatsApp Bot Connected!
 
 ⏰ Connection Time: ${new Date().toLocaleString()}
 📱 Bot Status: Online and Ready  
 🔧 Command Prefix: ${this.prefix === 'null' || this.prefix === '' ? 'No prefix required' : this.prefix}
 🔌 Plugins: ${this.pluginManager ? this.pluginManager.loadedCount : 0} loaded
-📚 Library: @neoxr/wb with Baileys
-🛡️ Features: Enhanced spam detection, interactive messages
+📚 Library: ${this.useModVersion ? 'baileys-mod' : 'GitHub Baileys'} (Hybrid)
+🛡️ Features: Enhanced spam detection, hybrid compatibility
 
 📋 Available Commands:
 ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}menu - Show all commands
 ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}ping - Check bot status
-${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}help - Get help information
-${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}buttons - Interactive buttons demo
-${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interactive list demo
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}buttons - Interactive buttons
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interactive lists
 
-🚀 Bot is ready to receive commands!`;
+🚀 Hybrid bot ready for commands!`;
 
             const ownerJid = this.ownerNumber + '@s.whatsapp.net';
             const success = await this.sendMessage(ownerJid, welcomeText);
@@ -616,7 +511,6 @@ ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interac
             }
 
             return success;
-
         } catch (error) {
             console.error('❌ Error sending welcome message:', error);
             return false;
@@ -635,7 +529,7 @@ ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interac
                         connected: this.connected,
                         timestamp: new Date().toISOString(),
                         plugins: this.pluginManager ? this.pluginManager.loadedCount : 0,
-                        library: '@neoxr/wb with Baileys',
+                        library: this.useModVersion ? 'baileys-mod (hybrid)' : 'GitHub Baileys (hybrid)',
                         uptime: Date.now() - this.startTime
                     }));
                 } else {
@@ -647,15 +541,12 @@ ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interac
             server.on('error', (err) => {
                 if (err.code === 'EADDRINUSE') {
                     port = port + 1;
-                    console.log(`⚠️ Port ${port - 1} in use, trying port ${port}`);
                     server.listen(port);
-                } else {
-                    console.error('❌ Health server error:', err);
                 }
             });
 
             server.listen(port, '0.0.0.0', () => {
-                console.log(`🏥 Health check server running on port ${port}`);
+                console.log(`🏥 Health server running on port ${port}`);
             });
 
         } catch (error) {
@@ -664,17 +555,16 @@ ${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interac
     }
 }
 
-// Start the bot
-const bot = new WhatsAppBot();
+// Start the hybrid bot
+const bot = new HybridWhatsAppBot();
 bot.initialize();
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down WhatsApp Bot...');
+    console.log('\n🛑 Shutting down Hybrid Bot...');
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log('\n🛑 Shutting down WhatsApp Bot...');
+    console.log('\n🛑 Shutting down Hybrid Bot...');
     process.exit(0);
 });
