@@ -92,7 +92,7 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
 - **Welcome Message System**: Added automatic welcome message functionality after successful connection
   - Sends welcome message to configured owner number when bot connects
   - Welcome message includes connection time, bot status, prefix information, and usage instructions
-  - OWNER_NUMBER environment variable configuration for targeting welcome messages
+  - Automatic owner number extraction from WhatsApp credentials for targeting welcome messages
   - Prevents duplicate welcome messages with hasWelcomeBeenSent flag
   - Graceful handling when no owner number is configured
   - Enhanced connection handler to be async for welcome message support

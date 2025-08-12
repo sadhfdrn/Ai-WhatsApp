@@ -15,8 +15,8 @@ class WhatsAppBot {
         this.hasWelcomeBeenSent = false;
         // Load prefix from environment, default to ".", null means no prefix
         this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
-        // Load owner/admin number for welcome message
-        this.ownerNumber = process.env.OWNER_NUMBER;
+        // Owner number will be extracted from credentials
+        this.ownerNumber = null;
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
         if (this.ownerNumber) {
             console.log(`👤 Owner number set for welcome messages`);
@@ -101,6 +101,22 @@ class WhatsAppBot {
                 fs.writeFileSync(credsPath, JSON.stringify(credsData, null, 2));
                 console.log('✅ WhatsApp credentials loaded from environment');
                 
+                // Extract owner number from credentials
+                if (credsData.me && credsData.me.id) {
+                    this.ownerNumber = credsData.me.id;
+                    console.log('👤 Owner number extracted from credentials');
+                } else if (credsData.registrationId) {
+                    // Alternative: look for phone number in other credential fields
+                    const phoneFields = ['phoneNumber', 'jid', 'wid'];
+                    for (const field of phoneFields) {
+                        if (credsData[field]) {
+                            this.ownerNumber = credsData[field];
+                            console.log(`👤 Owner number found in ${field} field`);
+                            break;
+                        }
+                    }
+                }
+                
                 // Also create session-data.json for compatibility
                 const sessionPath = path.join(authDir, 'session-data.json');
                 fs.writeFileSync(sessionPath, JSON.stringify(credsData, null, 2));
@@ -146,6 +162,12 @@ class WhatsAppBot {
         } else if (connection === 'open') {
             console.log('✅ WhatsApp Web connected successfully!');
             this.connected = true;
+            
+            // Extract owner number from connected socket
+            if (this.sock && this.sock.user && this.sock.user.id) {
+                this.ownerNumber = this.sock.user.id;
+                console.log('👤 Owner number extracted from socket connection');
+            }
             
             // Send welcome message after successful connection
             if (!this.hasWelcomeBeenSent) {
@@ -397,13 +419,13 @@ Bot Information:
 
 Type a message to interact with me!`;
 
-            // If owner number is configured, send welcome message to owner
+            // Send welcome message to owner (self)
             if (this.ownerNumber) {
                 const formattedNumber = this.ownerNumber.includes('@') ? this.ownerNumber : `${this.ownerNumber}@s.whatsapp.net`;
                 await this.sendMessage(formattedNumber, welcomeText);
                 console.log('🎉 Welcome message sent to owner');
             } else {
-                console.log('🎉 Bot connected successfully! (No owner number configured for welcome message)');
+                console.log('🎉 Bot connected successfully! (Owner number not yet available for welcome message)');
             }
 
             return true;
