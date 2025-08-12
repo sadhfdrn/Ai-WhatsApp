@@ -64,24 +64,12 @@ class PluginManager {
         }
 
         try {
-            // Add reaction to show processing
-            if (plugin.emoji) {
-                await this.bot.reactToMessage(messageData, plugin.emoji);
-            }
-
-            // Execute the plugin command
-            const success = await plugin.execute(messageData, command, args);
-
-            // Show success/failure reaction
-            await this.bot.reactToMessage(messageData, success ? '✅' : '❌');
-            setTimeout(() => this.bot.removeReaction(messageData), 2000);
-
+            // Execute the plugin command (don't add extra reactions here since main.js handles them)
+            const success = await plugin.execute(command, messageData, args);
             return success;
 
         } catch (error) {
             console.error(`❌ Error executing command ${command}:`, error);
-            await this.bot.reactToMessage(messageData, '❌');
-            setTimeout(() => this.bot.removeReaction(messageData), 2000);
             return false;
         }
     }

@@ -440,7 +440,7 @@ class WhatsAppBot {
             
             // Execute command through plugin manager
             if (this.pluginManager) {
-                const success = await this.pluginManager.executeCommand(commandName, messageData, args);
+                const success = await this.pluginManager.executeCommand(messageData, commandName, args);
                 
                 if (success) {
                     // Success reaction
