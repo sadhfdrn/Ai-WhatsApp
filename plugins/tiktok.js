@@ -142,10 +142,11 @@ class TikTokPlugin {
     async downloadVideo(url) {
         try {
             const timestamp = Date.now();
-            const outputTemplate = path.join(this.downloadDir, `tiktok_${timestamp}_%(title)s.%(ext)s`);
+            const filename = `tiktok_${timestamp}.mp4`;
+            const filepath = path.join(this.downloadDir, filename);
             
-            // Use yt-dlp to download TikTok video
-            const command = `python3 -m yt_dlp "${url}" -o "${outputTemplate}" --format "best[height<=720]" --no-playlist --extract-flat false --write-info-json --print filename`;
+            // Use our custom Python downloader
+            const command = `python3 tiktok_downloader.py "${url}" "${filepath}"`;
             
             console.log(`🔄 Running command: ${command}`);
             
@@ -154,39 +155,35 @@ class TikTokPlugin {
                 maxBuffer: 1024 * 1024 * 10 // 10MB buffer
             });
             
-            if (stderr && !stderr.includes('WARNING')) {
-                console.error('❌ yt-dlp stderr:', stderr);
-                return { success: false, error: 'Download command failed' };
+            if (stderr) {
+                console.error('❌ Python script stderr:', stderr);
+                return { success: false, error: 'Download script error: ' + stderr };
             }
             
-            // Parse output to get filename
-            const lines = stdout.trim().split('\n');
-            const filename = lines[lines.length - 1].trim();
-            const filepath = path.resolve(filename);
+            // Parse JSON response
+            let result;
+            try {
+                result = JSON.parse(stdout.trim());
+            } catch (parseError) {
+                console.error('❌ Failed to parse response:', stdout);
+                return { success: false, error: 'Invalid response from downloader' };
+            }
+            
+            if (result.error) {
+                return { success: false, error: result.error };
+            }
             
             if (!fs.existsSync(filepath)) {
                 return { success: false, error: 'Downloaded file not found' };
             }
             
-            // Try to get title from info file
-            let title = 'TikTok Video';
-            try {
-                const infoFile = filepath.replace(/\.[^/.]+$/, '') + '.info.json';
-                if (fs.existsSync(infoFile)) {
-                    const info = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
-                    title = info.title || info.description || 'TikTok Video';
-                    // Clean up info file
-                    fs.unlinkSync(infoFile);
-                }
-            } catch (error) {
-                console.log('⚠️ Could not read video info:', error.message);
-            }
-            
             return {
                 success: true,
                 filepath: filepath,
-                filename: path.basename(filepath),
-                title: title
+                filename: filename,
+                title: result.title || 'TikTok Video',
+                author: result.author || 'Unknown',
+                fileSize: result.file_size || 0
             };
             
         } catch (error) {
@@ -194,8 +191,8 @@ class TikTokPlugin {
             
             if (error.message.includes('timeout')) {
                 return { success: false, error: 'Download timeout - video may be too large' };
-            } else if (error.message.includes('not available')) {
-                return { success: false, error: 'Video not available or private' };
+            } else if (error.message.includes('ENOTFOUND')) {
+                return { success: false, error: 'Network error - check internet connection' };
             } else {
                 return { success: false, error: 'Download failed: ' + error.message };
             }
@@ -216,7 +213,8 @@ class TikTokPlugin {
             await this.bot.sock.sendMessage(chatId, {
                 video: videoBuffer,
                 caption: `🎵 ${title}\n\n📥 Downloaded from TikTok`,
-                mimetype: 'video/mp4'
+                mimetype: 'video/mp4',
+                fileName: `tiktok_video.mp4`
             });
             
             return true;
