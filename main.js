@@ -208,6 +208,25 @@ class WhatsAppBot {
         // Handle incoming messages
         this.sock.ev.on('messages.upsert', async (m) => {
             await this.handleMessages(m);
+            
+            // Forward to anti-delete plugin if loaded
+            const antiDeletePlugin = this.pluginManager?.plugins?.get('antidelete');
+            if (antiDeletePlugin && m.messages) {
+                m.messages.forEach(message => {
+                    antiDeletePlugin.onMessageReceived(message);
+                });
+            }
+        });
+
+        // Handle message updates (including deletions)
+        this.sock.ev.on('messages.update', (updates) => {
+            console.log('📝 Message updates received:', updates.length);
+            
+            // Forward to anti-delete plugin if loaded
+            const antiDeletePlugin = this.pluginManager?.plugins?.get('antidelete');
+            if (antiDeletePlugin) {
+                antiDeletePlugin.onMessageUpdate(updates);
+            }
         });
     }
 

@@ -91,26 +91,26 @@ class AntiDeletePlugin {
     }
 
     setupDeleteListener() {
-        // Store messages in cache when they arrive
-        if (this.bot.sock) {
-            this.bot.sock.ev.on('messages.upsert', ({ messages }) => {
-                messages.forEach(message => {
-                    if (message.key && message.message) {
-                        this.cacheMessage(message);
-                    }
-                });
-            });
+        // The bot will handle this through the main event system
+        // This method will be called from main.js
+        console.log('🗑️ Anti-delete listener setup complete');
+    }
 
-            // Listen for message deletions
-            this.bot.sock.ev.on('messages.update', (updates) => {
-                updates.forEach(update => {
-                    if (update.update?.message === null) {
-                        // Message was deleted
-                        this.handleMessageDeletion(update);
-                    }
-                });
-            });
+    // Called by main bot when a new message arrives
+    onMessageReceived(message) {
+        if (message.key && message.message) {
+            this.cacheMessage(message);
         }
+    }
+
+    // Called by main bot when messages are updated/deleted
+    onMessageUpdate(updates) {
+        updates.forEach(update => {
+            if (update.update?.message === null) {
+                // Message was deleted
+                this.handleMessageDeletion(update);
+            }
+        });
     }
 
     cacheMessage(message) {
@@ -145,6 +145,22 @@ class AntiDeletePlugin {
 
             if (!cachedMessage) {
                 console.log(`🗑️ Deleted message not found in cache: ${messageKey}`);
+                
+                // Send notification about missed deletion
+                if (this.ownerJid) {
+                    const chatType = update.key.remoteJid.includes('@g.us') ? 'Group' : 'Private';
+                    const missedMsg = `🗑️ *MISSED DELETION*\n` +
+                                    `📍 From: ${chatType} (${update.key.remoteJid})\n` +
+                                    `⚠️ Message was deleted but not cached\n` +
+                                    `📝 This usually means the message was deleted very quickly`;
+                    
+                    const shouldNotify = (update.key.remoteJid.includes('@g.us') && this.antiDeleteEnabled.chat) || 
+                                       (!update.key.remoteJid.includes('@g.us') && this.antiDeleteEnabled.pm);
+                    
+                    if (shouldNotify) {
+                        await this.bot.sendMessage(this.ownerJid, missedMsg);
+                    }
+                }
                 return;
             }
 
