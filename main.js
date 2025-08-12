@@ -255,6 +255,13 @@ class WhatsAppBot {
                     await this.sendMessage(messageData.from, '❌ Please provide a message after .tag\nExample: .tag Hello everyone!');
                 }
             }
+            else if (command === '.tagall') {
+                // Add reaction to the command
+                await this.reactToMessage(messageData, '🔔');
+                
+                // Tag everyone in the group without a custom message
+                await this.tagAllMembersLoud(messageData.from);
+            }
             
         } catch (error) {
             console.error('❌ Error processing command:', error);
@@ -411,6 +418,59 @@ class WhatsAppBot {
 
         } catch (error) {
             console.error('❌ Error tagging group members:', error);
+            await this.sendMessage(groupId, '❌ Failed to tag group members. Make sure I have admin permissions.');
+            return false;
+        }
+    }
+
+    async tagAllMembersLoud(groupId) {
+        try {
+            // Check if it's a group (group IDs end with @g.us)
+            if (!groupId.includes('@g.us')) {
+                await this.sendMessage(groupId, '❌ This command only works in groups!');
+                return false;
+            }
+
+            // Get group metadata to fetch all participants
+            const groupMetadata = await this.sock.groupMetadata(groupId);
+            const participants = groupMetadata.participants;
+
+            if (!participants || participants.length === 0) {
+                await this.sendMessage(groupId, '❌ Could not fetch group members');
+                return false;
+            }
+
+            // Create mentions array (exclude the bot itself)
+            const mentions = participants
+                .map(participant => participant.id)
+                .filter(id => !id.includes(this.sock.user?.id || ''));
+
+            // Create a loud notification message that tags everyone
+            let tagText = '🔔 *ATTENTION EVERYONE!* 🔔\n\n';
+            
+            // Add all mentions with their names for loud notification
+            for (let i = 0; i < mentions.length; i++) {
+                const phoneNumber = mentions[i].split('@')[0];
+                tagText += `@${phoneNumber} `;
+                
+                // Add line break every 5 mentions for readability
+                if ((i + 1) % 5 === 0) {
+                    tagText += '\n';
+                }
+            }
+
+            const tagMessage = {
+                text: tagText,
+                mentions: mentions
+            };
+
+            // Send the loud notification message
+            await this.sock.sendMessage(groupId, tagMessage);
+            console.log(`🔔 Loudly tagged ${mentions.length} members in group ${groupId}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error tagging group members loudly:', error);
             await this.sendMessage(groupId, '❌ Failed to tag group members. Make sure I have admin permissions.');
             return false;
         }
