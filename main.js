@@ -312,7 +312,8 @@ class WhatsAppBot {
                 if (message.message.extendedTextMessage.contextInfo?.quotedMessage) {
                     messageData.quotedMessage = {
                         participant: message.message.extendedTextMessage.contextInfo.participant,
-                        id: message.message.extendedTextMessage.contextInfo.stanzaId
+                        id: message.message.extendedTextMessage.contextInfo.stanzaId,
+                        content: message.message.extendedTextMessage.contextInfo.quotedMessage
                     };
                 }
             }

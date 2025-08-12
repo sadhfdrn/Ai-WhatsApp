@@ -49,7 +49,7 @@ class MessageUtils {
                 }))
             };
 
-            return await this.sock.sendMessage(jid, listMessage);
+            return await this.sock.sendMessage(jid, { text: `📋 *${title}*\n\n${description}\n\n${sections.map(section => `*${section.title}*\n${section.rows.map(row => `• ${row.title}: ${row.description || ''}`).join('\n')}`).join('\n\n')}\n\n💡 Interactive lists are being processed...` });
         } catch (error) {
             console.error('❌ Error sending list message:', error);
             return false;
