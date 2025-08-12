@@ -226,7 +226,8 @@ class WhatsAppBot {
 
     async processCommand(messageData) {
         try {
-            const command = messageData.body.trim().toLowerCase();
+            const message = messageData.body.trim();
+            const command = message.toLowerCase();
             
             if (command === '.ping') {
                 // Add reaction to the message
@@ -238,6 +239,21 @@ class WhatsAppBot {
                 
                 const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n🌐 Network: ${networkSpeed}ms\n✅ Status: Online`;
                 await this.sendMessage(messageData.from, response);
+            }
+            else if (command.startsWith('.tag ')) {
+                // Extract the message after .tag
+                const tagMessage = message.substring(5).trim();
+                
+                if (tagMessage) {
+                    // Add reaction to the command
+                    await this.reactToMessage(messageData, '👥');
+                    
+                    // Tag everyone in the group
+                    await this.tagAllMembers(messageData.from, tagMessage);
+                } else {
+                    await this.reactToMessage(messageData, '❌');
+                    await this.sendMessage(messageData.from, '❌ Please provide a message after .tag\nExample: .tag Hello everyone!');
+                }
             }
             
         } catch (error) {
@@ -357,6 +373,46 @@ class WhatsAppBot {
         } catch (error) {
             console.error('❌ Error measuring network speed:', error);
             return 'N/A';
+        }
+    }
+
+    async tagAllMembers(groupId, message) {
+        try {
+            // Check if it's a group (group IDs end with @g.us)
+            if (!groupId.includes('@g.us')) {
+                await this.sendMessage(groupId, '❌ This command only works in groups!');
+                return false;
+            }
+
+            // Get group metadata to fetch all participants
+            const groupMetadata = await this.sock.groupMetadata(groupId);
+            const participants = groupMetadata.participants;
+
+            if (!participants || participants.length === 0) {
+                await this.sendMessage(groupId, '❌ Could not fetch group members');
+                return false;
+            }
+
+            // Create mentions array (exclude the bot itself)
+            const mentions = participants
+                .map(participant => participant.id)
+                .filter(id => !id.includes(this.sock.user?.id || ''));
+
+            // Create the message with all mentions
+            const tagMessage = {
+                text: `📢 ${message}`,
+                mentions: mentions
+            };
+
+            // Send the message with all mentions
+            await this.sock.sendMessage(groupId, tagMessage);
+            console.log(`👥 Tagged ${mentions.length} members in group ${groupId}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error tagging group members:', error);
+            await this.sendMessage(groupId, '❌ Failed to tag group members. Make sure I have admin permissions.');
+            return false;
         }
     }
 

@@ -23,8 +23,10 @@ Uses Baileys library for WhatsApp Web connectivity with authentication state man
 ### Command System
 Enhanced command processor with reaction support:
 - **.ping**: Returns bot status, uptime, and network speed with ⚡ reaction
+- **.tag [message]**: Tags all group members silently with custom message and 👥 reaction
 - Command reactions provide instant feedback to users
 - Network speed measurement for performance monitoring
+- Group member tagging with mention functionality
 
 ### Health Monitoring
 HTTP server on port 8080 provides health check endpoint for deployment monitoring.
@@ -66,4 +68,8 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
 - **Workflow Updates**: Updated workflows to use new main.js instead of Python bridge
   - Removed "WhatsApp AI Bot" and "WhatsApp Bridge" workflows
   - Added new "WhatsApp Bot" workflow running Node.js application
+- **Enhanced Commands**: Added .tag command for group member tagging
+  - .tag [message] tags all group members with custom message
+  - Includes 👥 reaction and silent mention functionality
+  - Works only in groups with proper error handling
 - **Documentation Update**: Updated replit.md to reflect pure Node.js architecture
