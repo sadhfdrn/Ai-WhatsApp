@@ -448,15 +448,10 @@ class WhatsAppBot {
             // Create a loud notification message that tags everyone
             let tagText = '🔔 *ATTENTION EVERYONE!* 🔔\n\n';
             
-            // Add all mentions with their names for loud notification
+            // Add each mention on a separate numbered line
             for (let i = 0; i < mentions.length; i++) {
                 const phoneNumber = mentions[i].split('@')[0];
-                tagText += `@${phoneNumber} `;
-                
-                // Add line break every 5 mentions for readability
-                if ((i + 1) % 5 === 0) {
-                    tagText += '\n';
-                }
+                tagText += `${i + 1}. @${phoneNumber}\n`;
             }
 
             const tagMessage = {

@@ -73,5 +73,5 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - .tag [message] tags all group members silently with custom message (👥 reaction)
   - .tagall tags all group members loudly without requiring message (🔔 reaction)
   - Both commands work only in groups with proper error handling
-  - Loud tagging shows all member phone numbers for maximum visibility
+  - Loud tagging shows numbered list with each member on separate line for clarity
 - **Documentation Update**: Updated replit.md to reflect pure Node.js architecture
