@@ -386,6 +386,62 @@ Type a message to interact with me!`;
         }
     }
 
+    async reactToMessage(messageData, emoji) {
+        try {
+            if (!this.connected) {
+                console.log('⚠️ Not connected to WhatsApp - cannot react');
+                return false;
+            }
+
+            const reactionMessage = {
+                react: {
+                    text: emoji,
+                    key: {
+                        remoteJid: messageData.from,
+                        fromMe: false,
+                        id: messageData.id
+                    }
+                }
+            };
+
+            await this.sock.sendMessage(messageData.from, reactionMessage);
+            console.log(`⚡ Reacted with ${emoji} to message from ${messageData.from}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error reacting to message:', error);
+            return false;
+        }
+    }
+
+    async removeReaction(messageData) {
+        try {
+            if (!this.connected) {
+                console.log('⚠️ Not connected to WhatsApp - cannot remove reaction');
+                return false;
+            }
+
+            const removeReactionMessage = {
+                react: {
+                    text: '',
+                    key: {
+                        remoteJid: messageData.from,
+                        fromMe: false,
+                        id: messageData.id
+                    }
+                }
+            };
+
+            await this.sock.sendMessage(messageData.from, removeReactionMessage);
+            console.log(`🗑️ Removed reaction from message from ${messageData.from}`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error removing reaction:', error);
+            return false;
+        }
+    }
+
     startHealthServer() {
         try {
             let port = parseInt(process.env.PORT || '8080');
