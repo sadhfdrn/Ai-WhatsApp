@@ -103,6 +103,17 @@ class WhatsAppBot {
                 version = [2, 3000, 1023223821];
             }
 
+            // Close existing socket if it exists
+            if (this.sock) {
+                try {
+                    console.log('🔌 Closing existing socket...');
+                    this.sock.end();
+                    this.sock = null;
+                } catch (error) {
+                    console.error('❌ Error closing socket:', error);
+                }
+            }
+
             // Create WhatsApp socket with clean settings
             this.sock = makeWASocket({
                 version,
@@ -129,7 +140,11 @@ class WhatsAppBot {
                 mobile: false,
                 shouldIgnoreJid: jid => {
                     return /(newsletter|bot)/.test(jid);
-                }
+                },
+                // Add connection options to reduce conflicts
+                keepAliveIntervalMs: 10000,
+                connectTimeoutMs: 60000,
+                defaultQueryTimeoutMs: 60000
             });
 
             // Handle credentials update
@@ -214,7 +229,25 @@ class WhatsAppBot {
             
             console.log('🔌 Connection closed:', lastDisconnect?.error, 'reconnecting:', shouldReconnect);
             
-            if (shouldReconnect) {
+            // Handle stream conflict specifically
+            if (statusCode === 440 || lastDisconnect?.error?.message?.includes('conflict')) {
+                console.log('⚠️ Stream conflict detected, clearing session and reconnecting...');
+                this.connected = false;
+                
+                // Clear auth state to prevent conflicts
+                try {
+                    const authDir = './wa-auth';
+                    if (fs.existsSync(authDir)) {
+                        console.log('🧹 Clearing authentication state...');
+                        fs.rmSync(authDir, { recursive: true, force: true });
+                    }
+                } catch (error) {
+                    console.error('❌ Error clearing auth state:', error);
+                }
+                
+                // Wait longer for stream conflicts
+                setTimeout(() => this.initialize(), 10000);
+            } else if (shouldReconnect) {
                 this.connected = false;
                 // Add exponential backoff for reconnection
                 const delay = Math.min(5000 + Math.random() * 5000, 30000);
