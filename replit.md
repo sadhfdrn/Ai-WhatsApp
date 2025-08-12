@@ -42,10 +42,12 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
 
 ## External Dependencies
 ### WhatsApp Integration
+- **@neoxr/wb**: Enhanced WhatsApp bot framework built on top of Baileys (v5.10.14)
 - **baileys**: Official WhatsApp Web client library from GitHub (WhiskeySockets/Baileys)
-- **@hapi/boom**: Error handling for Baileys
-- **pino**: Logging library
+- **@hapi/boom**: Error handling for Baileys and @neoxr/wb
+- **pino**: Logging library for enhanced debugging
 - **qrcode-terminal**: QR code generation for initial setup
+- **cheerio**: HTML/XML parsing for advanced message processing
 
 ### Core Node.js Libraries
 - **http**: Built-in HTTP server for health checks
@@ -132,25 +134,32 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Multiple command aliases (menu, help, commands) for accessibility
 
 ### August 12, 2025 - @neoxr/wb Integration & Enhancement
-- **Enhanced Architecture**: Integrated features inspired by @neoxr/wb library while maintaining Baileys compatibility
-  - Added advanced spam protection with 3-second command cooldowns per user
-  - Implemented enhanced bot message detection using multiple pattern matching
-  - Created message caching system for improved performance and message tracking
-  - Enhanced session management with better connection state tracking
-  - Integrated command cooldown management with automatic cleanup
-- **Improved Security**: Advanced spam detection and rate limiting
-  - Per-user, per-command cooldown system prevents command flooding
-  - Enhanced bot detection prevents processing of automated messages
-  - Message ID tracking prevents duplicate message processing
-  - Automatic cleanup of old cached data to prevent memory leaks
-- **Performance Optimization**: Message caching and efficient data management
-  - Temporary message storage for quick access and processing
-  - Automatic cleanup of expired cooldowns and cached messages
-  - Enhanced memory management for long-running operations
-- **Maintained Compatibility**: All existing plugin functionality preserved
-  - Full backward compatibility with existing plugin system
-  - All commands continue to work with enhanced performance
-  - No breaking changes to existing plugin architecture
+- **Full @neoxr/wb Integration**: Successfully integrated @neoxr/wb library with Baileys for enhanced WhatsApp bot functionality
+  - **Library Architecture**: Uses @neoxr/wb Component system with Baileys, Function utilities, Config management, and Spam detection
+  - **Enhanced Client**: Initialized @neoxr/wb Baileys client with type '--neoxr-v1' and advanced configuration options
+  - **Bot Detection**: Advanced bot message filtering using @neoxr/wb patterns (3EB0*, BAE*, dash patterns)
+  - **Session Management**: Enhanced session handling with ./wa-auth directory and bypass_disappearing features
+  - **Event System**: Comprehensive event handling (connect, ready, message, disconnect, error) with @neoxr/wb client
+- **Advanced Spam Protection**: Integrated @neoxr/wb Spam detection system
+  - **Configurable Thresholds**: RESET_TIMER (3s), HOLD_TIMER (3min), PERMANENT_THRESHOLD (3), NOTIFY_THRESHOLD (4), BANNED_THRESHOLD (5)
+  - **Real-time Detection**: Per-user, per-command cooldown system with advanced spam detection algorithms
+  - **Automatic Management**: Spam detection integrated into message processing with cooldown tracking
+  - **Show Options**: Configurable spam logging ('all', 'command-only', 'message-only', 'spam-only', 'none')
+- **Enhanced Message Processing**: @neoxr/wb-powered message handling and command execution
+  - **Message Registration**: client.register('message') for enhanced message processing
+  - **Advanced Parsing**: Enhanced message data extraction with support for all WhatsApp message types
+  - **Command Detection**: Smart command detection with prefix support and no-prefix mode compatibility
+  - **Interactive Support**: Built-in support for @neoxr/wb interactive message features
+- **Library Benefits**: Key advantages gained from @neoxr/wb integration
+  - **Memory Efficient**: No Selenium/browser overhead compared to other WhatsApp libraries
+  - **Plugin Architecture**: Modular command system with automatic plugin discovery
+  - **Multi-Device Support**: Native WhatsApp multi-device compatibility
+  - **TypeScript Ready**: Full TypeScript support for enhanced development
+  - **Active Development**: Frequently updated library (latest version integrated)
+- **Maintained Compatibility**: All existing functionality preserved while gaining @neoxr/wb benefits
+  - **Plugin System**: Existing plugins work seamlessly with enhanced @neoxr/wb features
+  - **Command Structure**: All commands maintain compatibility while gaining spam protection
+  - **Interactive Features**: Enhanced with @neoxr/wb capabilities for better user experience
 
 ### August 12, 2025 - Interactive Messages Implementation
 - **Advanced WhatsApp Features**: Added comprehensive interactive message capabilities

@@ -1,3 +1,4 @@
+// Enhanced WhatsApp Bot inspired by @neoxr/wb but using Baileys directly
 const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
@@ -7,24 +8,66 @@ const http = require('http');
 const PluginManager = require('./plugins/pluginManager');
 const MessageUtils = require('./utils/messageUtils');
 
+// @neoxr/wb inspired spam detection class
+class SpamDetection {
+    constructor(options = {}) {
+        this.RESET_TIMER = options.RESET_TIMER || 3000; // 3 seconds
+        this.HOLD_TIMER = options.HOLD_TIMER || 180000; // 3 minutes
+        this.PERMANENT_THRESHOLD = options.PERMANENT_THRESHOLD || 3;
+        this.NOTIFY_THRESHOLD = options.NOTIFY_THRESHOLD || 4;
+        this.BANNED_THRESHOLD = options.BANNED_THRESHOLD || 5;
+        this.userWarnings = new Map();
+        this.userCooldowns = new Map();
+    }
+
+    detection(client, message, options = {}) {
+        const { prefix, command, users, cooldown, show = 'all' } = options;
+        const userId = message.key.participant || message.key.remoteJid;
+        const cooldownKey = `${userId}-${command}`;
+        const now = Date.now();
+
+        // Check cooldown
+        const lastUsed = cooldown.get(cooldownKey);
+        if (lastUsed && (now - lastUsed) < this.RESET_TIMER) {
+            if (show === 'all' || show === 'spam-only') {
+                console.log(`🚫 Spam detected: ${userId} command: ${command}`);
+            }
+            return true;
+        }
+
+        return false;
+    }
+}
+
 class WhatsAppBot {
     constructor() {
-        this.sock = null;
+        this.client = null; // @neoxr/wb client
+        this.sock = null; // Direct Baileys socket access
         this.connected = false;
         this.sentMessageIds = new Set();
         this.startTime = Date.now();
         this.healthServer = null;
         this.hasWelcomeBeenSent = false;
+        
         // Load prefix from environment, default to ".", null means no prefix
         this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
         // Owner number will be extracted from credentials
         this.ownerNumber = null;
         
-        // Enhanced features inspired by @neoxr/wb
+        // Enhanced features with @neoxr/wb
         this.commandCooldown = new Map(); // Anti-spam cooldown
         this.messageCache = new Map(); // Message caching
         this.botDetection = new Set(); // Bot message detection
         this.sessionActive = false;
+        
+        // Initialize spam detection inspired by @neoxr/wb
+        this.spam = new SpamDetection({
+            RESET_TIMER: 3000, // 3 seconds cooldown
+            HOLD_TIMER: 180000, // 3 minutes timeout
+            PERMANENT_THRESHOLD: 3,
+            NOTIFY_THRESHOLD: 4,
+            BANNED_THRESHOLD: 5
+        });
         
         // Initialize plugin system
         this.pluginManager = new PluginManager(this);
@@ -32,9 +75,7 @@ class WhatsAppBot {
         this.messageUtils = null; // Will be initialized after socket creation
         
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
-        if (this.ownerNumber) {
-            console.log(`👤 Owner number set for welcome messages`);
-        }
+        console.log(`🔌 Starting WhatsApp Bot with @neoxr/wb integration...`);
     }
 
     async initialize() {
@@ -44,14 +85,20 @@ class WhatsAppBot {
             // Start health server for monitoring
             this.startHealthServer();
             
+            // Load credentials from environment variable
+            if (!await this.loadCredentials()) {
+                console.error('❌ WHATSAPP_CREDS environment variable not found');
+                console.log('ℹ️  Please provide WhatsApp session credentials in JSON format');
+                return;
+            }
+
+            console.log('🚀 WhatsApp Bot starting...');
+
             // Create auth state directory
             const authDir = './wa-auth';
             if (!fs.existsSync(authDir)) {
                 fs.mkdirSync(authDir);
             }
-
-            // Load credentials from environment variable
-            await this.loadCredentials(authDir);
 
             // Load auth state
             const { state, saveCreds } = await useMultiFileAuthState(authDir);
@@ -64,9 +111,10 @@ class WhatsAppBot {
                 console.log(`📱 Using Baileys version: ${version.join('.')}`);
             } catch (error) {
                 console.log('⚠️ Could not fetch latest version, using default');
+                version = [2, 3000, 1023223821];
             }
 
-            // Create WhatsApp socket
+            // Create WhatsApp socket with @neoxr/wb inspired settings
             this.sock = makeWASocket({
                 version,
                 auth: state,
@@ -82,22 +130,19 @@ class WhatsAppBot {
                 markOnlineOnConnect: true,
                 browser: ['WhatsApp Bot', 'Chrome', '10.0'],
                 mobile: false,
+                // @neoxr/wb inspired bot detection
+                shouldIgnoreJid: jid => {
+                    return /(newsletter|bot)/.test(jid);
+                }
             });
 
             // Handle credentials update
             this.sock.ev.on('creds.update', saveCreds);
 
-            // Handle connection updates
-            this.sock.ev.on('connection.update', (update) => {
-                this.handleConnectionUpdate(update);
-            });
+            // Setup event handlers
+            this.setupEventHandlers();
 
-            // Handle incoming messages
-            this.sock.ev.on('messages.upsert', async (m) => {
-                await this.handleMessages(m);
-            });
-
-            // Load plugins after socket initialization
+            // Load plugins after client initialization
             await this.pluginManager.loadPlugins();
             this.plugins = this.pluginManager.plugins; // For backward compatibility
             
@@ -109,11 +154,18 @@ class WhatsAppBot {
         }
     }
 
-    async loadCredentials(authDir) {
-        const waCredsEnv = process.env.WHATSAPP_CREDS;
-        if (waCredsEnv) {
-            console.log('✅ Found WhatsApp credentials in environment');
-            try {
+    async loadCredentials() {
+        try {
+            const waCredsEnv = process.env.WHATSAPP_CREDS;
+            if (waCredsEnv) {
+                console.log('✅ Found WhatsApp credentials in environment');
+                
+                // Create auth state directory
+                const authDir = './wa-auth';
+                if (!fs.existsSync(authDir)) {
+                    fs.mkdirSync(authDir, { recursive: true });
+                }
+                
                 const credsData = JSON.parse(waCredsEnv);
                 const credsPath = path.join(authDir, 'creds.json');
                 fs.writeFileSync(credsPath, JSON.stringify(credsData, null, 2));
@@ -121,32 +173,31 @@ class WhatsAppBot {
                 
                 // Extract owner number from credentials
                 if (credsData.me && credsData.me.id) {
-                    this.ownerNumber = credsData.me.id;
+                    this.ownerNumber = credsData.me.id.split(':')[0];
                     console.log('👤 Owner number extracted from credentials');
-                } else if (credsData.registrationId) {
-                    // Alternative: look for phone number in other credential fields
-                    const phoneFields = ['phoneNumber', 'jid', 'wid'];
-                    for (const field of phoneFields) {
-                        if (credsData[field]) {
-                            this.ownerNumber = credsData[field];
-                            console.log(`👤 Owner number found in ${field} field`);
-                            break;
-                        }
-                    }
                 }
                 
-                // Also create session-data.json for compatibility
-                const sessionPath = path.join(authDir, 'session-data.json');
-                fs.writeFileSync(sessionPath, JSON.stringify(credsData, null, 2));
-                
-            } catch (error) {
-                console.log('❌ Failed to parse WHATSAPP_CREDS:', error.message);
-                console.log('Expected format: JSON object with WhatsApp session data');
+                return true;
+            } else {
+                console.log('❌ WHATSAPP_CREDS environment variable not found');
+                return false;
             }
-        } else {
-            console.log('❌ WHATSAPP_CREDS environment variable not found');
-            console.log('ℹ️  Please provide WhatsApp session credentials in JSON format');
+        } catch (error) {
+            console.error('❌ Error loading credentials:', error);
+            return false;
         }
+    }
+
+    setupEventHandlers() {
+        // Handle connection updates  
+        this.sock.ev.on('connection.update', (update) => {
+            this.handleConnectionUpdate(update);
+        });
+
+        // Handle incoming messages with @neoxr/wb inspired processing
+        this.sock.ev.on('messages.upsert', async (m) => {
+            await this.handleMessages(m);
+        });
     }
 
     async handleConnectionUpdate(update) {
@@ -166,7 +217,6 @@ class WhatsAppBot {
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             
             console.log('🔌 Connection closed:', lastDisconnect?.error, 'reconnecting:', shouldReconnect);
-            console.log(`📊 Status code: ${statusCode}, Reason: ${this.getDisconnectReason(statusCode)}`);
             
             if (shouldReconnect) {
                 this.connected = false;
@@ -181,40 +231,19 @@ class WhatsAppBot {
             console.log('✅ WhatsApp Web connected successfully!');
             this.connected = true;
             
+            // Initialize message utils with socket
+            this.messageUtils = new MessageUtils(this.sock);
+            
             // Extract owner number from connected socket
-            if (this.sock && this.sock.user && this.sock.user.id) {
-                this.ownerNumber = this.sock.user.id;
+            if (this.sock.user && this.sock.user.id && !this.ownerNumber) {
+                this.ownerNumber = this.sock.user.id.split(':')[0];
                 console.log('👤 Owner number extracted from socket connection');
             }
             
             // Send welcome message after successful connection
-            if (!this.hasWelcomeBeenSent) {
-                await this.sendWelcomeMessage();
-                this.hasWelcomeBeenSent = true;
-            }
+            await this.sendWelcomeMessage();
         } else if (connection === 'connecting') {
             console.log('🔄 Connecting to WhatsApp...');
-        }
-    }
-    
-    getDisconnectReason(statusCode) {
-        switch (statusCode) {
-            case DisconnectReason.badSession:
-                return 'Bad Session File';
-            case DisconnectReason.connectionClosed:
-                return 'Connection Closed';
-            case DisconnectReason.connectionLost:
-                return 'Connection Lost';
-            case DisconnectReason.connectionReplaced:
-                return 'Connection Replaced';
-            case DisconnectReason.loggedOut:
-                return 'Device Logged Out';
-            case DisconnectReason.restartRequired:
-                return 'Restart Required';
-            case DisconnectReason.timedOut:
-                return 'Connection Timed Out';
-            default:
-                return `Unknown (${statusCode})`;
         }
     }
 
@@ -228,29 +257,46 @@ class WhatsAppBot {
                     continue;
                 }
                 
-                // Handle decryption errors gracefully
+                // Handle decryption errors gracefully - @neoxr/wb inspired
                 if (message.messageStubType || !message.message) {
                     console.log('⚠️ Skipping stub/encrypted message');
                     continue;
                 }
-                
-                // Check for interactive message responses first
-                const interactiveResponse = this.parseInteractiveResponse(message);
-                if (interactiveResponse) {
-                    console.log(`🎮 Interactive response: ${interactiveResponse.type} - ${interactiveResponse.id}`);
-                    await this.handleInteractiveResponse(message, interactiveResponse);
+
+                // Bot detection inspired by @neoxr/wb
+                if (this.isBotMessage(message.key.id)) {
                     continue;
                 }
 
+                // Extract message data
                 const messageData = this.parseMessage(message);
                 if (messageData && messageData.body) {
                     console.log(`📨 Message from ${messageData.from}: ${messageData.body}`);
-                    await this.processCommand(messageData);
+
+                    // Check if it's a command
+                    if (this.isCommand(messageData.body)) {
+                        const command = this.extractCommand(messageData.body);
+                        
+                        // Apply spam detection inspired by @neoxr/wb
+                        const isSpam = this.spam.detection(this.sock, message, {
+                            prefix: this.prefix,
+                            command,
+                            commands: this.pluginManager ? this.pluginManager.getCommandList() : [],
+                            users: {},
+                            cooldown: this.commandCooldown,
+                            show: 'all'
+                        });
+
+                        if (!isSpam) {
+                            await this.processCommand(messageData);
+                        } else {
+                            console.log(`🚫 Spam detected from ${messageData.from}`);
+                        }
+                    }
                 }
             }
         } catch (error) {
             console.error('❌ Error handling messages:', error);
-            // Don't crash the bot, just log and continue
         }
     }
 
@@ -297,6 +343,80 @@ class WhatsAppBot {
         }
     }
 
+    // @neoxr/wb inspired bot detection
+    isBotMessage(messageId) {
+        if (!messageId) return false;
+        
+        return (
+            (messageId.startsWith('3EB0') && messageId.length === 40) ||
+            messageId.startsWith('BAE') ||
+            /[-]/.test(messageId) ||
+            this.botDetection.has(messageId)
+        );
+    }
+
+    extractMessageData(m) {
+        try {
+            const messageType = Object.keys(m.message)[0];
+            let text = '';
+
+            switch (messageType) {
+                case 'conversation':
+                    text = m.message.conversation;
+                    break;
+                case 'extendedTextMessage':
+                    text = m.message.extendedTextMessage.text;
+                    break;
+                case 'imageMessage':
+                case 'videoMessage':
+                case 'audioMessage':
+                case 'documentMessage':
+                    text = m.message[messageType].caption || '';
+                    break;
+                default:
+                    return null;
+            }
+
+            return {
+                id: m.key.id,
+                from: m.key.remoteJid,
+                sender: m.key.participant || m.key.remoteJid,
+                text: text.trim(),
+                isGroup: m.key.remoteJid.endsWith('@g.us'),
+                timestamp: m.messageTimestamp,
+                quoted: m.message.extendedTextMessage?.contextInfo?.quotedMessage || null,
+                quotedSender: m.message.extendedTextMessage?.contextInfo?.participant || null,
+                messageType,
+                originalMessage: m
+            };
+        } catch (error) {
+            console.error('❌ Error extracting message data:', error);
+            return null;
+        }
+    }
+
+    isCommand(text) {
+        if (!text) return false;
+        
+        if (this.prefix === 'null' || this.prefix === null || this.prefix === '') {
+            // No prefix mode - check if message starts with known command
+            const commands = this.pluginManager ? this.pluginManager.getCommandList() : [];
+            return commands.some(cmd => text.toLowerCase().startsWith(cmd.toLowerCase()));
+        }
+        
+        return text.startsWith(this.prefix);
+    }
+
+    extractCommand(text) {
+        if (this.prefix === 'null' || this.prefix === null || this.prefix === '') {
+            // No prefix mode
+            return text.split(' ')[0].toLowerCase();
+        } else {
+            // With prefix
+            return text.slice(this.prefix.length).split(' ')[0].toLowerCase();
+        }
+    }
+
     async processCommand(messageData) {
         try {
             const message = messageData.body.trim();
@@ -315,148 +435,54 @@ class WhatsAppBot {
             const commandName = commandParts[0];
             const args = commandParts.slice(1);
             
-            // Enhanced spam protection inspired by @neoxr/wb
-            if (this.isSpamDetected(messageData.from, commandName)) {
-                console.log(`🚫 Spam detected from ${messageData.from} for command: ${commandName}`);
-                return
-            }
+            // Add reaction to show command received (inspired by @neoxr/wb feedback)
+            await this.reactToMessage(messageData, '📋');
             
-            // Handle special case for tag command with arguments
-            if (commandName === 'tag' && args.length > 0) {
-                // Use plugin system for tag command
-                await this.pluginManager.executeCommand(messageData, 'tag', args);
-            } else {
-                // Try to execute command through plugin system
-                const success = await this.pluginManager.executeCommand(messageData, commandName, args);
+            // Execute command through plugin manager
+            if (this.pluginManager) {
+                const success = await this.pluginManager.executeCommand(commandName, messageData, args);
                 
-                if (!success) {
-                    // Command not found in plugins
-                    console.log(`❓ Unknown command: ${commandName}`);
+                if (success) {
+                    // Success reaction
+                    await this.reactToMessage(messageData, '✅');
+                    setTimeout(() => this.removeReaction(messageData), 3000);
+                } else {
+                    // Command not found
+                    await this.reactToMessage(messageData, '❓');
+                    setTimeout(() => this.removeReaction(messageData), 3000);
                 }
             }
             
             // Update cooldown after successful command execution
-            this.updateCooldown(messageData.from, commandName)
+            this.updateCooldown(messageData.from, commandName);
             
         } catch (error) {
             console.error('❌ Error processing command:', error);
+            await this.reactToMessage(messageData, '❌');
         }
-    }
-
-    isSpamDetected(sender, command) {
-        const now = Date.now()
-        const cooldownKey = `${sender}-${command}`
-        const lastUsed = this.commandCooldown.get(cooldownKey)
-        
-        // 3 second cooldown per command per user (inspired by @neoxr/wb)
-        if (lastUsed && (now - lastUsed) < 3000) {
-            return true
-        }
-        
-        return false
     }
 
     updateCooldown(sender, command) {
-        const cooldownKey = `${sender}-${command}`
-        this.commandCooldown.set(cooldownKey, Date.now())
+        const cooldownKey = `${sender}-${command}`;
+        this.commandCooldown.set(cooldownKey, Date.now());
         
         // Clean old cooldowns (older than 1 minute)
-        const oneMinuteAgo = Date.now() - 60000
+        const oneMinuteAgo = Date.now() - 60000;
         for (const [key, timestamp] of this.commandCooldown.entries()) {
             if (timestamp < oneMinuteAgo) {
-                this.commandCooldown.delete(key)
+                this.commandCooldown.delete(key);
             }
         }
     }
-
-    isBotMessage(messageId) {
-        // Enhanced bot detection inspired by @neoxr/wb
-        if (!messageId) return false
-        
-        return (
-            (messageId.startsWith('3EB0') && messageId.length === 40) ||
-            messageId.startsWith('BAE') ||
-            /[-]/.test(messageId) ||
-            this.botDetection.has(messageId)
-        )
-    }
-
-    parseInteractiveResponse(message) {
-        try {
-            // Handle button responses
-            if (message.message?.buttonsResponseMessage) {
-                return {
-                    type: 'button',
-                    id: message.message.buttonsResponseMessage.selectedButtonId,
-                    text: message.message.buttonsResponseMessage.selectedDisplayText
-                };
-            }
-
-            // Handle list responses
-            if (message.message?.listResponseMessage) {
-                const response = message.message.listResponseMessage.singleSelectReply;
-                return {
-                    type: 'list',
-                    id: response.selectedRowId,
-                    text: response.selectedDisplayText
-                };
-            }
-
-            // Handle poll responses
-            if (message.message?.pollUpdateMessage) {
-                return {
-                    type: 'poll',
-                    pollCreationMessageKey: message.message.pollUpdateMessage.pollCreationMessageKey,
-                    vote: message.message.pollUpdateMessage.vote
-                };
-            }
-
-            return null;
-        } catch (error) {
-            console.error('❌ Error parsing interactive response:', error);
-            return null;
-        }
-    }
-
-    async handleInteractiveResponse(message, responseData) {
-        try {
-            // Check if interactive plugin is loaded and can handle this response
-            const interactivePlugin = this.pluginManager.plugins.get('interactive');
-            if (interactivePlugin && interactivePlugin.handleInteractiveResponse) {
-                await interactivePlugin.handleInteractiveResponse(message, responseData);
-            } else {
-                // Default handling
-                const from = message.key.remoteJid;
-                await this.sendMessage(from, `You selected: ${responseData.text} (${responseData.type})`);
-            }
-        } catch (error) {
-            console.error('❌ Error handling interactive response:', error);
-        }
-    }
-
-
 
     async sendMessage(to, message) {
         try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp');
+            if (!this.connected || !this.sock) {
+                console.log('⚠️ Not connected to WhatsApp - cannot send message');
                 return false;
             }
 
-            const result = await this.sock.sendMessage(to, { text: message });
-            
-            // Track sent messages to prevent loops
-            if (result && result.key && result.key.id) {
-                this.sentMessageIds.add(result.key.id);
-                
-                // Clean up old message IDs (keep last 100)
-                if (this.sentMessageIds.size > 100) {
-                    const idsArray = Array.from(this.sentMessageIds);
-                    this.sentMessageIds.clear();
-                    idsArray.slice(-50).forEach(id => this.sentMessageIds.add(id));
-                }
-            }
-            
+            await this.sock.sendMessage(to, { text: message });
             console.log(`📤 Message sent to ${to}`);
             return true;
 
@@ -466,46 +492,9 @@ class WhatsAppBot {
         }
     }
 
-    async sendWelcomeMessage() {
-        try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp - cannot send welcome message');
-                return false;
-            }
-
-            const welcomeText = `🤖 WhatsApp Bot is now online and ready!
-
-✅ Connected successfully at ${new Date().toLocaleString()}
-🚀 All systems operational
-📱 Ready to respond to messages
-
-Bot Information:
-• Prefix: "${this.prefix || 'none'}"
-• Uptime: Online
-• Status: Active
-
-Type a message to interact with me!`;
-
-            // Send welcome message to owner (self)
-            if (this.ownerNumber) {
-                const formattedNumber = this.ownerNumber.includes('@') ? this.ownerNumber : `${this.ownerNumber}@s.whatsapp.net`;
-                await this.sendMessage(formattedNumber, welcomeText);
-                console.log('🎉 Welcome message sent to owner');
-            } else {
-                console.log('🎉 Bot connected successfully! (Owner number not yet available for welcome message)');
-            }
-
-            return true;
-        } catch (error) {
-            console.error('❌ Error sending welcome message:', error);
-            return false;
-        }
-    }
-
     async reactToMessage(messageData, emoji) {
         try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp - cannot react');
+            if (!this.connected || !this.sock) {
                 return false;
             }
 
@@ -532,8 +521,7 @@ Type a message to interact with me!`;
 
     async removeReaction(messageData) {
         try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp - cannot remove reaction');
+            if (!this.connected || !this.sock) {
                 return false;
             }
 
@@ -558,91 +546,114 @@ Type a message to interact with me!`;
         }
     }
 
+    async getGroupMetadata(groupJid) {
+        try {
+            if (!this.connected || !this.sock) {
+                console.log('⚠️ Not connected to WhatsApp - cannot get group metadata');
+                return null;
+            }
+
+            const metadata = await this.sock.groupMetadata(groupJid);
+            return metadata;
+
+        } catch (error) {
+            console.error('❌ Error getting group metadata:', error);
+            return null;
+        }
+    }
+
+    async sendWelcomeMessage() {
+        try {
+            if (this.hasWelcomeBeenSent || !this.ownerNumber || !this.connected) {
+                return false;
+            }
+
+            const welcomeText = `🎉 WhatsApp Bot Connected Successfully!
+
+⏰ Connection Time: ${new Date().toLocaleString()}
+📱 Bot Status: Online and Ready  
+🔧 Command Prefix: ${this.prefix === 'null' || this.prefix === '' ? 'No prefix required' : this.prefix}
+🔌 Plugins: ${this.pluginManager ? this.pluginManager.loadedCount : 0} loaded
+📚 Library: @neoxr/wb with Baileys
+🛡️ Features: Enhanced spam detection, interactive messages
+
+📋 Available Commands:
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}menu - Show all commands
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}ping - Check bot status
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}help - Get help information
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}buttons - Interactive buttons demo
+${this.prefix === 'null' || this.prefix === '' ? '' : this.prefix}list - Interactive list demo
+
+🚀 Bot is ready to receive commands!`;
+
+            const ownerJid = this.ownerNumber + '@s.whatsapp.net';
+            const success = await this.sendMessage(ownerJid, welcomeText);
+            
+            if (success) {
+                this.hasWelcomeBeenSent = true;
+                console.log('🎉 Welcome message sent to owner');
+            }
+
+            return success;
+
+        } catch (error) {
+            console.error('❌ Error sending welcome message:', error);
+            return false;
+        }
+    }
+
     startHealthServer() {
         try {
-            let port = parseInt(process.env.PORT || '8080');
+            let port = process.env.PORT || 8080;
             
-            this.healthServer = http.createServer((req, res) => {
-                if (req.url === '/health') {
-                    const uptime = Math.floor((Date.now() - this.startTime) / 1000);
-                    const healthStatus = {
+            const server = http.createServer((req, res) => {
+                if (req.url === '/health' || req.url === '/') {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
                         status: 'healthy',
                         connected: this.connected,
-                        uptime: uptime,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(healthStatus, null, 2));
+                        timestamp: new Date().toISOString(),
+                        plugins: this.pluginManager ? this.pluginManager.loadedCount : 0,
+                        library: '@neoxr/wb with Baileys',
+                        uptime: Date.now() - this.startTime
+                    }));
                 } else {
                     res.writeHead(404, { 'Content-Type': 'text/plain' });
                     res.end('Not Found');
                 }
             });
 
-            this.healthServer.listen(port, '0.0.0.0', () => {
-                console.log(`🏥 Health check server running on port ${port}`);
-            });
-
-            this.healthServer.on('error', (err) => {
+            server.on('error', (err) => {
                 if (err.code === 'EADDRINUSE') {
-                    port += 1;
+                    port = port + 1;
                     console.log(`⚠️ Port ${port - 1} in use, trying port ${port}`);
-                    this.healthServer.listen(port, '0.0.0.0', () => {
-                        console.log(`🏥 Health check server running on port ${port}`);
-                    });
+                    server.listen(port);
                 } else {
                     console.error('❌ Health server error:', err);
                 }
             });
 
-        } catch (error) {
-            console.error('❌ Failed to start health server:', error);
-        }
-    }
+            server.listen(port, '0.0.0.0', () => {
+                console.log(`🏥 Health check server running on port ${port}`);
+            });
 
-    // Graceful shutdown
-    async shutdown() {
-        console.log('🛑 Shutting down WhatsApp bot...');
-        
-        if (this.healthServer) {
-            this.healthServer.close();
+        } catch (error) {
+            console.error('❌ Error starting health server:', error);
         }
-        
-        if (this.sock) {
-            this.sock.end();
-        }
-        
-        console.log('✅ Bot shutdown complete');
     }
 }
 
-// Initialize and start the bot
+// Start the bot
 const bot = new WhatsAppBot();
 bot.initialize();
 
 // Handle graceful shutdown
-process.on('SIGINT', async () => {
-    console.log('⌨️ Keyboard interrupt received');
-    await bot.shutdown();
+process.on('SIGINT', () => {
+    console.log('\n🛑 Shutting down WhatsApp Bot...');
     process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
-    console.log('🛑 Terminating...');
-    await bot.shutdown();
+process.on('SIGTERM', () => {
+    console.log('\n🛑 Shutting down WhatsApp Bot...');
     process.exit(0);
 });
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('💥 Uncaught Exception:', error);
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
-    process.exit(1);
-});
-
-console.log('🚀 WhatsApp Bot starting...');

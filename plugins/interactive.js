@@ -3,17 +3,38 @@ const MessageUtils = require('../utils/messageUtils');
 class InteractivePlugin {
     constructor(bot) {
         this.bot = bot;
-        this.messageUtils = new MessageUtils(bot.sock);
+        this.messageUtils = null; // Will be initialized when bot socket is ready
         this.name = 'interactive';
-        this.description = 'Interactive messages with buttons, lists, and polls';
+        this.description = 'Enhanced interactive messages with @neoxr/wb features';
         this.commands = ['buttons', 'list', 'poll', 'carousel', 'quick', 'location', 'contact'];
         this.emoji = '🎮';
+        
+        // Initialize messageUtils when socket becomes available
+        this.initializeMessageUtils();
+    }
+
+    initializeMessageUtils() {
+        // Check periodically for socket availability
+        const checkSocket = () => {
+            if (this.bot.sock && !this.messageUtils) {
+                this.messageUtils = new MessageUtils(this.bot.sock);
+                console.log('🎮 Interactive plugin initialized with socket');
+            } else if (!this.bot.sock) {
+                setTimeout(checkSocket, 1000);
+            }
+        };
+        checkSocket();
     }
 
     async execute(command, messageData, args) {
         try {
             if (!this.bot.connected) {
                 return await this.bot.sendMessage(messageData.from, 'Bot is not connected to WhatsApp');
+            }
+
+            // Ensure messageUtils is initialized
+            if (!this.messageUtils && this.bot.sock) {
+                this.messageUtils = new MessageUtils(this.bot.sock);
             }
 
             switch (command) {
