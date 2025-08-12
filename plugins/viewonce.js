@@ -39,7 +39,10 @@ class ViewOncePlugin {
         try {
             // Check if this is a reply to a message
             if (!messageData.quotedMessage) {
-                await this.bot.sendMessage(messageData.from, '❌ Please reply to a view-once message with .vv');
+                // Send error to DM only, not current chat
+                if (this.ownerJid) {
+                    await this.bot.sendMessage(this.ownerJid, '❌ Please reply to a view-once message with .vv');
+                }
                 return true;
             }
 
@@ -83,51 +86,42 @@ class ViewOncePlugin {
                 if (mediaData) {
                     console.log('✅ Media extracted, sending to chat and DM...');
                     
-                    // Send the media back to the chat
-                    await this.sendMediaWithoutViewOnce(messageData.from, mediaData);
-                    
-                    // Also save to owner DM if configured
-                    if (this.ownerJid && messageData.from !== this.ownerJid) {
+                    // Send to owner DM only - no confirmation in current chat
+                    if (this.ownerJid) {
                         await this.sendMediaWithoutViewOnce(this.ownerJid, mediaData);
                         
-                        const dmNotification = `🔓 *View-Once Revealed*
+                        const chatType = messageData.from.includes('@g.us') ? 'Group' : 'Private';
+                        const dmNotification = `🔓 *VIEW-ONCE REVEALED*
 ⏰ Time: ${new Date().toLocaleString()}
-📍 From: ${messageData.from.includes('@g.us') ? 'Group' : 'Private'} chat
-👤 Requested by: ${messageData.sender}
+📍 From: ${chatType} (${messageData.from})
+👤 Sender: ${messageData.sender}
 💾 Media saved above`;
                         
                         await this.bot.sendMessage(this.ownerJid, dmNotification);
                     }
-                    
-                    const confirmMsg = await this.bot.sendMessage(messageData.from, '✅ View-once media revealed and saved!');
-                    
-                    // Auto-delete confirmation message after 3 seconds for stealth
-                    setTimeout(async () => {
-                        try {
-                            if (confirmMsg && confirmMsg.key) {
-                                await this.bot.sock.sendMessage(messageData.from, {
-                                    delete: confirmMsg.key
-                                });
-                            }
-                        } catch (error) {
-                            // Ignore deletion errors
-                        }
-                    }, 3000);
                 } else {
                     console.log('❌ Failed to extract media');
-                    await this.bot.sendMessage(messageData.from, '❌ Could not extract media from view-once message');
+                    // Send error only to DM, not current chat
+                    if (this.ownerJid) {
+                        await this.bot.sendMessage(this.ownerJid, '❌ Failed to extract view-once media');
+                    }
                 }
             } else {
-                // Not a view-once message, show what type it is
+                // Not a view-once message, show what type it is only in DM
                 const messageType = this.getMessageType(targetMessage);
                 console.log(`❌ Not a view-once message, type: ${messageType}`);
-                await this.bot.sendMessage(messageData.from, `❌ This is not a view-once message. Message type: ${messageType}`);
+                if (this.ownerJid) {
+                    await this.bot.sendMessage(this.ownerJid, `❌ Not a view-once message. Type: ${messageType}`);
+                }
             }
             
             return true;
         } catch (error) {
             console.error('❌ Error handling view-once:', error);
-            await this.bot.sendMessage(messageData.from, '❌ Error processing view-once message');
+            // Send error only to DM
+            if (this.ownerJid) {
+                await this.bot.sendMessage(this.ownerJid, '❌ Error processing view-once message');
+            }
             return false;
         }
     }
@@ -139,27 +133,16 @@ class ViewOncePlugin {
             const status = this.autoVVEnabled ? 'enabled' : 'disabled';
             const emoji = this.autoVVEnabled ? '✅' : '❌';
             
-            const response = `${emoji} Auto view-once ${status}!\n\n` +
-                           `When enabled, all view-once messages will automatically be:\n` +
-                           `• Opened and saved\n` +
-                           `• Sent to your DM\n` +
-                           `• Forwarded to current chat\n\n` +
-                           `Current status: ${status.toUpperCase()}`;
+            // Send status update only to DM, not current chat
+            if (this.ownerJid) {
+                const response = `${emoji} *AUTO VIEW-ONCE ${status.toUpperCase()}*\n\n` +
+                               `When enabled, all view-once messages will automatically be:\n` +
+                               `• Sent to your DM silently\n` +
+                               `• No confirmation in original chat\n\n` +
+                               `Current status: ${status.toUpperCase()}`;
 
-            const confirmMsg = await this.bot.sendMessage(messageData.from, response);
-            
-            // Auto-delete confirmation message after 5 seconds for stealth
-            setTimeout(async () => {
-                try {
-                    if (confirmMsg && confirmMsg.key) {
-                        await this.bot.sock.sendMessage(messageData.from, {
-                            delete: confirmMsg.key
-                        });
-                    }
-                } catch (error) {
-                    // Ignore deletion errors
-                }
-            }, 5000);
+                await this.bot.sendMessage(this.ownerJid, response);
+            }
             
             return true;
         } catch (error) {
@@ -220,28 +203,14 @@ class ViewOncePlugin {
                 chatType: chatType
             });
             
-            if (success) {
-                const confirmMsg = await this.bot.sendMessage(messageData.from, '✅ Message saved to your DM successfully!');
-                
-                // Auto-delete confirmation message after 3 seconds for stealth
-                setTimeout(async () => {
-                    try {
-                        if (confirmMsg && confirmMsg.key) {
-                            await this.bot.sock.sendMessage(messageData.from, {
-                                delete: confirmMsg.key
-                            });
-                        }
-                    } catch (error) {
-                        // Ignore deletion errors
-                    }
-                }, 3000);
-            } else {
-                await this.bot.sendMessage(messageData.from, '❌ Failed to save message to DM');
-            }
+            // No confirmation messages in current chat - save command is now silent
             return true;
         } catch (error) {
             console.error('❌ Error saving message:', error);
-            await this.bot.sendMessage(messageData.from, '❌ Error saving message');
+            // Send error to DM only
+            if (this.ownerJid) {
+                await this.bot.sendMessage(this.ownerJid, '❌ Error saving message');
+            }
             return false;
         }
     }
