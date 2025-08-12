@@ -4,6 +4,7 @@ const P = require('pino');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const PluginManager = require('./plugins/pluginManager');
 
 class WhatsAppBot {
     constructor() {
@@ -17,6 +18,11 @@ class WhatsAppBot {
         this.prefix = process.env.PREFIX === 'null' ? '' : (process.env.PREFIX || '.');
         // Owner number will be extracted from credentials
         this.ownerNumber = null;
+        
+        // Initialize plugin system
+        this.pluginManager = new PluginManager(this);
+        this.plugins = new Map(); // For backward compatibility
+        
         console.log(`🔧 Command prefix set to: "${this.prefix || 'none'}"`);
         if (this.ownerNumber) {
             console.log(`👤 Owner number set for welcome messages`);
@@ -83,6 +89,10 @@ class WhatsAppBot {
                 await this.handleMessages(m);
             });
 
+            // Load plugins after socket initialization
+            await this.pluginManager.loadPlugins();
+            this.plugins = this.pluginManager.plugins; // For backward compatibility
+            
             console.log('✅ WhatsApp bot initialized successfully');
 
         } catch (error) {
@@ -284,96 +294,22 @@ class WhatsAppBot {
             // Remove prefix from command for processing (if prefix exists)
             const cleanCommand = this.prefix ? command.slice(this.prefix.length) : command;
             
-            if (cleanCommand === 'ping') {
-                // Add initial processing reaction
-                await this.reactToMessage(messageData, '⚡');
+            // Split command and arguments
+            const commandParts = cleanCommand.split(' ');
+            const commandName = commandParts[0];
+            const args = commandParts.slice(1);
+            
+            // Handle special case for tag command with arguments
+            if (commandName === 'tag' && args.length > 0) {
+                // Use plugin system for tag command
+                await this.pluginManager.executeCommand(messageData, 'tag', args);
+            } else {
+                // Try to execute command through plugin system
+                const success = await this.pluginManager.executeCommand(messageData, commandName, args);
                 
-                try {
-                    // Measure network speed by timing a simple request
-                    const networkSpeed = await this.measureNetworkSpeed();
-                    const uptime = Math.floor((Date.now() - this.startTime) / 1000);
-                    
-                    const response = `🏓 Pong!\n⏱️ Uptime: ${this.formatUptime(uptime)}\n🌐 Network: ${networkSpeed}ms\n✅ Status: Online`;
-                    await this.sendMessage(messageData.from, response);
-                    
-                    // Show success reaction briefly then remove
-                    await this.reactToMessage(messageData, '✅');
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                } catch (error) {
-                    console.error('❌ Error in ping command:', error);
-                    await this.reactToMessage(messageData, '❌');
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                }
-            }
-            else if (cleanCommand.startsWith('tag ')) {
-                // Extract the message after the tag command
-                const tagCommandLength = (this.prefix ? this.prefix.length : 0) + 4; // prefix + "tag "
-                const tagMessage = message.substring(tagCommandLength).trim();
-                
-                if (tagMessage) {
-                    // Add initial processing reaction
-                    await this.reactToMessage(messageData, '👥');
-                    
-                    try {
-                        // Tag everyone in the group
-                        const success = await this.tagAllMembers(messageData.from, tagMessage);
-                        
-                        if (success) {
-                            await this.reactToMessage(messageData, '✅');
-                        } else {
-                            await this.reactToMessage(messageData, '❌');
-                        }
-                        setTimeout(() => this.removeReaction(messageData), 2000);
-                    } catch (error) {
-                        console.error('❌ Error in tag command:', error);
-                        await this.reactToMessage(messageData, '❌');
-                        setTimeout(() => this.removeReaction(messageData), 2000);
-                    }
-                } else {
-                    await this.reactToMessage(messageData, '❌');
-                    const prefixDisplay = this.prefix || '';
-                    await this.sendMessage(messageData.from, `❌ Please provide a message after ${prefixDisplay}tag\nExample: ${prefixDisplay}tag Hello everyone!`);
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                }
-            }
-            else if (cleanCommand === 'tagall') {
-                // Add initial processing reaction
-                await this.reactToMessage(messageData, '🔔');
-                
-                try {
-                    // Tag everyone in the group without a custom message
-                    const success = await this.tagAllMembersLoud(messageData.from);
-                    
-                    if (success) {
-                        await this.reactToMessage(messageData, '✅');
-                    } else {
-                        await this.reactToMessage(messageData, '❌');
-                    }
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                } catch (error) {
-                    console.error('❌ Error in tagall command:', error);
-                    await this.reactToMessage(messageData, '❌');
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                }
-            }
-            else if (cleanCommand === 'gstatus') {
-                // Add initial processing reaction
-                await this.reactToMessage(messageData, '👤');
-                
-                try {
-                    // Get group status for user or replied person
-                    const success = await this.getGroupStatus(messageData);
-                    
-                    if (success) {
-                        await this.reactToMessage(messageData, '✅');
-                    } else {
-                        await this.reactToMessage(messageData, '❌');
-                    }
-                    setTimeout(() => this.removeReaction(messageData), 2000);
-                } catch (error) {
-                    console.error('❌ Error in gstatus command:', error);
-                    await this.reactToMessage(messageData, '❌');
-                    setTimeout(() => this.removeReaction(messageData), 2000);
+                if (!success) {
+                    // Command not found in plugins
+                    console.log(`❓ Unknown command: ${commandName}`);
                 }
             }
             
@@ -382,22 +318,7 @@ class WhatsAppBot {
         }
     }
 
-    formatUptime(seconds) {
-        const days = Math.floor(seconds / 86400);
-        const hours = Math.floor((seconds % 86400) / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
 
-        if (days > 0) {
-            return `${days}d ${hours}h ${minutes}m ${secs}s`;
-        } else if (hours > 0) {
-            return `${hours}h ${minutes}m ${secs}s`;
-        } else if (minutes > 0) {
-            return `${minutes}m ${secs}s`;
-        } else {
-            return `${secs}s`;
-        }
-    }
 
     async sendMessage(to, message) {
         try {
@@ -465,282 +386,9 @@ Type a message to interact with me!`;
         }
     }
 
-    async getGroupStatus(messageData) {
-        try {
-            const groupId = messageData.from;
-            
-            // Check if it's a group (group IDs end with @g.us)
-            if (!groupId.includes('@g.us')) {
-                await this.sendMessage(groupId, '❌ This command only works in groups!');
-                return false;
-            }
-
-            // Get group metadata
-            const groupMetadata = await this.sock.groupMetadata(groupId);
-            
-            // Determine target user - either replied user or command sender
-            let targetUser = messageData.sender;
-            let isReply = false;
-            
-            // Check if this is a reply to someone's message
-            if (messageData.quotedMessage && messageData.quotedMessage.participant) {
-                targetUser = messageData.quotedMessage.participant;
-                isReply = true;
-            }
-            
-            // Find target participant in group
-            const participant = groupMetadata.participants.find(p => p.id === targetUser);
-            
-            if (!participant) {
-                await this.sendMessage(groupId, '❌ User not found in this group');
-                return false;
-            }
-            
-            // Extract user phone number for display
-            const phoneNumber = participant.id.split('@')[0];
-            
-            // Determine admin status
-            let adminStatus = 'Member';
-            if (participant.admin === 'superadmin') {
-                adminStatus = 'Super Admin (Creator)';
-            } else if (participant.admin === 'admin') {
-                adminStatus = 'Admin';
-            }
-            
-            // Format join date if available (not always provided by WhatsApp)
-            let joinInfo = 'Join date not available';
-            if (groupMetadata.creation) {
-                joinInfo = `Group created: ${new Date(groupMetadata.creation * 1000).toLocaleDateString()}`;
-            }
-            
-            // Get contact name if available
-            let displayName = phoneNumber;
-            try {
-                // Try to get contact info
-                const contact = await this.sock.onWhatsApp(participant.id);
-                if (contact && contact[0] && contact[0].name) {
-                    displayName = contact[0].name;
-                }
-            } catch (error) {
-                console.log('Could not fetch contact name');
-            }
-            
-            // Build status message
-            const statusMessage = `👤 *Group Member Status*
-            
-${isReply ? '📝 Replied User Info:' : '🔍 Your Group Info:'}
-
-📱 *Phone:* +${phoneNumber}
-👤 *Name:* ${displayName}
-🛡️ *Role:* ${adminStatus}
-📋 *User ID:* ${participant.id}
-
-📊 *Group Info:*
-🏷️ *Group:* ${groupMetadata.subject || 'Unknown'}
-👥 *Total Members:* ${groupMetadata.participants.length}
-🔢 *Group ID:* ${groupId}
-📅 ${joinInfo}
-
-${adminStatus.includes('Admin') ? '⚡ *Admin Privileges:* Yes' : '👤 *Admin Privileges:* No'}`;
-
-            await this.sendMessage(groupId, statusMessage);
-            console.log(`👤 Group status shown for ${phoneNumber} in ${groupId}`);
-            return true;
-
-        } catch (error) {
-            console.error('❌ Error getting group status:', error);
-            await this.sendMessage(messageData.from, '❌ Failed to get group status. Please try again.');
-            return false;
-        }
-    }
-
-    async reactToMessage(messageData, emoji) {
-        try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp - cannot react');
-                return false;
-            }
-
-            const reactionMessage = {
-                react: {
-                    text: emoji,
-                    key: {
-                        remoteJid: messageData.from,
-                        fromMe: false,
-                        id: messageData.id
-                    }
-                }
-            };
-
-            await this.sock.sendMessage(messageData.from, reactionMessage);
-            console.log(`⚡ Reacted with ${emoji} to message from ${messageData.from}`);
-            return true;
-
-        } catch (error) {
-            console.error('❌ Error reacting to message:', error);
-            return false;
-        }
-    }
-
-    async removeReaction(messageData) {
-        try {
-            if (!this.connected) {
-                console.log('⚠️ Not connected to WhatsApp - cannot remove reaction');
-                return false;
-            }
-
-            const removeReactionMessage = {
-                react: {
-                    text: '', // Empty text removes the reaction
-                    key: {
-                        remoteJid: messageData.from,
-                        fromMe: false,
-                        id: messageData.id
-                    }
-                }
-            };
-
-            await this.sock.sendMessage(messageData.from, removeReactionMessage);
-            console.log(`🗑️ Removed reaction from message from ${messageData.from}`);
-            return true;
-
-        } catch (error) {
-            console.error('❌ Error removing reaction:', error);
-            return false;
-        }
-    }
-
-    async measureNetworkSpeed() {
-        try {
-            const startTime = Date.now();
-            
-            // Use a more reliable endpoint for latency measurement
-            await new Promise((resolve, reject) => {
-                const https = require('https');
-                const req = https.get('https://www.google.com/generate_204', (res) => {
-                    res.on('data', () => {});
-                    res.on('end', resolve);
-                });
-                req.on('error', () => {
-                    // Fallback to localhost health check
-                    const http = require('http');
-                    const fallbackReq = http.get('http://localhost:8080/health', (res) => {
-                        res.on('data', () => {});
-                        res.on('end', resolve);
-                    });
-                    fallbackReq.on('error', reject);
-                    fallbackReq.setTimeout(2000, () => {
-                        fallbackReq.destroy();
-                        reject(new Error('Timeout'));
-                    });
-                });
-                req.setTimeout(3000, () => {
-                    req.destroy();
-                    // Don't reject immediately, let the fallback handle it
-                });
-            });
-            
-            const endTime = Date.now();
-            const latency = endTime - startTime;
-            return `${latency}ms`;
-            
-        } catch (error) {
-            console.error('❌ Error measuring network speed:', error);
-            return 'N/A';
-        }
-    }
-
-    async tagAllMembers(groupId, message) {
-        try {
-            // Check if it's a group (group IDs end with @g.us)
-            if (!groupId.includes('@g.us')) {
-                await this.sendMessage(groupId, '❌ This command only works in groups!');
-                return false;
-            }
-
-            // Get group metadata to fetch all participants
-            const groupMetadata = await this.sock.groupMetadata(groupId);
-            const participants = groupMetadata.participants;
-
-            if (!participants || participants.length === 0) {
-                await this.sendMessage(groupId, '❌ Could not fetch group members');
-                return false;
-            }
-
-            // Create mentions array (exclude the bot itself)
-            const mentions = participants
-                .map(participant => participant.id)
-                .filter(id => !id.includes(this.sock.user?.id || ''));
-
-            // Create the message with all mentions
-            const tagMessage = {
-                text: `📢 ${message}`,
-                mentions: mentions
-            };
-
-            // Send the message with all mentions
-            await this.sock.sendMessage(groupId, tagMessage);
-            console.log(`👥 Tagged ${mentions.length} members in group ${groupId}`);
-            return true;
-
-        } catch (error) {
-            console.error('❌ Error tagging group members:', error);
-            await this.sendMessage(groupId, '❌ Failed to tag group members. Make sure I have admin permissions.');
-            return false;
-        }
-    }
-
-    async tagAllMembersLoud(groupId) {
-        try {
-            // Check if it's a group (group IDs end with @g.us)
-            if (!groupId.includes('@g.us')) {
-                await this.sendMessage(groupId, '❌ This command only works in groups!');
-                return false;
-            }
-
-            // Get group metadata to fetch all participants
-            const groupMetadata = await this.sock.groupMetadata(groupId);
-            const participants = groupMetadata.participants;
-
-            if (!participants || participants.length === 0) {
-                await this.sendMessage(groupId, '❌ Could not fetch group members');
-                return false;
-            }
-
-            // Create mentions array (exclude the bot itself)
-            const mentions = participants
-                .map(participant => participant.id)
-                .filter(id => !id.includes(this.sock.user?.id || ''));
-
-            // Create a loud notification message that tags everyone
-            let tagText = '🔔 *ATTENTION EVERYONE!* 🔔\n\n';
-            
-            // Add each mention on a separate numbered line
-            for (let i = 0; i < mentions.length; i++) {
-                const phoneNumber = mentions[i].split('@')[0];
-                tagText += `${i + 1}. @${phoneNumber}\n`;
-            }
-
-            const tagMessage = {
-                text: tagText,
-                mentions: mentions
-            };
-
-            // Send the loud notification message
-            await this.sock.sendMessage(groupId, tagMessage);
-            console.log(`🔔 Loudly tagged ${mentions.length} members in group ${groupId}`);
-            return true;
-
-        } catch (error) {
-            console.error('❌ Error tagging group members loudly:', error);
-            await this.sendMessage(groupId, '❌ Failed to tag group members. Make sure I have admin permissions.');
-            return false;
-        }
-    }
-
     startHealthServer() {
         try {
-            const port = parseInt(process.env.PORT || '8080');
+            let port = parseInt(process.env.PORT || '8080');
             
             this.healthServer = http.createServer((req, res) => {
                 if (req.url === '/health') {
@@ -762,6 +410,18 @@ ${adminStatus.includes('Admin') ? '⚡ *Admin Privileges:* Yes' : '👤 *Admin P
 
             this.healthServer.listen(port, '0.0.0.0', () => {
                 console.log(`🏥 Health check server running on port ${port}`);
+            });
+
+            this.healthServer.on('error', (err) => {
+                if (err.code === 'EADDRINUSE') {
+                    port += 1;
+                    console.log(`⚠️ Port ${port - 1} in use, trying port ${port}`);
+                    this.healthServer.listen(port, '0.0.0.0', () => {
+                        console.log(`🏥 Health check server running on port ${port}`);
+                    });
+                } else {
+                    console.error('❌ Health server error:', err);
+                }
             });
 
         } catch (error) {

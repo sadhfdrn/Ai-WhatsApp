@@ -20,16 +20,18 @@ Environment variables manage WhatsApp credentials (WHATSAPP_CREDS), server port 
 ### WhatsApp Integration
 Uses Baileys library for WhatsApp Web connectivity with authentication state management and message handling.
 
-### Command System
-Enhanced command processor with smart reaction system and customizable prefix:
+### Plugin System
+Modular plugin architecture with smart reaction system and customizable prefix:
+- **Plugin Manager**: Automatic loading and management of command plugins
 - **ping**: Returns bot status, uptime, and network speed with ⚡ reaction
+- **menu/help/commands**: Shows formatted bot menu with all available commands with 📋 reaction
 - **tag [message]**: Tags all group members silently with custom message and 👥 reaction
 - **tagall**: Tags all group members loudly without requiring a message and 🔔 reaction
 - **gstatus**: Shows detailed group member information (admin status, role, join date) with 👤 reaction
 - Customizable prefix via PREFIX env var (., /, !, etc.) or null for no prefix
 - Smart reactions: Initial command emoji → Success (✅) or Failure (❌) → Auto-removal after 2 seconds
-- Network speed measurement for performance monitoring
-- Group member tagging with mention functionality
+- Extensible plugin system for easy addition of new commands
+- Professional menu formatting with boxed layout and comprehensive command listing
 
 ### Health Monitoring
 HTTP server on port 8080 provides health check endpoint for deployment monitoring.
@@ -108,3 +110,19 @@ HTTP server on port 8080 provides health check endpoint for deployment monitorin
   - Enhanced message parsing to handle quoted messages (replies)
   - Added sender identification and quoted message context
   - Group-only command with proper validation and error handling
+
+### August 12, 2025 - Plugin System Architecture
+- **Plugin System Implementation**: Complete conversion to modular plugin architecture
+  - Created PluginManager class for automatic plugin loading and command routing
+  - Separated commands into individual plugin files (menu.js, ping.js, grouputils.js)
+  - Enhanced command processing with automatic plugin discovery and execution
+  - Maintained backward compatibility with existing command structure
+  - Added professional menu system with formatted command listing
+- **Improved Health Server**: Enhanced port conflict handling with automatic port selection
+  - Dynamic port selection when default port 8080 is in use
+  - Better error handling for server startup
+- **Professional Menu Design**: Created formatted menu command with boxed layout
+  - Comprehensive command listing with categories and descriptions
+  - Bot information display including loaded plugin count
+  - Usage tips and examples for better user experience
+  - Multiple command aliases (menu, help, commands) for accessibility
