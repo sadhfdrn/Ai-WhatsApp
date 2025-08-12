@@ -6,7 +6,7 @@ class ViewOncePlugin {
         this.bot = bot;
         this.name = 'viewonce';
         this.description = 'Handle view-once messages and auto-saving';
-        this.commands = ['vv', 'autovv', 'save'];
+        this.commands = ['vv', 'vv2', 'autovv', 'save'];
         this.emoji = '👁️';
         this.autoVVEnabled = false;
         this.ownerJid = null;
@@ -22,6 +22,8 @@ class ViewOncePlugin {
             switch (command) {
                 case 'vv':
                     return await this.handleViewOnce(messageData);
+                case 'vv2':
+                    return await this.handleViewOnceToChat(messageData);
                 case 'autovv':
                     return await this.toggleAutoVV(messageData);
                 case 'save':
@@ -96,6 +98,100 @@ class ViewOncePlugin {
 📍 From: ${chatType} (${messageData.from})
 👤 Sender: ${messageData.sender}
 💾 Media saved above`;
+                        
+                        await this.bot.sendMessage(this.ownerJid, dmNotification);
+                    }
+                } else {
+                    console.log('❌ Failed to extract media');
+                    // Send error only to DM, not current chat
+                    if (this.ownerJid) {
+                        await this.bot.sendMessage(this.ownerJid, '❌ Failed to extract view-once media');
+                    }
+                }
+            } else {
+                // Not a view-once message, show what type it is only in DM
+                const messageType = this.getMessageType(targetMessage);
+                console.log(`❌ Not a view-once message, type: ${messageType}`);
+                if (this.ownerJid) {
+                    await this.bot.sendMessage(this.ownerJid, `❌ Not a view-once message. Type: ${messageType}`);
+                }
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error handling view-once:', error);
+            // Send error only to DM
+            if (this.ownerJid) {
+                await this.bot.sendMessage(this.ownerJid, '❌ Error processing view-once message');
+            }
+            return false;
+        }
+    }
+
+    async handleViewOnceToChat(messageData) {
+        try {
+            // Check if this is a reply to a message
+            if (!messageData.quotedMessage) {
+                // Send error to DM only, not current chat
+                if (this.ownerJid) {
+                    await this.bot.sendMessage(this.ownerJid, '❌ Please reply to a view-once message with .vv2');
+                }
+                return true;
+            }
+
+            console.log('🔍 Processing view-once message for current chat...');
+            console.log('📋 Quoted message structure:', JSON.stringify(messageData.quotedMessage, null, 2));
+            
+            // Get the quoted message content
+            const quotedMsg = messageData.quotedMessage;
+            
+            // Try to get the full message from the original message if available
+            let targetMessage = quotedMsg.message || quotedMsg.content;
+            
+            // If we have access to the original message from messageData, use that
+            if (messageData.originalMessage && messageData.originalMessage.message && 
+                messageData.originalMessage.message.extendedTextMessage && 
+                messageData.originalMessage.message.extendedTextMessage.contextInfo &&
+                messageData.originalMessage.message.extendedTextMessage.contextInfo.quotedMessage) {
+                
+                targetMessage = messageData.originalMessage.message.extendedTextMessage.contextInfo.quotedMessage;
+                console.log('📱 Using contextInfo quoted message');
+            }
+            
+            console.log('📋 Target message for processing:', JSON.stringify(targetMessage, null, 2));
+            
+            // Check if it's a view-once message
+            if (this.isViewOnceMessage(targetMessage)) {
+                console.log('👁️ View-once message detected, extracting media...');
+                
+                // Create proper message structure for extraction
+                const messageForExtraction = {
+                    message: targetMessage,
+                    key: quotedMsg.key || {
+                        id: quotedMsg.id,
+                        remoteJid: messageData.from,
+                        participant: quotedMsg.participant
+                    }
+                };
+                
+                // Extract and send the media without view-once restriction
+                const mediaData = await this.extractViewOnceMedia(messageForExtraction);
+                if (mediaData) {
+                    console.log('✅ Media extracted, sending to current chat...');
+                    
+                    // Send the media to current chat
+                    await this.sendMediaWithoutViewOnce(messageData.from, mediaData);
+                    
+                    // Also save to owner DM if configured
+                    if (this.ownerJid) {
+                        await this.sendMediaWithoutViewOnce(this.ownerJid, mediaData);
+                        
+                        const chatType = messageData.from.includes('@g.us') ? 'Group' : 'Private';
+                        const dmNotification = `🔓 *VIEW-ONCE REVEALED TO CHAT*
+⏰ Time: ${new Date().toLocaleString()}
+📍 From: ${chatType} (${messageData.from})
+👤 Sender: ${messageData.sender}
+💾 Media also saved above`;
                         
                         await this.bot.sendMessage(this.ownerJid, dmNotification);
                     }

@@ -24,7 +24,7 @@ Utilizes the official GitHub Baileys library for WhatsApp Web integration, inclu
 
 ### Plugin System
 An enhanced modular plugin architecture, inspired by `@neoxr/wb`, enables automatic loading and management of command plugins. Key features include:
-- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction and download actual media), `autovv` (toggle auto view-once processing), and `save` (save actual message content including media to DM).
+- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), and `save` (save actual message content including media to DM).
 - **Enhanced Message Processing**: Full implementation of message content extraction and media downloading for vv and save commands. Now processes actual images, videos, voice messages, and text content instead of just message IDs.
 - **Message Caching**: Temporary message storage (1000 messages) for reliable quoted message retrieval and processing.
 - **Smart Reactions**: Initial command emojis, followed by success (✅) or failure (❌) indicators, which auto-remove after 2 seconds.
