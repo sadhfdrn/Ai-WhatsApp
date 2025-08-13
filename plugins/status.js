@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 const { promisify } = require('util');
+const { downloadMediaMessage } = require('baileys');
 
 const execAsync = promisify(exec);
 
@@ -203,10 +204,22 @@ class StatusPlugin {
     // Handle image status
     async handleImageStatus(imageMessage, userId) {
         try {
-            // Download the image
-            const buffer = await this.bot.sock.downloadMediaMessage({
+            // Create message structure for download
+            const messageForDownload = {
+                key: { remoteJid: userId },
                 message: { imageMessage }
-            });
+            };
+
+            // Download the image
+            const buffer = await downloadMediaMessage(
+                messageForDownload,
+                'buffer',
+                {},
+                {
+                    logger: console,
+                    reuploadRequest: this.bot.sock.updateMediaMessage
+                }
+            );
 
             const statusJid = 'status@broadcast';
             const caption = imageMessage.caption || '';
@@ -228,10 +241,22 @@ class StatusPlugin {
     // Handle video status with auto-trimming
     async handleVideoStatus(videoMessage, userId) {
         try {
-            // Download the video
-            const buffer = await this.bot.sock.downloadMediaMessage({
+            // Create message structure for download
+            const messageForDownload = {
+                key: { remoteJid: userId },
                 message: { videoMessage }
-            });
+            };
+
+            // Download the video
+            const buffer = await downloadMediaMessage(
+                messageForDownload,
+                'buffer',
+                {},
+                {
+                    logger: console,
+                    reuploadRequest: this.bot.sock.updateMediaMessage
+                }
+            );
 
             const tempVideoPath = `downloads/temp_status_video_${Date.now()}.mp4`;
             await fs.writeFile(tempVideoPath, buffer);
@@ -313,10 +338,22 @@ class StatusPlugin {
     // Handle audio/voice status
     async handleAudioStatus(audioMessage, userId) {
         try {
-            // Download the audio
-            const buffer = await this.bot.sock.downloadMediaMessage({
+            // Create message structure for download
+            const messageForDownload = {
+                key: { remoteJid: userId },
                 message: { audioMessage }
-            });
+            };
+
+            // Download the audio
+            const buffer = await downloadMediaMessage(
+                messageForDownload,
+                'buffer',
+                {},
+                {
+                    logger: console,
+                    reuploadRequest: this.bot.sock.updateMediaMessage
+                }
+            );
 
             const statusJid = 'status@broadcast';
 
