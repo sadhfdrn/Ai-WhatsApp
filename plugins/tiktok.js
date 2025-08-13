@@ -1,229 +1,275 @@
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
-
-const execAsync = promisify(exec);
+const Tiktok = require("@tobyg74/tiktok-api-dl");
 
 class TikTokPlugin {
     constructor(bot) {
         this.bot = bot;
         this.name = 'tiktok';
-        this.description = 'Download TikTok videos from URL';
+        this.description = 'Download TikTok videos using npm package';
         this.commands = ['tiktok', 'tt'];
         this.emoji = '🎵';
-        this.ownerJid = null;
-        this.downloadDir = './downloads';
+        this.cooldown = 5000; // 5 second cooldown
+        this.userCooldowns = new Map();
+        this.version = "v1"; // Using v1 API version
+    }
+
+    // Helper function to check cooldown
+    checkCooldown(userId) {
+        const now = Date.now();
+        const cooldownEnd = this.userCooldowns.get(userId) || 0;
         
-        // Create downloads directory
-        if (!fs.existsSync(this.downloadDir)) {
-            fs.mkdirSync(this.downloadDir, { recursive: true });
+        if (now < cooldownEnd) {
+            const remaining = Math.ceil((cooldownEnd - now) / 1000);
+            return { onCooldown: true, remaining };
         }
+        
+        this.userCooldowns.set(userId, now + this.cooldown);
+        return { onCooldown: false };
     }
 
-    async execute(messageData, command, args) {
-        try {
-            // Get owner JID for DM functionality
-            if (!this.ownerJid && this.bot.ownerNumber) {
-                this.ownerJid = this.bot.ownerNumber + '@s.whatsapp.net';
-            }
-
-            if (['tiktok', 'tt'].includes(command)) {
-                return await this.downloadTikTok(messageData, args);
-            }
-
-            return false;
-        } catch (error) {
-            console.error(`❌ Error in tiktok plugin (${command}):`, error);
-            return false;
+    // Helper function to extract TikTok URL variations
+    getTikTokUrlVariations(originalUrl) {
+        const variations = [originalUrl];
+        
+        // Handle shortened URLs (vt.tiktok.com)
+        if (originalUrl.includes('vt.tiktok.com')) {
+            const shortCode = originalUrl.split('/').pop().split('?')[0];
+            variations.push(`https://www.tiktok.com/t/${shortCode}`);
+            
+            // Try case variations for the short code
+            variations.push(`https://vt.tiktok.com/${shortCode.toUpperCase()}/`);
+            variations.push(`https://vt.tiktok.com/${shortCode.toLowerCase()}/`);
         }
+        
+        return variations;
     }
 
-    async downloadTikTok(messageData, args) {
+    // Helper function to format file size
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Helper function to format duration
+    formatDuration(seconds) {
+        if (!seconds) return 'Unknown';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return minutes > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${seconds}s`;
+    }
+
+    // Main download function using @tobyg74/tiktok-api-dl
+    async downloadTikTokVideo(url) {
         try {
-            if (!args || args.length === 0) {
-                // Send usage to DM only
-                if (this.ownerJid) {
-                    const usage = `🎵 *TIKTOK DOWNLOADER*\n\n` +
-                                `📝 Usage:\n` +
-                                `.tiktok {url} - Download TikTok video\n` +
-                                `.tt {url} - Short version\n\n` +
-                                `📋 Example:\n` +
-                                `.tiktok https://www.tiktok.com/@user/video/123456789\n\n` +
-                                `🔄 The video will be sent to current chat and saved to your DM`;
-                    
-                    await this.bot.sendMessage(this.ownerJid, usage);
-                }
-                return true;
-            }
-
-            const url = args.join(' ').trim();
+            console.log(`🎵 Starting TikTok download using npm package: ${url}`);
             
-            // Validate TikTok URL
-            if (!this.isValidTikTokURL(url)) {
-                if (this.ownerJid) {
-                    await this.bot.sendMessage(this.ownerJid, '❌ Invalid TikTok URL. Please provide a valid TikTok video link.');
-                }
-                return true;
-            }
-
-            console.log(`🎵 Starting TikTok download: ${url}`);
+            const urlVariations = this.getTikTokUrlVariations(url);
+            let lastError = null;
             
-            // Send processing message to DM
-            if (this.ownerJid) {
-                await this.bot.sendMessage(this.ownerJid, `🎵 *PROCESSING TIKTOK VIDEO*\n\n📍 Requested from: ${messageData.from.includes('@g.us') ? 'Group' : 'Private'}\n🔗 URL: ${url}\n⏳ Downloading...`);
-            }
-
-            // Download the video
-            const result = await this.downloadVideo(url);
-            
-            if (result.success) {
-                console.log(`✅ TikTok video downloaded: ${result.filename}`);
-                
-                // Send video to current chat
-                await this.sendVideo(messageData.from, result.filepath, result.title);
-                
-                // Also send to owner DM with context
-                if (this.ownerJid && messageData.from !== this.ownerJid) {
-                    await this.sendVideo(this.ownerJid, result.filepath, result.title);
+            // Try each URL variation
+            for (const testUrl of urlVariations) {
+                try {
+                    console.log(`🔄 Trying URL: ${testUrl}`);
                     
-                    const chatType = messageData.from.includes('@g.us') ? 'Group' : 'Private';
-                    const dmNotification = `🎵 *TIKTOK VIDEO DOWNLOADED*\n` +
-                                         `⏰ Time: ${new Date().toLocaleString()}\n` +
-                                         `📍 From: ${chatType} (${messageData.from})\n` +
-                                         `👤 Requested by: ${messageData.sender}\n` +
-                                         `🎬 Title: ${result.title || 'TikTok Video'}\n` +
-                                         `💾 Video sent above`;
+                    const result = await Tiktok.Downloader(testUrl, {
+                        version: this.version,
+                        showOriginalResponse: false
+                    });
                     
-                    await this.bot.sendMessage(this.ownerJid, dmNotification);
-                }
-                
-                // Clean up downloaded file
-                setTimeout(() => {
-                    try {
-                        if (fs.existsSync(result.filepath)) {
-                            fs.unlinkSync(result.filepath);
-                            console.log(`🧹 Cleaned up: ${result.filename}`);
+                    if (result && result.status === "success" && result.result) {
+                        const data = result.result;
+                        
+                        // Extract video information
+                        const videoInfo = {
+                            title: data.title || 'TikTok Video',
+                            author: data.author?.nickname || data.author?.username || 'Unknown',
+                            video_id: data.id || 'unknown',
+                            duration: data.duration || 0,
+                            description: data.description || '',
+                            stats: {
+                                views: data.statistics?.playCount || 0,
+                                likes: data.statistics?.diggCount || 0,
+                                comments: data.statistics?.commentCount || 0,
+                                shares: data.statistics?.shareCount || 0
+                            }
+                        };
+                        
+                        // Get the best video URL (prefer HD)
+                        let videoUrl = null;
+                        if (data.video) {
+                            if (data.video.noWatermark) {
+                                videoUrl = data.video.noWatermark;
+                            } else if (data.video.watermark) {
+                                videoUrl = data.video.watermark;
+                            } else if (Array.isArray(data.video) && data.video.length > 0) {
+                                videoUrl = data.video[0];
+                            }
                         }
-                    } catch (error) {
-                        console.error('❌ Error cleaning up file:', error);
+                        
+                        if (!videoUrl) {
+                            throw new Error('No video download URL found');
+                        }
+                        
+                        // Generate unique filename
+                        const timestamp = Date.now();
+                        const outputFile = `downloads/tiktok_${timestamp}.mp4`;
+                        
+                        // Download the video
+                        console.log(`📥 Downloading video from: ${videoUrl}`);
+                        
+                        const https = require('https');
+                        const http = require('http');
+                        
+                        const downloadPromise = new Promise((resolve, reject) => {
+                            const client = videoUrl.startsWith('https://') ? https : http;
+                            
+                            client.get(videoUrl, {
+                                headers: {
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                                }
+                            }, (response) => {
+                                if (response.statusCode !== 200) {
+                                    reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+                                    return;
+                                }
+                                
+                                const fileStream = require('fs').createWriteStream(outputFile);
+                                const totalSize = parseInt(response.headers['content-length'] || '0');
+                                
+                                response.pipe(fileStream);
+                                
+                                fileStream.on('finish', () => {
+                                    fileStream.close();
+                                    resolve({
+                                        success: true,
+                                        ...videoInfo,
+                                        file_size: totalSize,
+                                        output_file: outputFile
+                                    });
+                                });
+                                
+                                fileStream.on('error', (error) => {
+                                    fs.unlink(outputFile).catch(() => {});
+                                    reject(error);
+                                });
+                            }).on('error', (error) => {
+                                reject(error);
+                            });
+                        });
+                        
+                        return await downloadPromise;
                     }
-                }, 30000); // Delete after 30 seconds
-                
-            } else {
-                console.log(`❌ TikTok download failed: ${result.error}`);
-                if (this.ownerJid) {
-                    await this.bot.sendMessage(this.ownerJid, `❌ Failed to download TikTok video: ${result.error}`);
+                    
+                } catch (error) {
+                    console.log(`❌ Failed with URL ${testUrl}: ${error.message}`);
+                    lastError = error;
+                    continue;
                 }
             }
-
-            return true;
+            
+            // If we get here, no URL worked
+            throw new Error(lastError?.message || 'Failed to download from any URL variation');
+            
         } catch (error) {
-            console.error('❌ Error downloading TikTok video:', error);
-            if (this.ownerJid) {
-                await this.bot.sendMessage(this.ownerJid, '❌ Error processing TikTok download request');
-            }
-            return false;
-        }
-    }
-
-    isValidTikTokURL(url) {
-        const tiktokPatterns = [
-            /^https?:\/\/(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/,
-            /^https?:\/\/vm\.tiktok\.com\/[\w]+/,
-            /^https?:\/\/vt\.tiktok\.com\/[\w]+/,
-            /^https?:\/\/m\.tiktok\.com\/v\/\d+/,
-            /^https?:\/\/www\.tiktok\.com\/t\/[\w]+/
-        ];
-        
-        return tiktokPatterns.some(pattern => pattern.test(url));
-    }
-
-    async downloadVideo(url) {
-        try {
-            const timestamp = Date.now();
-            const filename = `tiktok_${timestamp}.mp4`;
-            const filepath = path.join(this.downloadDir, filename);
-            
-            // Use our custom Python downloader
-            const command = `python3 tiktok_downloader.py "${url}" "${filepath}"`;
-            
-            console.log(`🔄 Running command: ${command}`);
-            
-            const { stdout, stderr } = await execAsync(command, {
-                timeout: 60000, // 60 second timeout
-                maxBuffer: 1024 * 1024 * 10 // 10MB buffer
-            });
-            
-            // Parse JSON response from stdout (ignore stderr as it contains progress info)
-            let result;
-            try {
-                result = JSON.parse(stdout.trim());
-            } catch (parseError) {
-                console.error('❌ Failed to parse response:', stdout);
-                // Log stderr only if JSON parsing fails for debugging
-                if (stderr) {
-                    console.error('❌ Python script stderr:', stderr);
-                }
-                return { success: false, error: 'Invalid response from downloader' };
-            }
-            
-            if (result.error) {
-                return { success: false, error: result.error };
-            }
-            
-            // Check if file exists at expected location or the location returned by yt-dlp
-            const actualFilePath = result.output_file || filepath;
-            if (!fs.existsSync(actualFilePath)) {
-                return { success: false, error: 'Downloaded file not found' };
-            }
-            
-            return {
-                success: true,
-                filepath: actualFilePath,
-                filename: path.basename(actualFilePath),
-                title: result.title || 'TikTok Video',
-                author: result.author || 'Unknown',
-                fileSize: result.file_size || 0
+            console.error(`❌ TikTok download error: ${error.message}`);
+            return { 
+                success: false, 
+                error: `Download failed: ${error.message}` 
             };
-            
-        } catch (error) {
-            console.error('❌ Download error:', error);
-            
-            if (error.message.includes('timeout')) {
-                return { success: false, error: 'Download timeout - video may be too large' };
-            } else if (error.message.includes('ENOTFOUND')) {
-                return { success: false, error: 'Network error - check internet connection' };
-            } else {
-                return { success: false, error: 'Download failed: ' + error.message };
-            }
         }
     }
 
-    async sendVideo(chatId, filepath, title) {
+    // Main command handler
+    async execute(messageData, command, args) {
+        const userId = messageData.from;
+        
         try {
-            const videoBuffer = fs.readFileSync(filepath);
-            const fileSize = videoBuffer.length;
-            
-            // Check file size (WhatsApp limit is around 16MB for videos)
-            if (fileSize > 15 * 1024 * 1024) {
-                await this.bot.sendMessage(chatId, '❌ Video too large for WhatsApp (>15MB). Please try a shorter video.');
+            // Check cooldown
+            const cooldownCheck = this.checkCooldown(userId);
+            if (cooldownCheck.onCooldown) {
+                await this.bot.sendMessage(userId, `⏰ Please wait ${cooldownCheck.remaining} seconds before using this command again.`);
                 return false;
             }
             
-            await this.bot.sock.sendMessage(chatId, {
-                video: videoBuffer,
-                caption: `🎵 ${title}\n\n📥 Downloaded from TikTok`,
-                mimetype: 'video/mp4',
-                fileName: `tiktok_video.mp4`
-            });
+            // Validate URL argument
+            if (!args[0] || !args[0].includes('tiktok.com')) {
+                await this.bot.sendMessage(userId, `❌ Please provide a valid TikTok URL.\n\nExample: .tt https://vt.tiktok.com/ZSSvq22PY/`);
+                return false;
+            }
             
-            return true;
+            const url = args[0];
+            
+            // Send processing message
+            await this.bot.sendMessage(userId, `🎵 *PROCESSING TIKTOK VIDEO*\n📍 Requested from: ${userId.includes('@g.us') ? 'Group' : 'Private'}\n🔗 URL: ${url}\n⏳ Downloading...`);
+            
+            // Download the video using npm package
+            const result = await this.downloadTikTokVideo(url);
+            
+            if (result.success) {
+                // Check if file exists and get size
+                try {
+                    const stats = await fs.stat(result.output_file);
+                    const fileSize = stats.size;
+                    
+                    // WhatsApp file size limit is 64MB for videos
+                    const maxSize = 64 * 1024 * 1024; // 64MB in bytes
+                    
+                    if (fileSize > maxSize) {
+                        await this.bot.sendMessage(userId, `❌ Video is too large (${this.formatFileSize(fileSize)}). WhatsApp supports videos up to 64MB.`);
+                        
+                        // Clean up large file
+                        await fs.unlink(result.output_file).catch(() => {});
+                        return false;
+                    }
+                    
+                    // Send the video
+                    const videoBuffer = await fs.readFile(result.output_file);
+                    
+                    await this.bot.sendMessage(userId, {
+                        video: videoBuffer,
+                        caption: `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: @${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`,
+                        gifPlayback: false
+                    });
+                    
+                    console.log(`✅ TikTok video sent successfully: ${result.output_file}`);
+                    
+                    // Clean up downloaded file after sending
+                    setTimeout(async () => {
+                        try {
+                            await fs.unlink(result.output_file);
+                            console.log(`🧹 Cleaned up: ${result.output_file}`);
+                        } catch (error) {
+                            console.log(`⚠️ Could not clean up ${result.output_file}: ${error.message}`);
+                        }
+                    }, 5000); // Clean up after 5 seconds
+                    
+                    return true;
+                    
+                } catch (error) {
+                    console.error(`❌ File processing error: ${error.message}`);
+                    await this.bot.sendMessage(userId, `❌ Failed to process downloaded video: ${error.message}`);
+                    return false;
+                }
+                
+            } else {
+                // Send error message
+                await this.bot.sendMessage(userId, `❌ Failed to download TikTok video: ${result.error}`);
+                return false;
+            }
+            
         } catch (error) {
-            console.error('❌ Error sending video:', error);
-            await this.bot.sendMessage(chatId, '❌ Error sending video: ' + error.message);
+            console.error(`❌ TikTok command error: ${error.message}`);
+            await this.bot.sendMessage(userId, `❌ An error occurred: ${error.message}`);
             return false;
         }
+    }
+
+    isValidCommand(command) {
+        return this.commands.includes(command);
     }
 }
 

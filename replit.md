@@ -47,7 +47,7 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **pino**: Employed for logging.
 - **qrcode-terminal**: Generates QR codes for initial setup.
 - **cheerio**: Used for HTML/XML parsing in message processing.
-- **yt-dlp**: Python library for reliable TikTok video downloading and metadata extraction.
+- **@tobyg74/tiktok-api-dl**: Pure Node.js npm package for reliable TikTok video downloading and metadata extraction.
 - **http**: Node.js built-in module for health checks.
 - **fs**: Node.js built-in module for file system operations (credential management).
 - **path**: Node.js built-in module for path utilities.
@@ -58,5 +58,9 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **Better Error Handling**: More specific error messages for network issues, video availability, and download failures
 - **Format Optimization**: Prioritizes MP4 format for better WhatsApp compatibility
 - **Case Sensitivity Fix**: Fixed URL case conversion issue in command processing - URLs now preserve original case
-- **Output Stream Handling**: Improved JavaScript-Python communication by properly handling yt-dlp's output streams
+- **Output Stream Handling**: Improved JavaScript-Python communication by properly handling yt-dlp's output streams  
 - **LSP Diagnostics**: Resolved variable binding issues for better code reliability
+- **Pure Node.js Migration**: Completely replaced Python/yt-dlp with @tobyg74/tiktok-api-dl npm package for pure Node.js implementation
+- **Plugin Architecture Compliance**: Restructured TikTok plugin to use class-based architecture matching other bot plugins
+- **Enhanced Video Stats**: Added comprehensive TikTok video statistics display (views, likes, comments, shares)
+- **Dependency Cleanup**: Removed all Python dependencies and files for a cleaner, single-language codebase
