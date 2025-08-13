@@ -46,16 +46,7 @@ class InteractiveUtils {
                 header = null
             } = options;
 
-            // Validate and format JID
-            const validJid = this.validateJid(jid);
-            if (!validJid) {
-                console.log('❌ Invalid JID, using text fallback');
-                return await this.sock.sendMessage(jid, { 
-                    text: `${text}\n\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}`
-                });
-            }
-
-            // Use @neoxr/baileys button format from docs
+            // Use @neoxr/baileys button format directly from docs - no JID validation needed
             const buttonMessage = {
                 text: text,
                 footer: footer,
@@ -72,11 +63,12 @@ class InteractiveUtils {
 
             try {
                 console.log('🔄 Sending @neoxr/baileys button message...');
-                return await this.sock.sendMessage(validJid, buttonMessage, { quoted: null });
+                return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
             } catch (buttonError) {
                 console.log('⚠️ Buttons failed, using text menu fallback');
+                console.error('Button error:', buttonError.message);
                 const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
-                return await this.sock.sendMessage(validJid, { text: textMenu });
+                return await this.sock.sendMessage(jid, { text: textMenu });
             }
 
         } catch (error) {
@@ -96,16 +88,9 @@ class InteractiveUtils {
                 title = 'Select Option'
             } = options;
 
-            // Validate JID first
-            const validJid = this.validateJid(jid);
-            if (!validJid) {
-                console.log('❌ Invalid JID for list message');
-                return false;
-            }
-
             try {
-                // Use @neoxr/baileys native flow button format from docs
-                const flowMessage = {
+                // Use simple button format first from @neoxr/baileys docs
+                const buttonMessage = {
                     text: text,
                     footer: footer,
                     buttons: [
@@ -114,41 +99,26 @@ class InteractiveUtils {
                             buttonText: {
                                 displayText: 'MENU'
                             },
-                            type: 1,
+                            type: 1
                         },
                         {
-                            buttonId: 'flow_list',
+                            buttonId: '.help',
                             buttonText: {
-                                displayText: buttonText
+                                displayText: 'HELP'
                             },
-                            type: 4,
-                            nativeFlowInfo: {
-                                name: 'single_select',
-                                paramsJson: JSON.stringify({
-                                    title: title,
-                                    sections: sections.map(section => ({
-                                        title: section.title,
-                                        highlight_label: '📋',
-                                        rows: section.rows.map(row => ({
-                                            header: row.title,
-                                            title: row.title,
-                                            description: row.description || '',
-                                            id: row.id || this.generateId('row'),
-                                        }))
-                                    }))
-                                }),
-                            },
-                        },
+                            type: 1
+                        }
                     ],
                     headerType: 1,
                     viewOnce: false
                 };
 
-                console.log('🔄 Sending @neoxr/baileys flow list...');
-                return await this.sock.sendMessage(validJid, flowMessage, { quoted: null });
+                console.log('🔄 Sending @neoxr/baileys simple button list...');
+                return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
 
             } catch (flowError) {
                 console.log('⚠️ Flow list failed, using text menu fallback');
+                console.error('Flow error:', flowError.message);
                 let textMenu = `📋 *${title}*\n\n${text}\n\n`;
                 
                 let optionNumber = 1;
@@ -165,7 +135,7 @@ class InteractiveUtils {
                 
                 textMenu += '💡 Reply with the number of your choice.';
                 
-                return await this.sock.sendMessage(validJid, { text: textMenu });
+                return await this.sock.sendMessage(jid, { text: textMenu });
             }
 
         } catch (error) {

@@ -92,6 +92,7 @@ class MessageUtils {
                 return await this.sock.sendMessage(jid, listMessage);
             } catch (listError) {
                 console.log('📱 List format not supported, using text menu');
+                console.error('List error:', listError.message);
                 return await this.sock.sendMessage(jid, { 
                     text: `📋 *${title}*\n\n${description}\n\n${sections.map(section => `*${section.title}*\n${section.rows.map(row => `• ${row.title}: ${row.description || ''}`).join('\n')}`).join('\n\n')}\n\n💡 Reply with the option name to select` 
                 });
