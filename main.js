@@ -209,6 +209,16 @@ class WhatsAppBot {
 
         // Handle incoming messages
         this.sock.ev.on('messages.upsert', async (m) => {
+            console.log('🔔 Raw message event received:', m?.messages?.length || 0, 'messages');
+            if (m?.messages?.length > 0) {
+                console.log('🔔 First message details:', {
+                    fromMe: m.messages[0].key.fromMe,
+                    remoteJid: m.messages[0].key.remoteJid,
+                    hasMessage: !!m.messages[0].message,
+                    messageKeys: m.messages[0].message ? Object.keys(m.messages[0].message) : []
+                });
+            }
+            
             await this.handleMessages(m);
             
             // Forward to anti-delete plugin if loaded
@@ -310,9 +320,14 @@ class WhatsAppBot {
                 console.log(`🔍 Has message content: ${!!message.message}`);
                 
                 // Skip messages sent by the bot itself (but only our own sent messages)
-                if (message.key.fromMe && this.sentMessageIds.has(message.key.id)) {
-                    console.log(`⏭️ Skipping own sent message: ${message.key.id}`);
-                    continue;
+                if (message.key.fromMe) {
+                    console.log(`🔍 Message from me detected - checking if it's our sent message`);
+                    if (this.sentMessageIds.has(message.key.id)) {
+                        console.log(`⏭️ Skipping own sent message: ${message.key.id}`);
+                        continue;
+                    } else {
+                        console.log(`✅ Message from me but not in sentMessageIds - processing (owner command)`);
+                    }
                 }
                 
                 // Handle decryption errors gracefully
