@@ -173,14 +173,16 @@ class TikTokPlugin {
                 return { success: false, error: result.error };
             }
             
-            if (!fs.existsSync(filepath)) {
+            // Check if file exists at expected location or the location returned by yt-dlp
+            const actualFilePath = result.output_file || filepath;
+            if (!fs.existsSync(actualFilePath)) {
                 return { success: false, error: 'Downloaded file not found' };
             }
             
             return {
                 success: true,
-                filepath: filepath,
-                filename: filename,
+                filepath: actualFilePath,
+                filename: path.basename(actualFilePath),
                 title: result.title || 'TikTok Video',
                 author: result.author || 'Unknown',
                 fileSize: result.file_size || 0

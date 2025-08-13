@@ -24,7 +24,7 @@ Utilizes the official GitHub Baileys library for WhatsApp Web integration, inclu
 
 ### Plugin System
 An enhanced modular plugin architecture, inspired by `@neoxr/wb`, enables automatic loading and management of command plugins. Key features include:
-- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), and `tiktok`/`tt` (download TikTok videos from URL).
+- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), and `tiktok`/`tt` (download TikTok videos using yt-dlp for reliable extraction).
 - **Enhanced Message Processing**: Full implementation of message content extraction and media downloading for vv and save commands. Now processes actual images, videos, voice messages, and text content instead of just message IDs.
 - **Message Caching**: Temporary message storage (1000 messages for quoted messages, 2000 for anti-delete) for reliable message retrieval and processing.
 - **Smart Reactions**: Initial command emojis, followed by success (✅) or failure (❌) indicators, which auto-remove after 2 seconds.
@@ -47,6 +47,13 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **pino**: Employed for logging.
 - **qrcode-terminal**: Generates QR codes for initial setup.
 - **cheerio**: Used for HTML/XML parsing in message processing.
+- **yt-dlp**: Python library for reliable TikTok video downloading and metadata extraction.
 - **http**: Node.js built-in module for health checks.
 - **fs**: Node.js built-in module for file system operations (credential management).
 - **path**: Node.js built-in module for path utilities.
+
+## Recent Changes (August 2025)
+- **TikTok Downloader Upgrade**: Replaced outdated oEmbed API approach with yt-dlp implementation for reliable TikTok video downloads
+- **Enhanced Video Extraction**: Improved video metadata extraction including title, author, duration, and file size
+- **Better Error Handling**: More specific error messages for network issues, video availability, and download failures
+- **Format Optimization**: Prioritizes MP4 format for better WhatsApp compatibility
