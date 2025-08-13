@@ -139,14 +139,16 @@ class WhatsAppBot {
                 browser: ['KaizenBot', 'Chrome', '118.0.0.0'], // Updated browser info
                 mobile: false,
                 shouldIgnoreJid: jid => {
-                    return /(newsletter|status@broadcast)/.test(jid);
+                    // Only ignore newsletters and status broadcasts, not regular chats
+                    if (!jid) return false;
+                    return /(@newsletter|status@broadcast)/.test(jid);
                 },
                 // Connection optimization for KaizenMFH
                 keepAliveIntervalMs: 30000,
                 retryRequestDelayMs: 250,
                 maxMsgRetryCount: 3,
                 fireInitQueries: true,
-                emitOwnEvents: false
+                emitOwnEvents: true // Enable to receive owner messages
             });
 
             // Handle credentials update
