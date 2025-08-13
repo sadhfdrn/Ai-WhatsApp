@@ -34,12 +34,15 @@ class TikTokPlugin {
         
         // Handle shortened URLs (vt.tiktok.com)
         if (originalUrl.includes('vt.tiktok.com')) {
-            const shortCode = originalUrl.split('/').pop().split('?')[0];
-            variations.push(`https://www.tiktok.com/t/${shortCode}`);
-            
-            // Try case variations for the short code
-            variations.push(`https://vt.tiktok.com/${shortCode.toUpperCase()}/`);
-            variations.push(`https://vt.tiktok.com/${shortCode.toLowerCase()}/`);
+            // Extract short code properly handling trailing slash
+            const shortCode = originalUrl.replace(/\/$/, '').split('/').pop().split('?')[0];
+            if (shortCode) {
+                variations.push(`https://www.tiktok.com/t/${shortCode}`);
+                
+                // Try case variations for the short code
+                variations.push(`https://vt.tiktok.com/${shortCode.toUpperCase()}/`);
+                variations.push(`https://vt.tiktok.com/${shortCode.toLowerCase()}/`);
+            }
         }
         
         return variations;
@@ -86,21 +89,27 @@ class TikTokPlugin {
                         // Extract video information
                         const videoInfo = {
                             title: data.title || 'TikTok Video',
-                            author: data.author?.nickname || data.author?.username || 'Unknown',
-                            video_id: data.id || 'unknown',
+                            author: data.author || 'Unknown',
+                            video_id: data.video_id || data.id || 'unknown',
                             duration: data.duration || 0,
-                            description: data.description || '',
+                            description: data.description || data.title || '',
                             stats: {
-                                views: data.statistics?.playCount || 0,
-                                likes: data.statistics?.diggCount || 0,
-                                comments: data.statistics?.commentCount || 0,
-                                shares: data.statistics?.shareCount || 0
+                                views: data.play_count || data.statistics?.playCount || 0,
+                                likes: data.digg_count || data.statistics?.diggCount || 0,
+                                comments: data.comment_count || data.statistics?.commentCount || 0,
+                                shares: data.share_count || data.statistics?.shareCount || 0
                             }
                         };
                         
-                        // Get the best video URL (prefer HD)
+                        // Get the best video URL - handle different API response structures
                         let videoUrl = null;
-                        if (data.video) {
+                        
+                        // Check for playUrl array (v1 API response structure)
+                        if (data.playUrl && Array.isArray(data.playUrl) && data.playUrl.length > 0) {
+                            videoUrl = data.playUrl[0]; // First URL is usually best quality
+                        }
+                        // Check for video object (some API versions)
+                        else if (data.video) {
                             if (data.video.noWatermark) {
                                 videoUrl = data.video.noWatermark;
                             } else if (data.video.watermark) {
@@ -108,6 +117,13 @@ class TikTokPlugin {
                             } else if (Array.isArray(data.video) && data.video.length > 0) {
                                 videoUrl = data.video[0];
                             }
+                        }
+                        // Check for direct video URL fields
+                        else if (data.video_url) {
+                            videoUrl = data.video_url;
+                        }
+                        else if (data.download_url) {
+                            videoUrl = data.download_url;
                         }
                         
                         if (!videoUrl) {
