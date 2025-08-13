@@ -300,20 +300,30 @@ class WhatsAppBot {
     async handleMessages(m) {
         try {
             const messages = m.messages || [];
+            console.log(`📝 Message updates received: ${messages.length}`);
             
             for (const message of messages) {
-                // Skip messages sent by the bot itself
+                // Debug: Log incoming message details
+                console.log(`🔍 Processing message from: ${message.key.remoteJid || 'unknown'}`);
+                console.log(`🔍 Message ID: ${message.key.id}`);
+                console.log(`🔍 From me: ${message.key.fromMe}`);
+                console.log(`🔍 Has message content: ${!!message.message}`);
+                
+                // Skip messages sent by the bot itself (but only our own sent messages)
                 if (message.key.fromMe && this.sentMessageIds.has(message.key.id)) {
+                    console.log(`⏭️ Skipping own sent message: ${message.key.id}`);
                     continue;
                 }
                 
                 // Handle decryption errors gracefully
                 if (message.messageStubType || !message.message) {
+                    console.log(`⏭️ Skipping stub/empty message: ${message.messageStubType || 'no content'}`);
                     continue;
                 }
 
-                // Bot detection
+                // Bot detection - but be more specific
                 if (this.isBotMessage(message.key.id)) {
+                    console.log(`🤖 Detected bot message: ${message.key.id}`);
                     continue;
                 }
 
@@ -337,12 +347,22 @@ class WhatsAppBot {
 
                 // Extract message data
                 const messageData = this.parseMessage(message);
+                console.log(`🔍 Parsed message data:`, messageData ? {
+                    from: messageData.from,
+                    body: messageData.body,
+                    hasBody: !!messageData.body
+                } : 'null');
+                
                 if (messageData && messageData.body) {
                     console.log(`📨 Message from ${messageData.from}: ${messageData.body}`);
 
                     // Check if it's a command
-                    if (this.isCommand(messageData.body)) {
+                    const isCmd = this.isCommand(messageData.body);
+                    console.log(`🔍 Is command check: ${isCmd} (prefix: "${this.prefix}")`);
+                    
+                    if (isCmd) {
                         const command = this.extractCommand(messageData.body);
+                        console.log(`🎯 Extracted command: "${command}"`);
                         
                         // Apply spam detection
                         const isSpam = this.spam.detection(this.sock, message, {
@@ -351,12 +371,15 @@ class WhatsAppBot {
                         });
 
                         if (!isSpam) {
+                            console.log(`✅ Processing command: ${command}`);
                             // Add original message to messageData for plugin access
                             messageData.originalMessage = message;
                             await this.processCommand(messageData);
                         } else {
                             console.log(`🚫 Spam detected from ${messageData.from}`);
                         }
+                    } else {
+                        console.log(`ℹ️ Not a command: "${messageData.body}"`);
                     }
                 }
             }
