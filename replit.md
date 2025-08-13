@@ -54,7 +54,7 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
-- **Baileys Library**: Reverted back to original WhiskeySockets/Baileys after testing nstar-y/bail alternative. Original library provides stable, reliable WhatsApp Web connectivity.
+- **Custom Baileys Integration**: Successfully integrated KaizenMFH v25.9.1 (DinzID/DinzV1Baileys), a custom modified baileys library with enhanced features. Optimized socket configuration for better compatibility with custom library defaults.
 - **TikTok Image Carousel Support**: Added support for TikTok picture-based posts, downloading multiple images and sending as WhatsApp albums
 - **Enhanced TikTok Detection**: Plugin now automatically detects video vs image content from TikTok API response and handles accordingly
 - **WhatsApp Album Creation**: Image carousels are sent as sequential images with caption on first image to create album effect

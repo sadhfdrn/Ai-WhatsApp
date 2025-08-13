@@ -114,37 +114,39 @@ class WhatsAppBot {
                 }
             }
 
-            // Create WhatsApp socket with clean settings
+            // Create WhatsApp socket with KaizenMFH optimized settings
             this.sock = makeWASocket({
                 version,
                 auth: state,
                 logger: P({ level: 'silent' }),
                 printQRInTerminal: false,
-                defaultQueryTimeoutMs: 90000,
+                defaultQueryTimeoutMs: 60000,
                 connectTimeoutMs: 60000,
-                generateHighQualityLinkPreview: true,
+                generateHighQualityLinkPreview: false, // Set to false as per KaizenMFH defaults
                 getMessage: async (key) => {
                     // Try to get message from cache first
                     if (this.messageCache && this.messageCache.has(key.id)) {
                         return this.messageCache.get(key.id);
                     }
                     
-                    // Return empty for missing messages to avoid errors
+                    // Return empty message for missing messages
                     return {
-                        conversation: "Message not found in cache"
+                        conversation: "Message not available"
                     };
                 },
                 syncFullHistory: false,
                 markOnlineOnConnect: true,
-                browser: ['WhatsApp Bot', 'Chrome', '10.0'],
+                browser: ['KaizenBot', 'Chrome', '118.0.0.0'], // Updated browser info
                 mobile: false,
                 shouldIgnoreJid: jid => {
-                    return /(newsletter|bot)/.test(jid);
+                    return /(newsletter|status@broadcast)/.test(jid);
                 },
-                // Add connection options to reduce conflicts
-                keepAliveIntervalMs: 10000,
-                connectTimeoutMs: 60000,
-                defaultQueryTimeoutMs: 60000
+                // Connection optimization for KaizenMFH
+                keepAliveIntervalMs: 30000,
+                retryRequestDelayMs: 250,
+                maxMsgRetryCount: 3,
+                fireInitQueries: true,
+                emitOwnEvents: false
             });
 
             // Handle credentials update
