@@ -71,7 +71,8 @@ def download_tiktok_video(url, output_file):
             'writeinfojson': False,
             'writethumbnail': False,
             'ignoreerrors': False,
-            'no_warnings': False,
+            'no_warnings': True,  # Suppress warnings
+            'quiet': True,  # Suppress progress output
             'extractflat': False,
             'retries': 3,
             'socket_timeout': 30,
@@ -96,6 +97,11 @@ def download_tiktok_video(url, output_file):
         
         # Try each URL until one works
         last_error = None
+        title = 'TikTok Video'
+        uploader = 'Unknown'
+        video_id = 'unknown'
+        duration = 0
+        
         for test_url in urls_to_try:
             try:
                 # Extract video info first

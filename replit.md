@@ -57,3 +57,6 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **Enhanced Video Extraction**: Improved video metadata extraction including title, author, duration, and file size
 - **Better Error Handling**: More specific error messages for network issues, video availability, and download failures
 - **Format Optimization**: Prioritizes MP4 format for better WhatsApp compatibility
+- **Case Sensitivity Fix**: Fixed URL case conversion issue in command processing - URLs now preserve original case
+- **Output Stream Handling**: Improved JavaScript-Python communication by properly handling yt-dlp's output streams
+- **LSP Diagnostics**: Resolved variable binding issues for better code reliability

@@ -155,17 +155,16 @@ class TikTokPlugin {
                 maxBuffer: 1024 * 1024 * 10 // 10MB buffer
             });
             
-            if (stderr) {
-                console.error('❌ Python script stderr:', stderr);
-                return { success: false, error: 'Download script error: ' + stderr };
-            }
-            
-            // Parse JSON response
+            // Parse JSON response from stdout (ignore stderr as it contains progress info)
             let result;
             try {
                 result = JSON.parse(stdout.trim());
             } catch (parseError) {
                 console.error('❌ Failed to parse response:', stdout);
+                // Log stderr only if JSON parsing fails for debugging
+                if (stderr) {
+                    console.error('❌ Python script stderr:', stderr);
+                }
                 return { success: false, error: 'Invalid response from downloader' };
             }
             
