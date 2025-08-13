@@ -1,5 +1,5 @@
 // Clean WhatsApp Bot using pure Baileys
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys-mod');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
 const fs = require('fs');
