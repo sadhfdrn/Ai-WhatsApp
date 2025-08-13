@@ -566,7 +566,20 @@ class WhatsAppBot {
                 return false;
             }
 
-            await this.sock.sendMessage(targetJid, { text: message });
+            // Handle different message types
+            let messageContent;
+            if (typeof message === 'string') {
+                // Simple text message
+                messageContent = { text: message };
+            } else if (typeof message === 'object' && message !== null) {
+                // Media message or complex message object
+                messageContent = message;
+            } else {
+                console.error('❌ Invalid message format:', typeof message);
+                return false;
+            }
+
+            await this.sock.sendMessage(targetJid, messageContent);
             console.log(`📤 Message sent to ${targetJid}`);
             return true;
 

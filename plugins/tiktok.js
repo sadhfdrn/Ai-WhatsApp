@@ -256,15 +256,25 @@ class TikTokPlugin {
                     }
                     
                     // Send the video
+                    console.log(`📤 Preparing to send video: ${result.output_file} (${this.formatFileSize(fileSize)})`);
                     const videoBuffer = await fs.readFile(result.output_file);
                     
-                    await this.bot.sendMessage(userId, {
+                    const videoMessage = {
                         video: videoBuffer,
                         caption: `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: @${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`,
-                        gifPlayback: false
-                    });
+                        gifPlayback: false,
+                        fileName: path.basename(result.output_file),
+                        mimetype: 'video/mp4'
+                    };
                     
-                    console.log(`✅ TikTok video sent successfully: ${result.output_file}`);
+                    const sendResult = await this.bot.sendMessage(userId, videoMessage);
+                    
+                    if (sendResult) {
+                        console.log(`✅ TikTok video sent successfully: ${result.output_file}`);
+                    } else {
+                        console.log(`❌ Failed to send TikTok video: ${result.output_file}`);
+                        throw new Error('Failed to send video message');
+                    }
                     
                     // Clean up downloaded file after sending
                     setTimeout(async () => {
