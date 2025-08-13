@@ -11,7 +11,31 @@ class InteractiveUtils {
         return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    // Enhanced Button Messages using interactiveMessage format
+    // Validate and format JID
+    validateJid(jid) {
+        try {
+            if (!jid || typeof jid !== 'string') {
+                return null;
+            }
+
+            // If it already includes @, assume it's properly formatted
+            if (jid.includes('@')) {
+                return jid;
+            }
+
+            // Format based on whether it looks like a group or individual
+            if (jid.includes('-')) {
+                return `${jid}@g.us`;
+            } else {
+                return `${jid}@s.whatsapp.net`;
+            }
+        } catch (error) {
+            console.error('❌ JID validation error:', error);
+            return null;
+        }
+    }
+
+    // Enhanced Button Messages with proper JID validation
     async sendInteractiveButtons(jid, options) {
         try {
             const {
@@ -22,31 +46,17 @@ class InteractiveUtils {
                 header = null
             } = options;
 
-            // Format buttons for WhatsApp Business API
-            const formattedButtons = buttons.map((btn, index) => ({
-                name: "quick_reply",
-                buttonParamsJson: JSON.stringify({
-                    display_text: btn.text || btn.displayText || `Button ${index + 1}`,
-                    id: btn.id || this.generateId('btn')
-                })
-            }));
+            // Validate and format JID
+            const validJid = this.validateJid(jid);
+            if (!validJid) {
+                console.log('❌ Invalid JID, using text fallback');
+                return await this.sock.sendMessage(jid, { 
+                    text: `${text}\n\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}`
+                });
+            }
 
-            const interactiveMessage = {
-                interactiveMessage: {
-                    body: { text: text },
-                    footer: { text: footer },
-                    nativeFlowMessage: {
-                        buttons: formattedButtons,
-                        messageParamsJson: JSON.stringify({
-                            from: "bot",
-                            timestamp: Date.now()
-                        })
-                    }
-                }
-            };
-
-            // Fallback to standard buttons if interactive fails
-            const fallbackMessage = {
+            // Try standard button format first (more compatible)
+            const standardButtons = {
                 text: text,
                 footer: footer,
                 buttons: buttons.map((btn, index) => ({
@@ -58,23 +68,22 @@ class InteractiveUtils {
             };
 
             try {
-                console.log('🔄 Attempting to send interactive button message...');
-                return await this.sock.sendMessage(jid, interactiveMessage);
-            } catch (interactiveError) {
-                console.log('⚠️ Interactive message failed, using fallback buttons');
-                return await this.sock.sendMessage(jid, fallbackMessage);
+                console.log('🔄 Sending standard button message...');
+                return await this.sock.sendMessage(validJid, standardButtons);
+            } catch (buttonError) {
+                console.log('⚠️ Standard buttons failed, using text menu');
+                // Final fallback to text menu
+                const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
+                return await this.sock.sendMessage(validJid, { text: textMenu });
             }
 
         } catch (error) {
             console.error('❌ Error sending interactive buttons:', error);
-            // Final fallback to plain text
-            return await this.sock.sendMessage(jid, { 
-                text: `${options.text}\n\n${options.buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}`
-            });
+            return false;
         }
     }
 
-    // Enhanced List Messages using native flow
+    // Enhanced List Messages with proper validation
     async sendInteractiveList(jid, options) {
         try {
             const {
@@ -85,76 +94,32 @@ class InteractiveUtils {
                 title = 'Select Option'
             } = options;
 
-            // Format sections for WhatsApp Business API
-            const formattedSections = sections.map(section => ({
-                title: section.title,
-                rows: section.rows.map(row => ({
-                    header: row.title,
-                    title: row.title,
-                    description: row.description || '',
-                    id: row.id || this.generateId('row')
-                }))
-            }));
-
-            const interactiveMessage = {
-                interactiveMessage: {
-                    body: { text: text },
-                    footer: { text: footer },
-                    nativeFlowMessage: {
-                        buttons: [{
-                            name: "single_select",
-                            buttonParamsJson: JSON.stringify({
-                                title: title,
-                                sections: formattedSections
-                            })
-                        }],
-                        messageParamsJson: JSON.stringify({
-                            from: "bot",
-                            timestamp: Date.now()
-                        })
-                    }
-                }
-            };
-
-            // Fallback to standard list format
-            const fallbackMessage = {
-                text: text,
-                footer: footer,
-                title: title,
-                buttonText: buttonText,
-                sections: formattedSections.map(section => ({
-                    title: section.title,
-                    rows: section.rows.map(row => ({
-                        title: row.title,
-                        description: row.description,
-                        rowId: row.id
-                    }))
-                }))
-            };
-
-            try {
-                console.log('🔄 Attempting to send interactive list message...');
-                return await this.sock.sendMessage(jid, interactiveMessage);
-            } catch (interactiveError) {
-                console.log('⚠️ Interactive list failed, using fallback list');
-                try {
-                    return await this.sock.sendMessage(jid, fallbackMessage);
-                } catch (fallbackError) {
-                    console.log('⚠️ List fallback failed, using text menu');
-                    // Final fallback to text menu
-                    let textMenu = `📋 *${title}*\n\n${text}\n\n`;
-                    sections.forEach((section, sIndex) => {
-                        textMenu += `*${section.title}*\n`;
-                        section.rows.forEach((row, rIndex) => {
-                            textMenu += `${sIndex + 1}.${rIndex + 1} ${row.title}`;
-                            if (row.description) textMenu += ` - ${row.description}`;
-                            textMenu += '\n';
-                        });
-                        textMenu += '\n';
-                    });
-                    return await this.sock.sendMessage(jid, { text: textMenu });
-                }
+            // Validate JID first
+            const validJid = this.validateJid(jid);
+            if (!validJid) {
+                console.log('❌ Invalid JID for list message');
+                return false;
             }
+
+            // Skip complex list formats and go straight to text menu for better compatibility
+            console.log('📱 Using text menu format for maximum compatibility');
+            let textMenu = `📋 *${title}*\n\n${text}\n\n`;
+            
+            let optionNumber = 1;
+            sections.forEach((section) => {
+                textMenu += `*${section.title}*\n`;
+                section.rows.forEach((row) => {
+                    textMenu += `${optionNumber}. ${row.title}`;
+                    if (row.description) textMenu += ` - ${row.description}`;
+                    textMenu += '\n';
+                    optionNumber++;
+                });
+                textMenu += '\n';
+            });
+            
+            textMenu += '💡 Reply with the number of your choice.';
+            
+            return await this.sock.sendMessage(validJid, { text: textMenu });
 
         } catch (error) {
             console.error('❌ Error sending interactive list:', error);
@@ -162,7 +127,7 @@ class InteractiveUtils {
         }
     }
 
-    // Quick Reply Buttons (Modern approach)
+    // Quick Reply Buttons with validation
     async sendQuickReplies(jid, options) {
         try {
             const {
@@ -171,39 +136,22 @@ class InteractiveUtils {
                 replies = []
             } = options;
 
-            const quickReplyButtons = replies.map(reply => ({
-                name: "quick_reply",
-                buttonParamsJson: JSON.stringify({
-                    display_text: reply.text,
-                    id: reply.id || this.generateId('qr')
-                })
-            }));
-
-            const interactiveMessage = {
-                interactiveMessage: {
-                    body: { text: text },
-                    footer: { text: footer },
-                    nativeFlowMessage: {
-                        buttons: quickReplyButtons,
-                        messageParamsJson: JSON.stringify({
-                            type: "quick_reply",
-                            timestamp: Date.now()
-                        })
-                    }
-                }
-            };
-
-            try {
-                console.log('🔄 Attempting to send quick replies...');
-                return await this.sock.sendMessage(jid, interactiveMessage);
-            } catch (interactiveError) {
-                console.log('⚠️ Quick replies failed, using standard buttons');
-                return await this.sendInteractiveButtons(jid, {
-                    text,
-                    footer,
-                    buttons: replies
-                });
+            // Validate JID
+            const validJid = this.validateJid(jid);
+            if (!validJid) {
+                return false;
             }
+
+            // Use standard button approach for better compatibility
+            console.log('🔄 Sending quick replies as standard buttons');
+            return await this.sendInteractiveButtons(validJid, {
+                text,
+                footer,
+                buttons: replies.map(reply => ({
+                    id: reply.id || this.generateId('qr'),
+                    text: reply.text
+                }))
+            });
 
         } catch (error) {
             console.error('❌ Error sending quick replies:', error);
@@ -318,7 +266,7 @@ class InteractiveUtils {
         }
     }
 
-    // Copy Code Button
+    // Copy Code Button with fallback
     async sendCopyCodeButton(jid, options) {
         try {
             const {
@@ -327,34 +275,16 @@ class InteractiveUtils {
                 footer = 'WhatsApp Bot'
             } = options;
 
-            const copyMessage = {
-                interactiveMessage: {
-                    body: { text: text },
-                    footer: { text: footer },
-                    nativeFlowMessage: {
-                        buttons: [{
-                            name: "copy_code",
-                            buttonParamsJson: JSON.stringify({
-                                copy_code: code
-                            })
-                        }],
-                        messageParamsJson: JSON.stringify({
-                            type: "copy",
-                            timestamp: Date.now()
-                        })
-                    }
-                }
-            };
-
-            try {
-                console.log('🔄 Attempting to send copy code button...');
-                return await this.sock.sendMessage(jid, copyMessage);
-            } catch (copyError) {
-                console.log('⚠️ Copy button failed, sending code as text');
-                return await this.sock.sendMessage(jid, {
-                    text: `${text}\n\n\`\`\`\n${code}\n\`\`\``
-                });
+            // Validate JID
+            const validJid = this.validateJid(jid);
+            if (!validJid) {
+                return false;
             }
+
+            // Send as formatted text with code block
+            console.log('📋 Sending code as formatted text');
+            const codeMessage = `${text}\n\n\`\`\`${code}\`\`\`\n\n${footer}`;
+            return await this.sock.sendMessage(validJid, { text: codeMessage });
 
         } catch (error) {
             console.error('❌ Error sending copy code button:', error);
@@ -399,6 +329,59 @@ class InteractiveUtils {
                     type: 'list',
                     id: message.message.listResponseMessage.singleSelectReply.selectedRowId,
                     text: message.message.listResponseMessage.title
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('❌ Error parsing interactive response:', error);
+            return null;
+        }
+    }
+
+    // Parse interactive response from message
+    parseInteractiveResponse(message) {
+        try {
+            if (!message || !message.message) {
+                return null;
+            }
+
+            const msg = message.message;
+
+            // Check for button response
+            if (msg.buttonsResponseMessage) {
+                return {
+                    type: 'button',
+                    id: msg.buttonsResponseMessage.selectedButtonId,
+                    text: msg.buttonsResponseMessage.selectedDisplayText || 'Button Selected'
+                };
+            }
+
+            // Check for list response
+            if (msg.listResponseMessage) {
+                const response = msg.listResponseMessage;
+                return {
+                    type: 'list',
+                    id: response.singleSelectReply?.selectedRowId || response.title,
+                    text: response.title || response.singleSelectReply?.selectedRowId || 'List Item Selected'
+                };
+            }
+
+            // Check for template button response
+            if (msg.templateButtonReplyMessage) {
+                return {
+                    type: 'template_button',
+                    id: msg.templateButtonReplyMessage.selectedId,
+                    text: msg.templateButtonReplyMessage.selectedDisplayText || 'Template Button'
+                };
+            }
+
+            // Check for quick reply
+            if (msg.extendedTextMessage?.contextInfo?.quotedMessage?.buttonsMessage) {
+                return {
+                    type: 'quick_reply',
+                    id: 'quick_reply',
+                    text: msg.extendedTextMessage.text || 'Quick Reply'
                 };
             }
 

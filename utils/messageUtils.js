@@ -3,7 +3,7 @@ const InteractiveUtils = require('./interactiveUtils');
 class MessageUtils {
     constructor(sock) {
         this.sock = sock;
-        this.interactive = new InteractiveUtils(sock);
+        this.interactiveUtils = new InteractiveUtils(sock);
     }
 
     // Enhanced button message with interactive support
@@ -12,7 +12,7 @@ class MessageUtils {
             console.log('🎯 Sending enhanced button message...');
             
             // Try interactive buttons first
-            const result = await this.interactive.sendInteractiveButtons(jid, {
+            const result = await this.interactiveUtils.sendInteractiveButtons(jid, {
                 text: text,
                 footer: options.footer || 'WhatsApp Bot',
                 buttons: buttons,
@@ -58,7 +58,7 @@ class MessageUtils {
             console.log('🎯 Sending enhanced list message...');
             
             // Try interactive list first
-            const result = await this.interactive.sendInteractiveList(jid, {
+            const result = await this.interactiveUtils.sendInteractiveList(jid, {
                 text: description,
                 footer: "WhatsApp Bot",
                 title: title,
@@ -162,7 +162,7 @@ class MessageUtils {
         try {
             console.log('🎯 Sending copy code message...');
             
-            const result = await this.interactive.sendCopyCodeButton(jid, {
+            const result = await this.interactiveUtils.sendCopyCodeButton(jid, {
                 text: text,
                 code: code,
                 footer: options.footer || 'WhatsApp Bot'
@@ -180,7 +180,7 @@ class MessageUtils {
         try {
             console.log('🎯 Sending flow message...');
             
-            const result = await this.interactive.sendFlowMessage(jid, {
+            const result = await this.interactiveUtils.sendFlowMessage(jid, {
                 text: text,
                 footer: options.footer || 'WhatsApp Bot',
                 ...flowOptions
@@ -195,7 +195,7 @@ class MessageUtils {
 
     // Parse interactive responses
     parseInteractiveResponse(message) {
-        return this.interactive.parseInteractiveResponse(message);
+        return this.interactiveUtils.parseInteractiveResponse(message);
     }
 
     // Send carousel-style message (using multiple list sections)
