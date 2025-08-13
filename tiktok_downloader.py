@@ -6,11 +6,52 @@ import yt_dlp
 import tempfile
 import re
 
+def get_actual_tiktok_url(url):
+    """Get the actual TikTok URL by following redirects and trying case variations"""
+    import requests
+    from urllib.parse import urlparse
+    
+    url = url.strip()
+    
+    # For shortened URLs, try different case variations if the first fails
+    if 'vt.tiktok.com' in url or 'vm.tiktok.com' in url:
+        parsed = urlparse(url)
+        path_parts = parsed.path.strip('/').split('/')
+        
+        if len(path_parts) > 0:
+            video_id = path_parts[-1]
+            urls_to_try = [url]  # Start with original
+            
+            # Add case variations
+            if video_id.islower():
+                urls_to_try.append(url.replace(video_id, video_id.upper()))
+            elif video_id.isupper():
+                urls_to_try.append(url.replace(video_id, video_id.lower()))
+            else:
+                # Mixed case, try both variations
+                urls_to_try.append(url.replace(video_id, video_id.upper()))
+                urls_to_try.append(url.replace(video_id, video_id.lower()))
+            
+            # Try each URL variation
+            for test_url in urls_to_try:
+                try:
+                    response = requests.head(test_url, allow_redirects=True, timeout=10)
+                    final_url = response.url
+                    
+                    # Check if it redirects to a valid video page (not explore/home)
+                    if '/video/' in final_url and 'explore' not in final_url:
+                        return final_url
+                
+                except Exception:
+                    continue
+    
+    return url
+
 def download_tiktok_video(url, output_file):
     """Download TikTok video using yt-dlp"""
     try:
         # Clean the URL
-        url = url.strip()
+        original_url = url.strip()
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_file)
@@ -36,30 +77,68 @@ def download_tiktok_video(url, output_file):
             'socket_timeout': 30,
         }
         
-        # Extract video info first
-        info = None
-        with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
+        # List of URLs to try (original + case variations for shortened URLs)
+        urls_to_try = [original_url]
+        
+        # For shortened URLs, add case variations
+        if 'vt.tiktok.com' in original_url or 'vm.tiktok.com' in original_url:
+            from urllib.parse import urlparse
+            parsed = urlparse(original_url)
+            path_parts = parsed.path.strip('/').split('/')
+            
+            if len(path_parts) > 0:
+                video_id = path_parts[-1]
+                # Try different case variations
+                if video_id != video_id.upper():
+                    urls_to_try.append(original_url.replace(video_id, video_id.upper()))
+                if video_id != video_id.lower():
+                    urls_to_try.append(original_url.replace(video_id, video_id.lower()))
+        
+        # Try each URL until one works
+        last_error = None
+        for test_url in urls_to_try:
             try:
-                info = ydl.extract_info(url, download=False)
+                # Extract video info first
+                info = None
+                with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
+                    info = ydl.extract_info(test_url, download=False)
+                
+                if not info:
+                    continue
+                
+                # Get video details
+                title = info.get('title', 'TikTok Video')
+                uploader = info.get('uploader', 'Unknown')
+                video_id = info.get('id', 'unknown')
+                duration = info.get('duration', 0)
+                
+                # Clean title for safer filename
+                safe_title = re.sub(r'[^\w\s-]', '', title).strip()
+                safe_title = re.sub(r'[-\s]+', '-', safe_title)[:50]  # Limit length
+                
+                # Download the video
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([test_url])
+                
+                # If we get here, the download was successful
+                break
+                
             except Exception as e:
-                return {'error': f'Failed to extract video info: {str(e)}'}
-        
-        if not info:
-            return {'error': 'Could not extract video information'}
-        
-        # Get video details
-        title = info.get('title', 'TikTok Video')
-        uploader = info.get('uploader', 'Unknown')
-        video_id = info.get('id', 'unknown')
-        duration = info.get('duration', 0)
-        
-        # Clean title for safer filename
-        safe_title = re.sub(r'[^\w\s-]', '', title).strip()
-        safe_title = re.sub(r'[-\s]+', '-', safe_title)[:50]  # Limit length
-        
-        # Download the video
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+                last_error = str(e)
+                if 'Unsupported URL' in last_error and 'explore' in last_error:
+                    continue  # Try next URL variation
+                else:
+                    # For other errors, don't continue trying
+                    break
+        else:
+            # No URL worked
+            if last_error:
+                if 'explore' in last_error or 'Unsupported URL' in last_error:
+                    return {'error': 'Invalid or expired TikTok URL. This could be due to:\n• The video was deleted or made private\n• The shortened URL has expired\n• Incorrect case sensitivity in the URL\n\nPlease:\n• Check if the video is still available on TikTok\n• Try copying the URL directly from the TikTok app\n• Ensure the URL format is correct'}
+                else:
+                    return {'error': f'Download failed: {last_error}'}
+            else:
+                return {'error': 'Could not extract video information from any URL variation'}
         
         # Find the downloaded file (yt-dlp might add extension)
         downloaded_file = None
