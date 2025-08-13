@@ -362,6 +362,14 @@ class WhatsAppBot {
                     }
                 }
 
+                // Check for interactive responses first
+                const interactiveResponse = this.messageUtils ? this.messageUtils.parseInteractiveResponse(message) : null;
+                if (interactiveResponse) {
+                    console.log('🎮 Interactive response detected:', interactiveResponse.type, interactiveResponse.id);
+                    await this.handleInteractiveResponse(message, interactiveResponse);
+                    continue; // Skip further processing for interactive responses
+                }
+
                 // Extract message data
                 const messageData = this.parseMessage(message);
                 console.log(`🔍 Parsed message data:`, messageData ? {
@@ -587,6 +595,38 @@ class WhatsAppBot {
             if (timestamp < oneMinuteAgo) {
                 this.commandCooldown.delete(key);
             }
+        }
+    }
+
+    // Handle interactive responses (buttons, lists, etc.)
+    async handleInteractiveResponse(message, responseData) {
+        try {
+            const from = message.key.remoteJid;
+            console.log('🎮 Handling interactive response:', responseData);
+
+            // Forward to interactive plugin first
+            const interactivePlugin = this.pluginManager?.plugins?.get('interactive');
+            if (interactivePlugin) {
+                await interactivePlugin.handleInteractiveResponse(message, responseData);
+                return;
+            }
+
+            // Generic response handling if no specific plugin handles it
+            switch (responseData.type) {
+                case 'button':
+                    await this.sendMessage(from, `You clicked: ${responseData.text} (ID: ${responseData.id})`);
+                    break;
+                case 'list':
+                    await this.sendMessage(from, `You selected: ${responseData.text} (ID: ${responseData.id})`);
+                    break;
+                case 'native_flow':
+                    await this.sendMessage(from, `Interactive response received: ${responseData.id}`);
+                    break;
+                default:
+                    console.log('🔍 Unhandled interactive response type:', responseData.type);
+            }
+        } catch (error) {
+            console.error('❌ Error handling interactive response:', error);
         }
     }
 

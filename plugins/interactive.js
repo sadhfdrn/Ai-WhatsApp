@@ -72,14 +72,16 @@ class InteractivePlugin {
         const buttons = [
             { id: 'like', text: '👍 Like' },
             { id: 'share', text: '📤 Share' },
-            { id: 'save', text: '💾 Save' }
+            { id: 'save', text: '💾 Save' },
+            { id: 'copy_demo', text: '📋 Copy Code' }
         ];
 
+        console.log('🎮 Sending enhanced interactive button demo...');
         await this.messageUtils.sendButtonMessage(
             messageData.from,
-            "🎮 Interactive Buttons Demo\n\nChoose an action below:",
+            "🎮 Enhanced Interactive Buttons Demo\n\nTesting hybrid functionality with multiple fallbacks:\n\n✨ Features:\n• Native flow buttons (priority)\n• Standard button fallback\n• Text menu final fallback\n\nChoose an action below:",
             buttons,
-            { footer: 'WhatsApp Bot Interactive Features' }
+            { footer: 'Hybrid Interactive System v2.0' }
         );
 
         return true;
@@ -247,35 +249,57 @@ class InteractivePlugin {
             const { type, id, text } = responseData;
             const from = message.key.remoteJid;
 
+            console.log('🎮 Interactive plugin handling response:', { type, id, text });
+
             switch (id) {
                 case 'like':
-                    await this.bot.sendMessage(from, "👍 You liked this message!");
+                    await this.bot.sendMessage(from, "👍 You liked this message! Interactive button working perfectly!");
                     break;
                 case 'share':
-                    await this.bot.sendMessage(from, "📤 Thanks for sharing!");
+                    await this.bot.sendMessage(from, "📤 Thanks for sharing! The hybrid interactive system is functioning!");
                     break;
                 case 'save':
-                    await this.bot.sendMessage(from, "💾 Message saved to your favorites!");
+                    await this.bot.sendMessage(from, "💾 Message saved to your favorites! Enhanced buttons are working!");
+                    break;
+                case 'copy_demo':
+                    await this.messageUtils.sendCopyCodeMessage(
+                        from,
+                        "📋 Copy Code Demo\n\nHere's sample code you can copy:",
+                        "const bot = new WhatsAppBot();\nbot.sendInteractiveMessage(jid, options);",
+                        { footer: 'Interactive Copy Feature' }
+                    );
                     break;
                 case 'yes':
-                    await this.bot.sendMessage(from, "✅ Great! You'll receive notifications about new features.");
+                    await this.bot.sendMessage(from, "✅ Great! You'll receive notifications about new features. Interactive responses are working!");
                     break;
                 case 'no':
-                    await this.bot.sendMessage(from, "❌ No problem! You can change this anytime.");
+                    await this.bot.sendMessage(from, "❌ No problem! You can change this anytime. The system recognized your choice!");
                     break;
                 case 'maybe':
-                    await this.bot.sendMessage(from, "🤔 We'll ask again later!");
+                    await this.bot.sendMessage(from, "🤔 We'll ask again later! Interactive quick replies working perfectly!");
+                    break;
+                case 'love_it':
+                    await this.bot.sendMessage(from, "❤️ Awesome! The interactive features are working great!");
+                    break;
+                case 'good':
+                    await this.bot.sendMessage(from, "👍 Thanks for the feedback! Interactive system operational!");
+                    break;
+                case 'needs_work':
+                    await this.bot.sendMessage(from, "🔧 Thanks for the honest feedback! We'll keep improving the interactive features!");
                     break;
                 default:
                     if (id.startsWith('demo_')) {
                         const command = id.replace('demo_', '');
                         await this.executeDemo(from, command);
+                    } else if (id.startsWith('test_')) {
+                        await this.bot.sendMessage(from, `🧪 Test button clicked: ${text}\n\nInteractive ID: ${id}\nType: ${type}\n\n✅ Hybrid interactive system is working!`);
                     } else {
-                        await this.bot.sendMessage(from, `You selected: ${text} (ID: ${id})`);
+                        await this.bot.sendMessage(from, `🎯 Interactive Selection Processed!\n\nSelected: ${text || 'Unknown'}\nID: ${id}\nType: ${type}\n\n✅ Your hybrid interactive WhatsApp bot is functioning perfectly!`);
                     }
             }
         } catch (error) {
             console.error('❌ Error handling interactive response:', error);
+            await this.bot.sendMessage(from, "❌ Error processing your selection, but the interactive system detected it!");
         }
     }
 
