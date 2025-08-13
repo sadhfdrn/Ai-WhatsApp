@@ -11,7 +11,7 @@ class TikTokPlugin {
         this.emoji = '🎵';
         this.cooldown = 5000; // 5 second cooldown
         this.userCooldowns = new Map();
-        this.version = "v1"; // Using v1 API version
+        this.version = "v3"; // Using v3 API version for direct video URLs
     }
 
     // Helper function to check cooldown
@@ -85,6 +85,7 @@ class TikTokPlugin {
                     
                     if (result && result.status === "success" && result.result) {
                         const data = result.result;
+                        console.log(`🔍 API Response structure:`, JSON.stringify(data, null, 2));
                         
                         // Extract video information
                         const videoInfo = {
@@ -104,26 +105,38 @@ class TikTokPlugin {
                         // Get the best video URL - handle different API response structures
                         let videoUrl = null;
                         
-                        // Check for playUrl array (v1 API response structure)
-                        if (data.playUrl && Array.isArray(data.playUrl) && data.playUrl.length > 0) {
-                            videoUrl = data.playUrl[0]; // First URL is usually best quality
+                        console.log(`🔍 V3 API Response - Available video URLs:`, {
+                            hasVideoSD: !!data.videoSD,
+                            hasVideoHD: !!data.videoHD,
+                            hasVideoWatermark: !!data.videoWatermark,
+                            dataKeys: Object.keys(data)
+                        });
+                        
+                        // V3 API provides direct video URLs - prefer HD, fallback to SD
+                        if (data.videoHD) {
+                            videoUrl = data.videoHD;
+                            console.log(`✅ Using HD video: ${videoUrl}`);
+                        } else if (data.videoSD) {
+                            videoUrl = data.videoSD;
+                            console.log(`✅ Using SD video: ${videoUrl}`);
+                        } else if (data.videoWatermark) {
+                            videoUrl = data.videoWatermark;
+                            console.log(`✅ Using watermarked video: ${videoUrl}`);
                         }
-                        // Check for video object (some API versions)
+                        
+                        // Fallback for other API versions
+                        else if (data.playUrl && Array.isArray(data.playUrl) && data.playUrl.length > 0) {
+                            videoUrl = data.playUrl[0];
+                            console.log(`✅ Fallback: Found video URL in playUrl[0]: ${videoUrl}`);
+                        }
                         else if (data.video) {
                             if (data.video.noWatermark) {
                                 videoUrl = data.video.noWatermark;
+                                console.log(`✅ Fallback: Found video URL in video.noWatermark: ${videoUrl}`);
                             } else if (data.video.watermark) {
                                 videoUrl = data.video.watermark;
-                            } else if (Array.isArray(data.video) && data.video.length > 0) {
-                                videoUrl = data.video[0];
+                                console.log(`✅ Fallback: Found video URL in video.watermark: ${videoUrl}`);
                             }
-                        }
-                        // Check for direct video URL fields
-                        else if (data.video_url) {
-                            videoUrl = data.video_url;
-                        }
-                        else if (data.download_url) {
-                            videoUrl = data.download_url;
                         }
                         
                         if (!videoUrl) {
