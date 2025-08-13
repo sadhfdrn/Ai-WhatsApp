@@ -87,18 +87,18 @@ class TikTokPlugin {
                         const data = result.result;
                         console.log(`🔍 API Response structure:`, JSON.stringify(data, null, 2));
                         
-                        // Extract video information
+                        // Extract video information from different API response structures
                         const videoInfo = {
-                            title: data.title || 'TikTok Video',
-                            author: data.author || 'Unknown',
+                            title: data.title || data.desc || 'TikTok Video',
+                            author: typeof data.author === 'object' ? data.author?.nickname?.replace('@', '') || 'Unknown' : data.author || 'Unknown',
                             video_id: data.video_id || data.id || 'unknown',
-                            duration: data.duration || 0,
-                            description: data.description || data.title || '',
+                            duration: data.duration || data.video?.duration || 0,
+                            description: data.description || data.desc || data.title || '',
                             stats: {
-                                views: data.play_count || data.statistics?.playCount || 0,
-                                likes: data.digg_count || data.statistics?.diggCount || 0,
-                                comments: data.comment_count || data.statistics?.commentCount || 0,
-                                shares: data.share_count || data.statistics?.shareCount || 0
+                                views: data.play_count || data.statistics?.playCount || data.playCount || 0,
+                                likes: data.digg_count || data.statistics?.diggCount || data.diggCount || 0,
+                                comments: data.comment_count || data.statistics?.commentCount || data.commentCount || 0,
+                                shares: data.share_count || data.statistics?.shareCount || data.shareCount || 0
                             }
                         };
                         
@@ -259,9 +259,18 @@ class TikTokPlugin {
                     console.log(`📤 Preparing to send video: ${result.output_file} (${this.formatFileSize(fileSize)})`);
                     const videoBuffer = await fs.readFile(result.output_file);
                     
+                    // Create caption with available information
+                    let caption = `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: ${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}`;
+                    
+                    // Add stats only if available
+                    const hasStats = result.stats.views > 0 || result.stats.likes > 0 || result.stats.comments > 0 || result.stats.shares > 0;
+                    if (hasStats) {
+                        caption += `\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`;
+                    }
+                    
                     const videoMessage = {
                         video: videoBuffer,
-                        caption: `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: @${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`,
+                        caption: caption,
                         gifPlayback: false,
                         fileName: path.basename(result.output_file),
                         mimetype: 'video/mp4'

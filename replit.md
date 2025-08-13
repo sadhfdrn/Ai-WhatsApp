@@ -53,14 +53,12 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
-- **TikTok Downloader Upgrade**: Replaced outdated oEmbed API approach with yt-dlp implementation for reliable TikTok video downloads
-- **Enhanced Video Extraction**: Improved video metadata extraction including title, author, duration, and file size
-- **Better Error Handling**: More specific error messages for network issues, video availability, and download failures
-- **Format Optimization**: Prioritizes MP4 format for better WhatsApp compatibility
-- **Case Sensitivity Fix**: Fixed URL case conversion issue in command processing - URLs now preserve original case
-- **Output Stream Handling**: Improved JavaScript-Python communication by properly handling yt-dlp's output streams  
-- **LSP Diagnostics**: Resolved variable binding issues for better code reliability
+- **TikTok Downloader Fixed**: Fixed critical issue where videos were downloading but not sending due to sendMessage method only handling text messages
+- **Enhanced sendMessage Method**: Updated main.js sendMessage to handle both text messages and media objects (video, image, etc.)
+- **Improved Metadata Parsing**: Fixed TikTok video information extraction to properly display title, author from API response structure
+- **Clean Caption Format**: Removed empty statistics display when stats aren't available from API, showing only available information
+- **Video Message Enhancement**: Added proper mimetype, filename, and buffer handling for reliable video message delivery
 - **Pure Node.js Migration**: Completely replaced Python/yt-dlp with @tobyg74/tiktok-api-dl npm package for pure Node.js implementation
 - **Plugin Architecture Compliance**: Restructured TikTok plugin to use class-based architecture matching other bot plugins
-- **Enhanced Video Stats**: Added comprehensive TikTok video statistics display (views, likes, comments, shares)
+- **Enhanced Error Logging**: Added comprehensive logging to track video download and send process for better debugging
 - **Dependency Cleanup**: Removed all Python dependencies and files for a cleaner, single-language codebase
