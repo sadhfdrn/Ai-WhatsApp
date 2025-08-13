@@ -42,7 +42,7 @@ An HTTP server on port 8080 provides a health check endpoint for monitoring depl
 The architecture prioritizes a pure Node.js environment, avoiding Python or AI dependencies for a lightweight and focused solution. It emphasizes modularity through its plugin system and robust connection management for high availability. UI/UX considerations are addressed through professional menu formatting, smart emoji reactions, and interactive message capabilities to enhance user experience.
 
 ## External Dependencies
-- **baileys**: The core WhatsApp Web client library (from GitHub - WhiskeySockets/Baileys).
+- **@neoxr/baileys**: Enhanced WhatsApp Web client library with advanced interactive message support and improved JID validation. Provides native flow buttons, copy code functionality, and comprehensive interactive message capabilities.
 - **@hapi/boom**: Used for error handling.
 - **pino**: Employed for logging.
 - **qrcode-terminal**: Generates QR codes for initial setup.
@@ -54,7 +54,12 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
-- **Custom Baileys Integration**: Successfully integrated KaizenMFH v25.9.1 (DinzID/DinzV1Baileys), a custom modified baileys library with enhanced features. Optimized socket configuration for better compatibility with custom library defaults.
+- **@neoxr/baileys Integration**: Successfully migrated from official Baileys to @neoxr/baileys library for enhanced interactive message support and better JID validation. Resolved "Cannot destructure property 'user' of 'jidDecode'" errors that prevented interactive messages from working.
+- **Interactive Message Implementation**: Implemented comprehensive interactive message system using @neoxr/baileys native flow format including buttons, lists, copy code functionality, and quick replies. All interactive components follow the exact documentation specifications for maximum compatibility.
+- **Native Flow Buttons**: Enhanced button messages using proper @neoxr/baileys format with `type: 4` and `nativeFlowInfo` for advanced interactive capabilities including single_select lists and copy code buttons.
+- **Hybrid Interactive System**: Created multi-layer fallback system that attempts native interactive messages first, then falls back to standard buttons, and finally to text menus for maximum compatibility across different WhatsApp client versions.
+- **Interactive Response Parsing**: Implemented comprehensive parsing for different interactive response types including buttonsResponseMessage, listResponseMessage, and nativeFlowResponseMessage to properly handle user interactions.
+- **Custom Baileys Migration**: Previously integrated KaizenMFH v25.9.1 but migrated to @neoxr/baileys for better interactive message support and stability.
 - **TikTok Image Carousel Support**: Added support for TikTok picture-based posts, downloading multiple images and sending as WhatsApp albums
 - **Enhanced TikTok Detection**: Plugin now automatically detects video vs image content from TikTok API response and handles accordingly
 - **WhatsApp Album Creation**: Image carousels are sent as sequential images with caption on first image to create album effect

@@ -35,14 +35,14 @@ class InteractiveUtils {
         }
     }
 
-    // Enhanced Button Messages with proper JID validation
+    // Enhanced Button Messages using @neoxr/baileys format
     async sendInteractiveButtons(jid, options) {
         try {
             const {
                 text,
                 footer = 'WhatsApp Bot',
                 buttons = [],
-                headerType = 'text',
+                headerType = 1,
                 header = null
             } = options;
 
@@ -55,24 +55,26 @@ class InteractiveUtils {
                 });
             }
 
-            // Try standard button format first (more compatible)
-            const standardButtons = {
+            // Use @neoxr/baileys button format from docs
+            const buttonMessage = {
                 text: text,
                 footer: footer,
                 buttons: buttons.map((btn, index) => ({
                     buttonId: btn.id || this.generateId('btn'),
-                    buttonText: { displayText: btn.text || btn.displayText || `Button ${index + 1}` },
+                    buttonText: {
+                        displayText: btn.text || btn.displayText || `Button ${index + 1}`
+                    },
                     type: 1
                 })),
-                headerType: 1
+                headerType: headerType,
+                viewOnce: false
             };
 
             try {
-                console.log('🔄 Sending standard button message...');
-                return await this.sock.sendMessage(validJid, standardButtons);
+                console.log('🔄 Sending @neoxr/baileys button message...');
+                return await this.sock.sendMessage(validJid, buttonMessage, { quoted: null });
             } catch (buttonError) {
-                console.log('⚠️ Standard buttons failed, using text menu');
-                // Final fallback to text menu
+                console.log('⚠️ Buttons failed, using text menu fallback');
                 const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
                 return await this.sock.sendMessage(validJid, { text: textMenu });
             }
@@ -83,7 +85,7 @@ class InteractiveUtils {
         }
     }
 
-    // Enhanced List Messages with proper validation
+    // Enhanced List Messages using @neoxr/baileys native flow format
     async sendInteractiveList(jid, options) {
         try {
             const {
@@ -101,25 +103,70 @@ class InteractiveUtils {
                 return false;
             }
 
-            // Skip complex list formats and go straight to text menu for better compatibility
-            console.log('📱 Using text menu format for maximum compatibility');
-            let textMenu = `📋 *${title}*\n\n${text}\n\n`;
-            
-            let optionNumber = 1;
-            sections.forEach((section) => {
-                textMenu += `*${section.title}*\n`;
-                section.rows.forEach((row) => {
-                    textMenu += `${optionNumber}. ${row.title}`;
-                    if (row.description) textMenu += ` - ${row.description}`;
+            try {
+                // Use @neoxr/baileys native flow button format from docs
+                const flowMessage = {
+                    text: text,
+                    footer: footer,
+                    buttons: [
+                        {
+                            buttonId: '.menu',
+                            buttonText: {
+                                displayText: 'MENU'
+                            },
+                            type: 1,
+                        },
+                        {
+                            buttonId: 'flow_list',
+                            buttonText: {
+                                displayText: buttonText
+                            },
+                            type: 4,
+                            nativeFlowInfo: {
+                                name: 'single_select',
+                                paramsJson: JSON.stringify({
+                                    title: title,
+                                    sections: sections.map(section => ({
+                                        title: section.title,
+                                        highlight_label: '📋',
+                                        rows: section.rows.map(row => ({
+                                            header: row.title,
+                                            title: row.title,
+                                            description: row.description || '',
+                                            id: row.id || this.generateId('row'),
+                                        }))
+                                    }))
+                                }),
+                            },
+                        },
+                    ],
+                    headerType: 1,
+                    viewOnce: false
+                };
+
+                console.log('🔄 Sending @neoxr/baileys flow list...');
+                return await this.sock.sendMessage(validJid, flowMessage, { quoted: null });
+
+            } catch (flowError) {
+                console.log('⚠️ Flow list failed, using text menu fallback');
+                let textMenu = `📋 *${title}*\n\n${text}\n\n`;
+                
+                let optionNumber = 1;
+                sections.forEach((section) => {
+                    textMenu += `*${section.title}*\n`;
+                    section.rows.forEach((row) => {
+                        textMenu += `${optionNumber}. ${row.title}`;
+                        if (row.description) textMenu += ` - ${row.description}`;
+                        textMenu += '\n';
+                        optionNumber++;
+                    });
                     textMenu += '\n';
-                    optionNumber++;
                 });
-                textMenu += '\n';
-            });
-            
-            textMenu += '💡 Reply with the number of your choice.';
-            
-            return await this.sock.sendMessage(validJid, { text: textMenu });
+                
+                textMenu += '💡 Reply with the number of your choice.';
+                
+                return await this.sock.sendMessage(validJid, { text: textMenu });
+            }
 
         } catch (error) {
             console.error('❌ Error sending interactive list:', error);
@@ -266,7 +313,7 @@ class InteractiveUtils {
         }
     }
 
-    // Copy Code Button with fallback
+    // Copy Code Button using @neoxr/baileys native flow format
     async sendCopyCodeButton(jid, options) {
         try {
             const {
@@ -281,10 +328,40 @@ class InteractiveUtils {
                 return false;
             }
 
-            // Send as formatted text with code block
-            console.log('📋 Sending code as formatted text');
-            const codeMessage = `${text}\n\n\`\`\`${code}\`\`\`\n\n${footer}`;
-            return await this.sock.sendMessage(validJid, { text: codeMessage });
+            try {
+                // Use @neoxr/baileys native flow copy button format
+                const copyMessage = {
+                    text: text,
+                    footer: footer,
+                    buttons: [
+                        {
+                            buttonId: 'copy_code',
+                            buttonText: {
+                                displayText: 'Copy Code'
+                            },
+                            type: 4,
+                            nativeFlowInfo: {
+                                name: 'cta_copy',
+                                paramsJson: JSON.stringify({
+                                    display_text: 'Copy Code',
+                                    id: 'copy_action',
+                                    copy_code: code
+                                })
+                            }
+                        }
+                    ],
+                    headerType: 1,
+                    viewOnce: false
+                };
+
+                console.log('📋 Sending @neoxr/baileys copy code button...');
+                return await this.sock.sendMessage(validJid, copyMessage, { quoted: null });
+
+            } catch (copyError) {
+                console.log('⚠️ Copy button failed, using formatted text');
+                const codeMessage = `${text}\n\n\`\`\`${code}\`\`\`\n\n${footer}`;
+                return await this.sock.sendMessage(validJid, { text: codeMessage });
+            }
 
         } catch (error) {
             console.error('❌ Error sending copy code button:', error);
