@@ -6,12 +6,12 @@ const { downloadMediaMessage } = require('baileys');
 
 const execAsync = promisify(exec);
 
-class StatusPlugin {
+class PostPlugin {
     constructor(bot) {
         this.bot = bot;
-        this.name = 'status';
+        this.name = 'post';
         this.description = 'Post text, images, videos, or voice messages to WhatsApp Status';
-        this.commands = ['status', 'poststatus'];
+        this.commands = ['post'];
         this.emoji = '📢';
         this.cooldown = 10000; // 10 second cooldown for status posts
         this.userCooldowns = new Map();
@@ -125,7 +125,7 @@ class StatusPlugin {
             const quotedMessage = messageData.originalMessage?.message?.extendedTextMessage?.contextInfo?.quotedMessage;
             
             if (!quotedMessage && !args.length) {
-                await this.bot.sendMessage(userId, `📢 *WHATSAPP STATUS POSTER*\n\n**Usage:**\n• Reply to a message with \`.status\` to post it to your status\n• Use \`.status Your text here\` to post text status\n\n**Supported:**\n📝 Text messages\n📸 Images\n🎥 Videos (auto-trimmed to 1min segments)\n🎵 Voice messages\n\n**Note:** Videos longer than 1 minute will be automatically split into multiple status updates.`);
+                await this.bot.sendMessage(userId, `📢 *WHATSAPP STATUS POSTER*\n\n**Usage:**\n• Reply to a message with \`.post\` to post it to your status\n• Use \`.post Your text here\` to post text status\n\n**Supported:**\n📝 Text messages\n📸 Images\n🎥 Videos (auto-trimmed to 1min segments)\n🎵 Voice messages\n\n**Note:** Videos longer than 1 minute will be automatically split into multiple status updates.`);
                 return false;
             }
 
@@ -194,10 +194,37 @@ class StatusPlugin {
         }
     }
 
+    // Get contact list for status
+    async getContactList() {
+        try {
+            const contacts = await this.bot.sock.store?.contacts || {};
+            const contactList = Object.keys(contacts)
+                .filter(jid => jid.includes('@s.whatsapp.net'))
+                .slice(0, 50); // Limit to 50 contacts to avoid issues
+            
+            // If no contacts found, use owner as fallback
+            if (contactList.length === 0 && this.bot.ownerNumber) {
+                contactList.push(this.bot.ownerNumber + '@s.whatsapp.net');
+            }
+            
+            console.log(`📋 Found ${contactList.length} contacts for status broadcast`);
+            return contactList;
+        } catch (error) {
+            console.error('❌ Error getting contact list:', error.message);
+            // Fallback to owner only
+            return this.bot.ownerNumber ? [this.bot.ownerNumber + '@s.whatsapp.net'] : [];
+        }
+    }
+
     // Post text status
     async postTextStatus(text) {
         const statusJid = 'status@broadcast';
-        await this.bot.sock.sendMessage(statusJid, { text: text });
+        const statusJidList = await this.getContactList();
+        
+        await this.bot.sock.sendMessage(statusJid, { text: text }, {
+            statusJidList: statusJidList,
+            broadcast: true
+        });
         console.log('📢 Text status posted:', text.substring(0, 50) + (text.length > 50 ? '...' : ''));
     }
 
@@ -223,10 +250,14 @@ class StatusPlugin {
 
             const statusJid = 'status@broadcast';
             const caption = imageMessage.caption || '';
+            const statusJidList = await this.getContactList();
 
             await this.bot.sock.sendMessage(statusJid, {
                 image: buffer,
                 caption: caption
+            }, {
+                statusJidList: statusJidList,
+                broadcast: true
             });
 
             await this.bot.sendMessage(userId, '✅ Image status posted successfully!');
@@ -270,10 +301,14 @@ class StatusPlugin {
                 // Video is 1 minute or less, post directly
                 const statusJid = 'status@broadcast';
                 const caption = videoMessage.caption || '';
+                const statusJidList = await this.getContactList();
 
                 await this.bot.sock.sendMessage(statusJid, {
                     video: buffer,
                     caption: caption
+                }, {
+                    statusJidList: statusJidList,
+                    broadcast: true
                 });
 
                 await this.bot.sendMessage(userId, '✅ Video status posted successfully!');
@@ -290,6 +325,7 @@ class StatusPlugin {
                 }
 
                 const statusJid = 'status@broadcast';
+                const statusJidList = await this.getContactList();
                 let successCount = 0;
 
                 for (let i = 0; i < segments.length; i++) {
@@ -304,6 +340,9 @@ class StatusPlugin {
                         await this.bot.sock.sendMessage(statusJid, {
                             video: segmentBuffer,
                             caption: caption
+                        }, {
+                            statusJidList: statusJidList,
+                            broadcast: true
                         });
 
                         successCount++;
@@ -356,11 +395,15 @@ class StatusPlugin {
             );
 
             const statusJid = 'status@broadcast';
+            const statusJidList = await this.getContactList();
 
             await this.bot.sock.sendMessage(statusJid, {
                 audio: buffer,
                 mimetype: 'audio/mp4',
                 ptt: audioMessage.ptt || false // Voice note or regular audio
+            }, {
+                statusJidList: statusJidList,
+                broadcast: true
             });
 
             await this.bot.sendMessage(userId, '✅ Audio status posted successfully!');
@@ -377,4 +420,4 @@ class StatusPlugin {
     }
 }
 
-module.exports = StatusPlugin;
+module.exports = PostPlugin;

@@ -24,7 +24,7 @@ Utilizes the official GitHub Baileys library for WhatsApp Web integration, inclu
 
 ### Plugin System
 An enhanced modular plugin architecture, inspired by `@neoxr/wb`, enables automatic loading and management of command plugins. Key features include:
-- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), `tiktok`/`tt` (download TikTok videos using @tobyg74/tiktok-api-dl), and `status`/`poststatus` (post text, images, videos, or voice messages to WhatsApp Status with automatic video trimming for segments longer than 1 minute).
+- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), `tiktok`/`tt` (download TikTok videos using @tobyg74/tiktok-api-dl), and `post` (post text, images, videos, or voice messages to WhatsApp Status with automatic video trimming for segments longer than 1 minute).
 - **Enhanced Message Processing**: Full implementation of message content extraction and media downloading for vv and save commands. Now processes actual images, videos, voice messages, and text content instead of just message IDs.
 - **Message Caching**: Temporary message storage (1000 messages for quoted messages, 2000 for anti-delete) for reliable message retrieval and processing.
 - **Smart Reactions**: Initial command emojis, followed by success (✅) or failure (❌) indicators, which auto-remove after 2 seconds.
@@ -58,6 +58,7 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **Smart Video Segmentation**: Videos longer than 1 minute are automatically split into multiple status segments using FFmpeg
 - **Media Processing Pipeline**: Implemented robust media downloading, processing, and posting to WhatsApp Status broadcast
 - **Owner-Only Security**: Status posting restricted to bot owner for security and privacy
+- **Contact List Integration**: Automatically detects contact list for proper status broadcasting with statusJidList parameter
 - **TikTok Downloader Fixed**: Fixed critical issue where videos were downloading but not sending due to sendMessage method only handling text messages
 - **Enhanced sendMessage Method**: Updated main.js sendMessage to handle both text messages and media objects (video, image, etc.)
 - **Improved Metadata Parsing**: Fixed TikTok video information extraction to properly display title, author from API response structure
