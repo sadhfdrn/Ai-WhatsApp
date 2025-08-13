@@ -493,20 +493,20 @@ class WhatsAppBot {
     async processCommand(messageData) {
         try {
             const message = messageData.body.trim();
-            const command = message.toLowerCase();
+            const lowerMessage = message.toLowerCase();
             
             // Check if message starts with the configured prefix (or process all messages if no prefix)
-            if (this.prefix && !command.startsWith(this.prefix)) {
+            if (this.prefix && !lowerMessage.startsWith(this.prefix)) {
                 return; // Not a command for us
             }
             
-            // Remove prefix from command for processing (if prefix exists)
-            const cleanCommand = this.prefix ? command.slice(this.prefix.length) : command;
+            // Remove prefix from command for processing (if prefix exists) - preserve original case for arguments
+            const cleanCommand = this.prefix ? message.slice(this.prefix.length) : message;
             
-            // Split command and arguments
+            // Split command and arguments - only convert command name to lowercase, preserve arguments case
             const commandParts = cleanCommand.split(' ');
-            const commandName = commandParts[0];
-            const args = commandParts.slice(1);
+            const commandName = commandParts[0].toLowerCase(); // Only convert command to lowercase
+            const args = commandParts.slice(1); // Keep original case for arguments
             
             // Add reaction to show command received
             await this.reactToMessage(messageData, '📋');
