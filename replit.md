@@ -42,7 +42,8 @@ An HTTP server on port 8080 provides a health check endpoint for monitoring depl
 The architecture prioritizes a pure Node.js environment, avoiding Python or AI dependencies for a lightweight and focused solution. It emphasizes modularity through its plugin system and robust connection management for high availability. UI/UX considerations are addressed through professional menu formatting, smart emoji reactions, and interactive message capabilities to enhance user experience.
 
 ## External Dependencies
-- **baileys**: The core WhatsApp Web client library (from GitHub - WhiskeySockets/Baileys).
+- **baileys-mod**: The core WhatsApp Web client library (from GitHub - nstar-y/bail). Custom modified version of Baileys with enhanced features.
+- **jimp**: Image processing library required by baileys-mod for media handling.
 - **@hapi/boom**: Used for error handling.
 - **pino**: Employed for logging.
 - **qrcode-terminal**: Generates QR codes for initial setup.
@@ -54,6 +55,7 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
+- **Baileys Library Migration**: Successfully migrated from WhiskeySockets/Baileys to nstar-y/bail (baileys-mod) for enhanced features and functionality. Added jimp dependency for improved media processing.
 - **TikTok Image Carousel Support**: Added support for TikTok picture-based posts, downloading multiple images and sending as WhatsApp albums
 - **Enhanced TikTok Detection**: Plugin now automatically detects video vs image content from TikTok API response and handles accordingly
 - **WhatsApp Album Creation**: Image carousels are sent as sequential images with caption on first image to create album effect
