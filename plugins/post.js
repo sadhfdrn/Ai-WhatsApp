@@ -198,6 +198,8 @@ class PostPlugin {
     async getContactList() {
         try {
             const contacts = await this.bot.sock.store?.contacts || {};
+            console.log('🔍 Raw contacts store:', Object.keys(contacts).length > 0 ? `${Object.keys(contacts).length} total contacts` : 'No contacts in store');
+            
             const contactList = Object.keys(contacts)
                 .filter(jid => jid.includes('@s.whatsapp.net'))
                 .slice(0, 50); // Limit to 50 contacts to avoid issues
@@ -205,14 +207,19 @@ class PostPlugin {
             // If no contacts found, use owner as fallback
             if (contactList.length === 0 && this.bot.ownerNumber) {
                 contactList.push(this.bot.ownerNumber + '@s.whatsapp.net');
+                console.log('📋 Using owner fallback for statusJidList:', this.bot.ownerNumber);
             }
             
-            console.log(`📋 Found ${contactList.length} contacts for status broadcast`);
+            console.log(`📋 StatusJidList contains ${contactList.length} contacts:`);
+            console.log('📋 StatusJidList:', contactList.slice(0, 5).map(c => c.replace('@s.whatsapp.net', '***')));
+            
             return contactList;
         } catch (error) {
             console.error('❌ Error getting contact list:', error.message);
             // Fallback to owner only
-            return this.bot.ownerNumber ? [this.bot.ownerNumber + '@s.whatsapp.net'] : [];
+            const fallback = this.bot.ownerNumber ? [this.bot.ownerNumber + '@s.whatsapp.net'] : [];
+            console.log('📋 Emergency fallback statusJidList:', fallback);
+            return fallback;
         }
     }
 
