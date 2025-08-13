@@ -54,7 +54,11 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
-- **WhatsApp Status Posting**: Added comprehensive status posting feature supporting text, images, videos, and voice messages with automatic video trimming
+- **TikTok Image Carousel Support**: Added support for TikTok picture-based posts, downloading multiple images and sending as WhatsApp albums
+- **Enhanced TikTok Detection**: Plugin now automatically detects video vs image content from TikTok API response and handles accordingly
+- **WhatsApp Album Creation**: Image carousels are sent as sequential images with caption on first image to create album effect
+- **Comprehensive Media Handling**: TikTok plugin supports both video downloads and image carousel downloads with proper cleanup
+- **WhatsApp Status Posting**: Added comprehensive status posting feature supporting text, images, videos, and voice messages with automatic video trimming (Note: Currently limited by Baileys library - status posting reports success but doesn't actually post due to GitHub issue #619)
 - **Smart Video Segmentation**: Videos longer than 1 minute are automatically split into multiple status segments using FFmpeg
 - **Media Processing Pipeline**: Implemented robust media downloading, processing, and posting to WhatsApp Status broadcast
 - **Owner-Only Security**: Status posting restricted to bot owner for security and privacy

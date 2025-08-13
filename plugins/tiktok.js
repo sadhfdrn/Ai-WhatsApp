@@ -65,6 +65,224 @@ class TikTokPlugin {
         return minutes > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${seconds}s`;
     }
 
+    // Download image carousel from TikTok
+    async downloadImageCarousel(contentInfo) {
+        try {
+            console.log(`🖼️ Starting image carousel download: ${contentInfo.images.length} images`);
+            
+            const timestamp = Date.now();
+            const imageFiles = [];
+            const https = require('https');
+            const http = require('http');
+            
+            // Download each image
+            for (let i = 0; i < contentInfo.images.length; i++) {
+                const imageUrl = contentInfo.images[i];
+                const outputFile = `downloads/tiktok_image_${timestamp}_${i + 1}.jpg`;
+                
+                console.log(`📥 Downloading image ${i + 1}/${contentInfo.images.length}: ${imageUrl}`);
+                
+                try {
+                    await new Promise((resolve, reject) => {
+                        const client = imageUrl.startsWith('https://') ? https : http;
+                        
+                        client.get(imageUrl, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                            }
+                        }, (response) => {
+                            if (response.statusCode !== 200) {
+                                reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+                                return;
+                            }
+                            
+                            const fileStream = require('fs').createWriteStream(outputFile);
+                            response.pipe(fileStream);
+                            
+                            fileStream.on('finish', () => {
+                                fileStream.close();
+                                imageFiles.push(outputFile);
+                                console.log(`✅ Downloaded image ${i + 1}: ${outputFile}`);
+                                resolve();
+                            });
+                            
+                            fileStream.on('error', (error) => {
+                                fs.unlink(outputFile).catch(() => {});
+                                reject(error);
+                            });
+                        }).on('error', (error) => {
+                            reject(error);
+                        });
+                    });
+                } catch (error) {
+                    console.log(`❌ Failed to download image ${i + 1}: ${error.message}`);
+                    // Continue with other images
+                }
+            }
+            
+            if (imageFiles.length === 0) {
+                throw new Error('No images could be downloaded');
+            }
+            
+            console.log(`✅ Successfully downloaded ${imageFiles.length}/${contentInfo.images.length} images`);
+            
+            return {
+                success: true,
+                ...contentInfo,
+                type: 'images',
+                image_files: imageFiles,
+                total_images: imageFiles.length
+            };
+            
+        } catch (error) {
+            console.error(`❌ Image carousel download error: ${error.message}`);
+            return { 
+                success: false, 
+                error: `Image download failed: ${error.message}` 
+            };
+        }
+    }
+
+    // Send image carousel as WhatsApp album
+    async sendImageCarousel(result, userId) {
+        try {
+            console.log(`📤 Preparing to send ${result.total_images} images as album`);
+            
+            // Read all image files
+            const imageBuffers = [];
+            for (const imageFile of result.image_files) {
+                try {
+                    const stats = await fs.stat(imageFile);
+                    const buffer = await fs.readFile(imageFile);
+                    imageBuffers.push({
+                        image: buffer,
+                        fileName: path.basename(imageFile),
+                        mimetype: 'image/jpeg'
+                    });
+                    console.log(`✅ Prepared image: ${imageFile} (${this.formatFileSize(stats.size)})`);
+                } catch (error) {
+                    console.log(`❌ Failed to read image ${imageFile}: ${error.message}`);
+                }
+            }
+            
+            if (imageBuffers.length === 0) {
+                throw new Error('No images could be processed for sending');
+            }
+            
+            // Create caption for first image
+            let caption = `✅ *TIKTOK IMAGE CAROUSEL*\n\n📝 Title: ${result.title}\n👤 Author: ${result.author}\n🖼️ Images: ${imageBuffers.length}`;
+            
+            // Add stats only if available
+            const hasStats = result.stats.views > 0 || result.stats.likes > 0 || result.stats.comments > 0 || result.stats.shares > 0;
+            if (hasStats) {
+                caption += `\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`;
+            }
+            
+            // Send first image with caption
+            const firstImage = { ...imageBuffers[0], caption };
+            const sendResult = await this.bot.sendMessage(userId, firstImage);
+            
+            if (!sendResult) {
+                throw new Error('Failed to send first image');
+            }
+            
+            // Send remaining images without caption (creates album effect)
+            for (let i = 1; i < imageBuffers.length; i++) {
+                await this.bot.sendMessage(userId, imageBuffers[i]);
+                // Small delay to ensure proper album grouping
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            console.log(`✅ TikTok image carousel sent successfully: ${imageBuffers.length} images`);
+            
+            // Clean up downloaded files after sending
+            setTimeout(async () => {
+                for (const imageFile of result.image_files) {
+                    try {
+                        await fs.unlink(imageFile);
+                        console.log(`🧹 Cleaned up: ${imageFile}`);
+                    } catch (error) {
+                        console.log(`⚠️ Could not clean up ${imageFile}: ${error.message}`);
+                    }
+                }
+            }, 5000);
+            
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Error sending image carousel: ${error.message}`);
+            await this.bot.sendMessage(userId, `❌ Failed to send image carousel: ${error.message}`);
+            return false;
+        }
+    }
+
+    // Send video content
+    async sendVideoContent(result, userId) {
+        try {
+            // Check if file exists and get size
+            const stats = await fs.stat(result.output_file);
+            const fileSize = stats.size;
+            
+            // WhatsApp file size limit is 64MB for videos
+            const maxSize = 64 * 1024 * 1024; // 64MB in bytes
+            
+            if (fileSize > maxSize) {
+                await this.bot.sendMessage(userId, `❌ Video is too large (${this.formatFileSize(fileSize)}). WhatsApp supports videos up to 64MB.`);
+                
+                // Clean up large file
+                await fs.unlink(result.output_file).catch(() => {});
+                return false;
+            }
+            
+            // Send the video
+            console.log(`📤 Preparing to send video: ${result.output_file} (${this.formatFileSize(fileSize)})`);
+            const videoBuffer = await fs.readFile(result.output_file);
+            
+            // Create caption with available information
+            let caption = `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: ${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}`;
+            
+            // Add stats only if available
+            const hasStats = result.stats.views > 0 || result.stats.likes > 0 || result.stats.comments > 0 || result.stats.shares > 0;
+            if (hasStats) {
+                caption += `\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`;
+            }
+            
+            const videoMessage = {
+                video: videoBuffer,
+                caption: caption,
+                gifPlayback: false,
+                fileName: path.basename(result.output_file),
+                mimetype: 'video/mp4'
+            };
+            
+            const sendResult = await this.bot.sendMessage(userId, videoMessage);
+            
+            if (sendResult) {
+                console.log(`✅ TikTok video sent successfully: ${result.output_file}`);
+            } else {
+                console.log(`❌ Failed to send TikTok video: ${result.output_file}`);
+                throw new Error('Failed to send video message');
+            }
+            
+            // Clean up downloaded file after sending
+            setTimeout(async () => {
+                try {
+                    await fs.unlink(result.output_file);
+                    console.log(`🧹 Cleaned up: ${result.output_file}`);
+                } catch (error) {
+                    console.log(`⚠️ Could not clean up ${result.output_file}: ${error.message}`);
+                }
+            }, 5000); // Clean up after 5 seconds
+            
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Error sending video: ${error.message}`);
+            await this.bot.sendMessage(userId, `❌ Failed to process downloaded video: ${error.message}`);
+            return false;
+        }
+    }
+
     // Main download function using @tobyg74/tiktok-api-dl
     async downloadTikTokVideo(url) {
         try {
@@ -87,9 +305,9 @@ class TikTokPlugin {
                         const data = result.result;
                         console.log(`🔍 API Response structure:`, JSON.stringify(data, null, 2));
                         
-                        // Extract video information from different API response structures
-                        const videoInfo = {
-                            title: data.title || data.desc || 'TikTok Video',
+                        // Extract content information from different API response structures
+                        const contentInfo = {
+                            title: data.title || data.desc || 'TikTok Content',
                             author: typeof data.author === 'object' ? data.author?.nickname?.replace('@', '') || 'Unknown' : data.author || 'Unknown',
                             video_id: data.video_id || data.id || 'unknown',
                             duration: data.duration || data.video?.duration || 0,
@@ -99,16 +317,25 @@ class TikTokPlugin {
                                 likes: data.digg_count || data.statistics?.diggCount || data.diggCount || 0,
                                 comments: data.comment_count || data.statistics?.commentCount || data.commentCount || 0,
                                 shares: data.share_count || data.statistics?.shareCount || data.shareCount || 0
-                            }
+                            },
+                            // Check if this is an image carousel
+                            images: data.images || data.imageSlideShow || []
                         };
                         
-                        // Get the best video URL - handle different API response structures
+                        // Check if this is an image carousel (slideshow)
+                        if (contentInfo.images && contentInfo.images.length > 0) {
+                            console.log(`🖼️ Detected image carousel with ${contentInfo.images.length} images`);
+                            return await this.downloadImageCarousel(contentInfo);
+                        }
+                        
+                        // Handle video content
                         let videoUrl = null;
                         
                         console.log(`🔍 V3 API Response - Available video URLs:`, {
                             hasVideoSD: !!data.videoSD,
                             hasVideoHD: !!data.videoHD,
                             hasVideoWatermark: !!data.videoWatermark,
+                            hasImages: !!(data.images || data.imageSlideShow),
                             dataKeys: Object.keys(data)
                         });
                         
@@ -175,7 +402,8 @@ class TikTokPlugin {
                                     fileStream.close();
                                     resolve({
                                         success: true,
-                                        ...videoInfo,
+                                        ...contentInfo,
+                                        type: 'video',
                                         file_size: totalSize,
                                         output_file: outputFile
                                     });
@@ -239,68 +467,14 @@ class TikTokPlugin {
             const result = await this.downloadTikTokVideo(url);
             
             if (result.success) {
-                // Check if file exists and get size
-                try {
-                    const stats = await fs.stat(result.output_file);
-                    const fileSize = stats.size;
-                    
-                    // WhatsApp file size limit is 64MB for videos
-                    const maxSize = 64 * 1024 * 1024; // 64MB in bytes
-                    
-                    if (fileSize > maxSize) {
-                        await this.bot.sendMessage(userId, `❌ Video is too large (${this.formatFileSize(fileSize)}). WhatsApp supports videos up to 64MB.`);
-                        
-                        // Clean up large file
-                        await fs.unlink(result.output_file).catch(() => {});
-                        return false;
-                    }
-                    
-                    // Send the video
-                    console.log(`📤 Preparing to send video: ${result.output_file} (${this.formatFileSize(fileSize)})`);
-                    const videoBuffer = await fs.readFile(result.output_file);
-                    
-                    // Create caption with available information
-                    let caption = `✅ *TIKTOK VIDEO DOWNLOADED*\n\n📝 Title: ${result.title}\n👤 Author: ${result.author}\n⏱️ Duration: ${this.formatDuration(result.duration)}\n📊 Size: ${this.formatFileSize(fileSize)}`;
-                    
-                    // Add stats only if available
-                    const hasStats = result.stats.views > 0 || result.stats.likes > 0 || result.stats.comments > 0 || result.stats.shares > 0;
-                    if (hasStats) {
-                        caption += `\n\n📈 Stats:\n👀 Views: ${result.stats.views.toLocaleString()}\n❤️ Likes: ${result.stats.likes.toLocaleString()}\n💬 Comments: ${result.stats.comments.toLocaleString()}\n📤 Shares: ${result.stats.shares.toLocaleString()}`;
-                    }
-                    
-                    const videoMessage = {
-                        video: videoBuffer,
-                        caption: caption,
-                        gifPlayback: false,
-                        fileName: path.basename(result.output_file),
-                        mimetype: 'video/mp4'
-                    };
-                    
-                    const sendResult = await this.bot.sendMessage(userId, videoMessage);
-                    
-                    if (sendResult) {
-                        console.log(`✅ TikTok video sent successfully: ${result.output_file}`);
-                    } else {
-                        console.log(`❌ Failed to send TikTok video: ${result.output_file}`);
-                        throw new Error('Failed to send video message');
-                    }
-                    
-                    // Clean up downloaded file after sending
-                    setTimeout(async () => {
-                        try {
-                            await fs.unlink(result.output_file);
-                            console.log(`🧹 Cleaned up: ${result.output_file}`);
-                        } catch (error) {
-                            console.log(`⚠️ Could not clean up ${result.output_file}: ${error.message}`);
-                        }
-                    }, 5000); // Clean up after 5 seconds
-                    
-                    return true;
-                    
-                } catch (error) {
-                    console.error(`❌ File processing error: ${error.message}`);
-                    await this.bot.sendMessage(userId, `❌ Failed to process downloaded video: ${error.message}`);
-                    return false;
+                // Handle image carousel
+                if (result.type === 'images') {
+                    return await this.sendImageCarousel(result, userId);
+                }
+                
+                // Handle video content
+                if (result.type === 'video') {
+                    return await this.sendVideoContent(result, userId);
                 }
                 
             } else {
