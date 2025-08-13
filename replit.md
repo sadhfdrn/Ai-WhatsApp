@@ -24,7 +24,7 @@ Utilizes the official GitHub Baileys library for WhatsApp Web integration, inclu
 
 ### Plugin System
 An enhanced modular plugin architecture, inspired by `@neoxr/wb`, enables automatic loading and management of command plugins. Key features include:
-- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), and `tiktok`/`tt` (download TikTok videos using yt-dlp for reliable extraction).
+- **Commands**: `ping` (bot status, uptime, network speed), `menu`/`help`/`commands` (formatted bot menu), `tag` (silently tags group members), `tagall` (loudly tags group members), `gstatus` (detailed group member information), `vv` (remove view-once restriction, send to DM only), `vv2` (remove view-once restriction, send to current chat), `autovv` (toggle auto view-once processing), `save` (save actual message content including media to DM), `antidelete` (forward deleted messages to owner DM with on/off controls for private messages and group chats), `tiktok`/`tt` (download TikTok videos using @tobyg74/tiktok-api-dl), and `status`/`poststatus` (post text, images, videos, or voice messages to WhatsApp Status with automatic video trimming for segments longer than 1 minute).
 - **Enhanced Message Processing**: Full implementation of message content extraction and media downloading for vv and save commands. Now processes actual images, videos, voice messages, and text content instead of just message IDs.
 - **Message Caching**: Temporary message storage (1000 messages for quoted messages, 2000 for anti-delete) for reliable message retrieval and processing.
 - **Smart Reactions**: Initial command emojis, followed by success (✅) or failure (❌) indicators, which auto-remove after 2 seconds.
@@ -48,17 +48,20 @@ The architecture prioritizes a pure Node.js environment, avoiding Python or AI d
 - **qrcode-terminal**: Generates QR codes for initial setup.
 - **cheerio**: Used for HTML/XML parsing in message processing.
 - **@tobyg74/tiktok-api-dl**: Pure Node.js npm package for reliable TikTok video downloading and metadata extraction.
+- **ffmpeg**: System dependency for video processing, trimming, and format conversion (used by status plugin for video segmentation).
 - **http**: Node.js built-in module for health checks.
 - **fs**: Node.js built-in module for file system operations (credential management).
 - **path**: Node.js built-in module for path utilities.
 
 ## Recent Changes (August 2025)
+- **WhatsApp Status Posting**: Added comprehensive status posting feature supporting text, images, videos, and voice messages with automatic video trimming
+- **Smart Video Segmentation**: Videos longer than 1 minute are automatically split into multiple status segments using FFmpeg
+- **Media Processing Pipeline**: Implemented robust media downloading, processing, and posting to WhatsApp Status broadcast
+- **Owner-Only Security**: Status posting restricted to bot owner for security and privacy
 - **TikTok Downloader Fixed**: Fixed critical issue where videos were downloading but not sending due to sendMessage method only handling text messages
 - **Enhanced sendMessage Method**: Updated main.js sendMessage to handle both text messages and media objects (video, image, etc.)
 - **Improved Metadata Parsing**: Fixed TikTok video information extraction to properly display title, author from API response structure
 - **Clean Caption Format**: Removed empty statistics display when stats aren't available from API, showing only available information
 - **Video Message Enhancement**: Added proper mimetype, filename, and buffer handling for reliable video message delivery
+- **FFmpeg Integration**: Added system-level FFmpeg dependency for advanced video processing capabilities
 - **Pure Node.js Migration**: Completely replaced Python/yt-dlp with @tobyg74/tiktok-api-dl npm package for pure Node.js implementation
-- **Plugin Architecture Compliance**: Restructured TikTok plugin to use class-based architecture matching other bot plugins
-- **Enhanced Error Logging**: Added comprehensive logging to track video download and send process for better debugging
-- **Dependency Cleanup**: Removed all Python dependencies and files for a cleaner, single-language codebase
