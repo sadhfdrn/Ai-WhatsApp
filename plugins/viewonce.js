@@ -1,5 +1,5 @@
 // Import required Baileys functions
-const { downloadMediaMessage, getContentType } = require('baileys-x');
+const { downloadMediaMessage, getContentType } = require('@whiskeysockets/baileys');
 
 class ViewOncePlugin {
     constructor(bot) {

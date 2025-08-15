@@ -2,7 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 const { promisify } = require('util');
-const { downloadMediaMessage } = require('baileys-x');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 const execAsync = promisify(exec);
 

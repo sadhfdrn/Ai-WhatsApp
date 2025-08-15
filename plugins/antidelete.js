@@ -278,7 +278,7 @@ class AntiDeletePlugin {
 
     async forwardMedia(mediaContent) {
         try {
-            const { downloadMediaMessage } = require('@neoxr/baileys');
+            const { downloadMediaMessage } = require('@whiskeysockets/baileys');
             
             // Create message structure for download
             const messageForDownload = {

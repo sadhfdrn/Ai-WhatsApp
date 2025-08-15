@@ -35,7 +35,7 @@ class InteractiveUtils {
         }
     }
 
-    // Enhanced Button Messages using baileys-x format
+    // Enhanced Button Messages using official baileys format
     async sendInteractiveButtons(jid, options) {
         try {
             const {
@@ -46,7 +46,7 @@ class InteractiveUtils {
                 header = null
             } = options;
 
-            // Use baileys-x button format directly from docs - no JID validation needed
+            // Use official baileys button format directly from docs - no JID validation needed
             const buttonMessage = {
                 text: text,
                 footer: footer,
@@ -62,7 +62,7 @@ class InteractiveUtils {
             };
 
             try {
-                console.log('🔄 Sending baileys-x button message...');
+                console.log('🔄 Sending official baileys button message...');
                 return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
             } catch (buttonError) {
                 console.log('⚠️ Buttons failed, using text menu fallback');
@@ -77,7 +77,7 @@ class InteractiveUtils {
         }
     }
 
-    // Enhanced List Messages using baileys-x native flow format
+    // Enhanced List Messages using official baileys native flow format
     async sendInteractiveList(jid, options) {
         try {
             const {
@@ -89,7 +89,7 @@ class InteractiveUtils {
             } = options;
 
             try {
-                // Use simple button format first from baileys-x docs
+                // Use simple button format first from official baileys docs
                 const buttonMessage = {
                     text: text,
                     footer: footer,
@@ -113,7 +113,7 @@ class InteractiveUtils {
                     viewOnce: false
                 };
 
-                console.log('🔄 Sending baileys-x simple button list...');
+                console.log('🔄 Sending official baileys simple button list...');
                 return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
 
             } catch (flowError) {
@@ -283,7 +283,7 @@ class InteractiveUtils {
         }
     }
 
-    // Copy Code Button using baileys-x native flow format
+    // Copy Code Button using official baileys native flow format
     async sendCopyCodeButton(jid, options) {
         try {
             const {
@@ -299,7 +299,7 @@ class InteractiveUtils {
             }
 
             try {
-                // Use baileys-x native flow copy button format
+                // Use official baileys native flow copy button format
                 const copyMessage = {
                     text: text,
                     footer: footer,
@@ -324,7 +324,7 @@ class InteractiveUtils {
                     viewOnce: false
                 };
 
-                console.log('📋 Sending baileys-x copy code button...');
+                console.log('📋 Sending official baileys copy code button...');
                 return await this.sock.sendMessage(validJid, copyMessage, { quoted: null });
 
             } catch (copyError) {

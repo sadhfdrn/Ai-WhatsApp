@@ -1,5 +1,5 @@
 // Test script for interactive message functionality
-const { makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@neoxr/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const MessageUtils = require('./utils/messageUtils');
 
 async function testInteractiveMessages() {
