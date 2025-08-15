@@ -20,5 +20,8 @@
     "@whiskeysockets/baileys": "github:WhiskeySockets/Baileys",
     "@adiwajshing/baileys": "github:WhiskeySockets/Baileys",
     "@adiwajshing/keyed-db": "github:adiwajshing/keyed-db"
+  },
+  "overrides": {
+    "baileys-x>jimp": "0.22.12"
   }
 }
