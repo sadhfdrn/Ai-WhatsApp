@@ -36,7 +36,7 @@ class InteractiveUtils {
         }
     }
 
-    // Enhanced Button Messages using baileys-x format
+    // Enhanced Button Messages using 2024 working format
     async sendInteractiveButtons(jid, options) {
         try {
             const {
@@ -47,29 +47,78 @@ class InteractiveUtils {
                 header = null
             } = options;
 
-            // Use baileys-x button format directly from docs - no JID validation needed
-            const buttonMessage = {
-                text: text,
-                footer: footer,
-                buttons: buttons.map((btn, index) => ({
-                    buttonId: btn.id || this.generateId('btn'),
-                    buttonText: {
-                        displayText: btn.text || btn.displayText || `Button ${index + 1}`
-                    },
-                    type: 1
-                })),
-                headerType: headerType,
-                viewOnce: false
-            };
-
+            console.log('🎯 Attempting 2024 interactive button format...');
+            
             try {
-                console.log('🔄 Sending baileys-x button message...');
-                return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
-            } catch (buttonError) {
-                console.log('⚠️ Buttons failed, using text menu fallback');
-                console.error('Button error:', buttonError.message);
-                const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
-                return await this.sock.sendMessage(jid, { text: textMenu });
+                // Method 1: Use modern nativeFlow format (2024 working method)
+                const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
+                
+                const interactiveMessage = generateWAMessageFromContent(jid, {
+                    viewOnceMessage: {
+                        message: {
+                            messageContextInfo: {
+                                deviceListMetadata: {},
+                                deviceListMetadataVersion: 2
+                            },
+                            interactiveMessage: proto.Message.InteractiveMessage.create({
+                                body: proto.Message.InteractiveMessage.Body.create({
+                                    text: text
+                                }),
+                                footer: proto.Message.InteractiveMessage.Footer.create({
+                                    text: footer
+                                }),
+                                nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                                    buttons: [{
+                                        name: "single_select",
+                                        buttonParamsJson: JSON.stringify({
+                                            title: "Choose Action",
+                                            sections: [{
+                                                title: "Available Options",
+                                                rows: buttons.map(btn => ({
+                                                    title: btn.text || btn.displayText,
+                                                    description: btn.description || btn.text,
+                                                    id: btn.id || this.generateId('btn')
+                                                }))
+                                            }]
+                                        })
+                                    }]
+                                })
+                            })
+                        }
+                    }
+                }, {});
+                
+                const result = await this.sock.relayMessage(jid, interactiveMessage.message, {});
+                console.log('✅ 2024 native flow interactive message sent!');
+                return result;
+                
+            } catch (nativeFlowError) {
+                console.log('⚠️ Native flow failed, trying legacy button format:', nativeFlowError.message);
+                
+                // Method 2: Try legacy button format
+                const buttonMessage = {
+                    text: text,
+                    footer: footer,
+                    buttons: buttons.map((btn, index) => ({
+                        buttonId: btn.id || this.generateId('btn'),
+                        buttonText: {
+                            displayText: btn.text || btn.displayText || `Button ${index + 1}`
+                        },
+                        type: 1
+                    })),
+                    headerType: headerType,
+                    viewOnce: false
+                };
+
+                try {
+                    console.log('🔄 Sending legacy button message...');
+                    return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
+                } catch (buttonError) {
+                    console.log('⚠️ All button formats failed, using text menu fallback');
+                    console.error('Button error:', buttonError.message);
+                    const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
+                    return await this.sock.sendMessage(jid, { text: textMenu });
+                }
             }
 
         } catch (error) {

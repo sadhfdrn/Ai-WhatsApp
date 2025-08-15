@@ -30,24 +30,49 @@ try {
     getContentType = baileysX.getContentType;
 }
 
-// === INTERACTIVE COMPONENTS ===
-// Use baileys-x specifically for interactive message creation
-const createInteractiveMessage = (jid, options) => {
+// === INTERACTIVE COMPONENTS - 2024 WORKING FORMAT ===
+// Use the latest WhatsApp interactive message format that actually works
+const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
+
+const createModernInteractiveMessage = (jid, options) => {
     try {
-        // Use baileys-x native interactive capabilities
-        return BaileysX.generateMessageFromContent(jid, {
+        // Use the 2024 working format with nativeFlow
+        return generateWAMessageFromContent(jid, {
             viewOnceMessage: {
                 message: {
                     messageContextInfo: {
                         deviceListMetadata: {},
                         deviceListMetadataVersion: 2
                     },
-                    interactiveMessage: options
+                    interactiveMessage: proto.Message.InteractiveMessage.create({
+                        body: proto.Message.InteractiveMessage.Body.create({
+                            text: options.text
+                        }),
+                        footer: proto.Message.InteractiveMessage.Footer.create({
+                            text: options.footer || "WhatsApp Bot"
+                        }),
+                        nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                            buttons: options.buttons.map(btn => ({
+                                name: "single_select",
+                                buttonParamsJson: JSON.stringify({
+                                    title: btn.text,
+                                    sections: [{
+                                        title: "Options",
+                                        rows: [{
+                                            title: btn.text,
+                                            description: btn.description || btn.text,
+                                            id: btn.id
+                                        }]
+                                    }]
+                                })
+                            }))
+                        })
+                    })
                 }
             }
-        }, { quoted: options.quoted });
+        }, {});
     } catch (error) {
-        console.error('❌ Interactive message creation failed:', error);
+        console.error('❌ Modern interactive message creation failed:', error);
         return null;
     }
 };
@@ -74,30 +99,79 @@ const createHybridSocket = (options = {}) => {
         }
     };
     
-    // Add enhanced button support
+    // Add enhanced button support using 2024 working format
     socket.sendButtonMessage = async (jid, buttons, text, footer, options = {}) => {
         try {
-            // Use baileys-x format for buttons
-            const buttonMessage = {
-                text: text,
-                footer: footer,
-                buttons: buttons.map((btn, index) => ({
-                    buttonId: btn.id || `btn_${index}`,
-                    buttonText: {
-                        displayText: btn.text || btn.displayText || `Button ${index + 1}`
-                    },
-                    type: 1
-                })),
-                headerType: 1,
-                viewOnce: false
-            };
+            console.log('🎯 Sending 2024 format interactive buttons...');
             
-            return await socket.sendMessage(jid, buttonMessage, options);
+            // Method 1: Try modern native flow format
+            const modernMessage = generateWAMessageFromContent(jid, {
+                viewOnceMessage: {
+                    message: {
+                        messageContextInfo: {
+                            deviceListMetadata: {},
+                            deviceListMetadataVersion: 2
+                        },
+                        interactiveMessage: proto.Message.InteractiveMessage.create({
+                            body: proto.Message.InteractiveMessage.Body.create({
+                                text: text
+                            }),
+                            footer: proto.Message.InteractiveMessage.Footer.create({
+                                text: footer || "WhatsApp Bot"
+                            }),
+                            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                                buttons: [{
+                                    name: "single_select",
+                                    buttonParamsJson: JSON.stringify({
+                                        title: "Select Option",
+                                        sections: [{
+                                            title: "Available Actions",
+                                            rows: buttons.map(btn => ({
+                                                title: btn.text || btn.displayText,
+                                                description: btn.description || btn.text,
+                                                id: btn.id || `btn_${Math.random().toString(36).substr(2, 9)}`
+                                            }))
+                                        }]
+                                    })
+                                }]
+                            })
+                        })
+                    }
+                }
+            }, {});
+            
+            const result = await socket.relayMessage(jid, modernMessage.message, {});
+            console.log('✅ Modern interactive message sent successfully');
+            return result;
+            
         } catch (error) {
-            console.error('❌ Button message failed, using fallback:', error);
-            // Fallback to text menu
-            const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}`;
-            return await socket.sendMessage(jid, { text: textMenu }, options);
+            console.error('❌ Modern button failed, using simple format:', error);
+            
+            try {
+                // Method 2: Try simple button format (may work on some clients)
+                const simpleButtonMessage = {
+                    text: text,
+                    footer: footer || "WhatsApp Bot",
+                    buttons: buttons.map((btn, index) => ({
+                        buttonId: btn.id || `btn_${index}`,
+                        buttonText: {
+                            displayText: btn.text || btn.displayText || `Button ${index + 1}`
+                        },
+                        type: 1
+                    })),
+                    headerType: 1
+                };
+                
+                const result = await socket.sendMessage(jid, simpleButtonMessage, options);
+                console.log('✅ Simple button format sent');
+                return result;
+                
+            } catch (fallbackError) {
+                console.error('❌ All button formats failed, using text menu:', fallbackError);
+                // Final fallback to text menu
+                const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number or text of your choice.`;
+                return await socket.sendMessage(jid, { text: textMenu }, options);
+            }
         }
     };
     
@@ -117,7 +191,7 @@ module.exports = {
     getContentType,
     
     // Interactive features (enhanced)
-    createInteractiveMessage,
+    createModernInteractiveMessage,
     
     // Access to individual libraries if needed
     libraries: {
