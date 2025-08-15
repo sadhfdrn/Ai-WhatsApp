@@ -1,5 +1,6 @@
 // Enhanced Interactive Message Utilities for WhatsApp Bot
-// Based on WhatsApp Business API standards and Baileys compatibility
+// Based on WhatsApp Business API standards and Hybrid Baileys approach
+// Uses multiple Baileys variants for optimal performance
 
 class InteractiveUtils {
     constructor(sock) {

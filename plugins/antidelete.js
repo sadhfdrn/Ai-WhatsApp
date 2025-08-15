@@ -278,7 +278,7 @@ class AntiDeletePlugin {
 
     async forwardMedia(mediaContent) {
         try {
-            const { downloadMediaMessage } = require('baileys-x');
+            const { downloadMediaMessage } = require('../utils/baileys-hybrid');
             
             // Create message structure for download
             const messageForDownload = {

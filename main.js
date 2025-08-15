@@ -1,5 +1,6 @@
 // Clean WhatsApp Bot using pure Baileys
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys-x');
+// Use hybrid approach - best of all Baileys variants
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('./utils/baileys-hybrid');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
 const fs = require('fs');

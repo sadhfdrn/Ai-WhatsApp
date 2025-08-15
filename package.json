@@ -16,6 +16,9 @@
     "cheerio": "^1.1.2",
     "jimp": "^0.16.13",
     "pino": "^9.8.0",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "@whiskeysockets/baileys": "github:WhiskeySockets/Baileys",
+    "@adiwajshing/baileys": "github:WhiskeySockets/Baileys",
+    "@adiwajshing/keyed-db": "github:adiwajshing/keyed-db"
   }
 }
