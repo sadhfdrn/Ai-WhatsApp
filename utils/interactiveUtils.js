@@ -12,16 +12,22 @@ class InteractiveUtils {
         return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    // Validate and format JID
+    // Enhanced JID validation and formatting with 2024 fix
     validateJid(jid) {
         try {
             if (!jid || typeof jid !== 'string') {
+                console.log('⚠️ Invalid JID provided:', jid);
                 return null;
             }
 
-            // If it already includes @, assume it's properly formatted
+            // If it already includes @, validate it's properly formatted
             if (jid.includes('@')) {
-                return jid;
+                // Additional validation for existing JIDs
+                if (jid.includes('@s.whatsapp.net') || jid.includes('@g.us') || jid.includes('@broadcast')) {
+                    return jid;
+                }
+                console.log('⚠️ Invalid JID format:', jid);
+                return null;
             }
 
             // Format based on whether it looks like a group or individual
@@ -33,6 +39,30 @@ class InteractiveUtils {
         } catch (error) {
             console.error('❌ JID validation error:', error);
             return null;
+        }
+    }
+
+    // Safe JID decoder to prevent 'user' destructuring errors
+    safeJidDecode(jid) {
+        try {
+            if (!jid) {
+                console.log('⚠️ No JID provided for decoding');
+                return { user: null, server: null };
+            }
+
+            // Import jidDecode safely
+            const { jidDecode } = require('@whiskeysockets/baileys');
+            const decoded = jidDecode(jid);
+            
+            if (!decoded || !decoded.user) {
+                console.log('⚠️ JID decode failed for:', jid);
+                return { user: null, server: null };
+            }
+            
+            return decoded;
+        } catch (error) {
+            console.error('❌ Safe JID decode error:', error);
+            return { user: null, server: null };
         }
     }
 
@@ -53,7 +83,13 @@ class InteractiveUtils {
                 // Method 1: Use modern nativeFlow format (2024 working method)
                 const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
                 
-                const interactiveMessage = generateWAMessageFromContent(jid, {
+                // Validate JID before creating message
+                const validJid = this.validateJid(jid);
+                if (!validJid) {
+                    throw new Error('Invalid JID provided for interactive message');
+                }
+                
+                const interactiveMessage = generateWAMessageFromContent(validJid, {
                     viewOnceMessage: {
                         message: {
                             messageContextInfo: {
@@ -88,7 +124,7 @@ class InteractiveUtils {
                     }
                 }, {});
                 
-                const result = await this.sock.relayMessage(jid, interactiveMessage.message, {});
+                const result = await this.sock.relayMessage(validJid, interactiveMessage.message, {});
                 console.log('✅ 2024 native flow interactive message sent!');
                 return result;
                 
@@ -112,12 +148,12 @@ class InteractiveUtils {
 
                 try {
                     console.log('🔄 Sending legacy button message...');
-                    return await this.sock.sendMessage(jid, buttonMessage, { quoted: null });
+                    return await this.sock.sendMessage(validJid, buttonMessage, { quoted: null });
                 } catch (buttonError) {
                     console.log('⚠️ All button formats failed, using text menu fallback');
                     console.error('Button error:', buttonError.message);
                     const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number of your choice.`;
-                    return await this.sock.sendMessage(jid, { text: textMenu });
+                    return await this.sock.sendMessage(validJid, { text: textMenu });
                 }
             }
 
@@ -389,52 +425,6 @@ class InteractiveUtils {
         }
     }
 
-    // Handle Interactive Response
-    parseInteractiveResponse(message) {
-        try {
-            // Handle different response types
-            if (message.message?.interactiveResponseMessage) {
-                const response = message.message.interactiveResponseMessage;
-                
-                if (response.nativeFlowResponseMessage) {
-                    return {
-                        type: 'native_flow',
-                        id: response.nativeFlowResponseMessage.paramsJson ? 
-                            JSON.parse(response.nativeFlowResponseMessage.paramsJson).id : null,
-                        data: response.nativeFlowResponseMessage
-                    };
-                }
-
-                return {
-                    type: 'interactive',
-                    data: response
-                };
-            }
-
-            // Handle button responses
-            if (message.message?.buttonsResponseMessage) {
-                return {
-                    type: 'button',
-                    id: message.message.buttonsResponseMessage.selectedButtonId,
-                    text: message.message.buttonsResponseMessage.selectedDisplayText
-                };
-            }
-
-            // Handle list responses
-            if (message.message?.listResponseMessage) {
-                return {
-                    type: 'list',
-                    id: message.message.listResponseMessage.singleSelectReply.selectedRowId,
-                    text: message.message.listResponseMessage.title
-                };
-            }
-
-            return null;
-        } catch (error) {
-            console.error('❌ Error parsing interactive response:', error);
-            return null;
-        }
-    }
 
     // Parse interactive response from message
     parseInteractiveResponse(message) {

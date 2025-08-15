@@ -127,7 +127,7 @@ class MessageUtils {
             console.log('🎯 Sending enhanced quick reply message...');
             
             // Try interactive quick replies first
-            const result = await this.interactive.sendQuickReplies(jid, {
+            const result = await this.interactiveUtils.sendQuickReplies(jid, {
                 text: text,
                 footer: options.footer || 'WhatsApp Bot',
                 replies: quickReplies

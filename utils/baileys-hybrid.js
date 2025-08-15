@@ -104,8 +104,17 @@ const createHybridSocket = (options = {}) => {
         try {
             console.log('🎯 Sending 2024 format interactive buttons...');
             
+            // Validate JID first to prevent decode errors
+            if (!jid || typeof jid !== 'string') {
+                throw new Error('Invalid JID provided for button message');
+            }
+            
+            // Ensure JID is properly formatted
+            const validJid = jid.includes('@') ? jid : `${jid}@s.whatsapp.net`;
+            console.log('🔍 Using validated JID:', validJid);
+            
             // Method 1: Try modern native flow format
-            const modernMessage = generateWAMessageFromContent(jid, {
+            const modernMessage = generateWAMessageFromContent(validJid, {
                 viewOnceMessage: {
                     message: {
                         messageContextInfo: {
@@ -140,7 +149,7 @@ const createHybridSocket = (options = {}) => {
                 }
             }, {});
             
-            const result = await socket.relayMessage(jid, modernMessage.message, {});
+            const result = await socket.relayMessage(validJid, modernMessage.message, {});
             console.log('✅ Modern interactive message sent successfully');
             return result;
             
@@ -162,7 +171,7 @@ const createHybridSocket = (options = {}) => {
                     headerType: 1
                 };
                 
-                const result = await socket.sendMessage(jid, simpleButtonMessage, options);
+                const result = await socket.sendMessage(validJid, simpleButtonMessage, options);
                 console.log('✅ Simple button format sent');
                 return result;
                 
@@ -170,7 +179,7 @@ const createHybridSocket = (options = {}) => {
                 console.error('❌ All button formats failed, using text menu:', fallbackError);
                 // Final fallback to text menu
                 const textMenu = `${text}\n\n📋 Options:\n${buttons.map((btn, i) => `${i + 1}. ${btn.text || btn.displayText}`).join('\n')}\n\nReply with the number or text of your choice.`;
-                return await socket.sendMessage(jid, { text: textMenu }, options);
+                return await socket.sendMessage(validJid, { text: textMenu }, options);
             }
         }
     };
