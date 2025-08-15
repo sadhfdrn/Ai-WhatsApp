@@ -1,5 +1,5 @@
 // Import required Baileys functions
-const { downloadMediaMessage, getContentType } = require('@neoxr/baileys');
+const { downloadMediaMessage, getContentType } = require('baileys-x');
 
 class ViewOncePlugin {
     constructor(bot) {

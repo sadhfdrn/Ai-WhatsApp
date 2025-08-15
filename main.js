@@ -1,5 +1,5 @@
 // Clean WhatsApp Bot using pure Baileys
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@neoxr/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('baileys-x');
 const { Boom } = require('@hapi/boom');
 const P = require('pino');
 const fs = require('fs');
@@ -34,7 +34,7 @@ class SpamDetection {
 
 class WhatsAppBot {
     constructor() {
-        this.client = null; // @neoxr/wb client
+        this.client = null; // baileys-x client
         this.sock = null; // Direct Baileys socket access
         this.connected = false;
         this.sentMessageIds = new Set();
@@ -47,7 +47,7 @@ class WhatsAppBot {
         // Owner number will be extracted from credentials
         this.ownerNumber = null;
         
-        // Enhanced features with @neoxr/wb
+        // Enhanced features with baileys-x
         this.commandCooldown = new Map(); // Anti-spam cooldown
         this.messageCache = new Map(); // Message caching
         this.botDetection = new Set(); // Bot message detection
