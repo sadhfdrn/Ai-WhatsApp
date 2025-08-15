@@ -22,6 +22,6 @@
     "@adiwajshing/keyed-db": "github:adiwajshing/keyed-db"
   },
   "overrides": {
-    "baileys-x>jimp": "0.22.12"
+    "baileys-x>jimp": "1.6.0"
   }
 }
