@@ -12,16 +12,9 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@tobyg74/tiktok-api-dl": "^1.3.4",
-    "baileys-x": "^1.1.9",
+    "bailey": "github:sadhfdrn/bailey",
     "cheerio": "^1.1.2",
-    "jimp": "^0.16.13",
     "pino": "^9.8.0",
-    "qrcode-terminal": "^0.12.0",
-    "@whiskeysockets/baileys": "github:WhiskeySockets/Baileys",
-    "@adiwajshing/baileys": "github:WhiskeySockets/Baileys",
-    "@adiwajshing/keyed-db": "github:adiwajshing/keyed-db"
-  },
-  "overrides": {
-    "baileys-x>jimp": "1.6.0"
+    "qrcode-terminal": "^0.12.0"
   }
 }
